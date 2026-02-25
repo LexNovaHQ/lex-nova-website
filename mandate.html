@@ -13,10 +13,14 @@
             theme: {
                 extend: {
                     colors: {
-                        void: '#050505', gold: '#C5A059', marble: '#EAE8E3', shadow: '#1A1A1A'
+                        void: '#050505',
+                        gold: '#C5A059',
+                        marble: '#EAE8E3',
+                        shadow: '#1A1A1A'
                     },
                     fontFamily: {
-                        serif: ['"Cormorant Garamond"', 'serif'], sans: ['"Inter"', 'sans-serif']
+                        serif: ['"Cormorant Garamond"', 'serif'],
+                        sans: ['"Inter"', 'sans-serif']
                     }
                 }
             }
@@ -28,11 +32,12 @@
 
     <nav class="w-full py-8 px-6 md:px-12 flex justify-between items-center z-50 relative">
         <a href="index.html" class="flex items-center gap-4 hover:opacity-80 transition-opacity group">
-            <img src="logo.png" alt="Lex Nova Pillar" class="h-6 md:h-8 w-auto">
-            <span class="font-serif text-xl tracking-widest text-gold uppercase mt-1">Lex Nova <span class="text-marble opacity-50 text-sm ml-1">HQ</span></span>
+            <img src="logo.png" alt="Lex Nova HQ Logo" class="h-8 md:h-10 w-auto object-contain">
+            <span class="font-serif text-xl tracking-widest text-gold uppercase mt-1 hidden sm:block">Lex Nova <span class="text-marble opacity-50 text-sm ml-1">HQ</span></span>
         </a>
+        
         <div class="hidden md:flex gap-8 items-center text-marble opacity-80">
-            <a href="mandate.html" class="font-sans text-xs tracking-[0.15em] uppercase text-gold transition-colors duration-500">Division Mandate</a>
+            <a href="mandate.html" class="font-sans text-xs tracking-[0.15em] uppercase text-gold transition-colors duration-500">The Mandate</a>
             <a href="engagement.html" class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">Engagement</a>
             <a href="architect.html" class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">The Architect</a>
         </div>
@@ -47,58 +52,224 @@
 
     <hr class="border-shadow">
 
-    <header class="py-32 flex flex-col justify-center items-center text-center px-6">
-        <h1 class="font-sans text-xs tracking-[0.3em] text-gold uppercase mb-6">Our Thesis</h1>
-        <h2 class="font-serif text-5xl md:text-7xl leading-tight text-marble mb-8 max-w-4xl">
-            Compliance is an illusion. <br> Architecture is defense.
-        </h2>
+    <header class="py-32 flex flex-col items-center text-center px-6">
+        <h2 class="font-sans text-xs tracking-[0.3em] text-gold uppercase mb-6">The Mandate</h2>
+        <h1 class="font-serif text-5xl md:text-7xl mb-8 leading-tight max-w-4xl">
+            Engineering Defenses for the <br class="hidden md:block"> Speed of Scale.
+        </h1>
     </header>
 
     <hr class="border-shadow">
 
-    <main class="max-w-4xl mx-auto px-6 py-24 space-y-24">
+    <main class="max-w-4xl mx-auto px-6 py-24">
         
-        <div class="border-l-2 border-shadow pl-6 md:pl-10">
-            <h3 class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-4">I. The Template Trap</h3>
-            <div class="font-sans text-sm md:text-base text-marble opacity-80 leading-loose space-y-6">
-                <p>A generic Terms of Service document downloaded from the internet will not protect your AI company. A SaaS template built in 2018 does not account for algorithmic disgorgement, vector data provenance, or UETA §14 agentic strict liability.</p>
-                <p>When you rely on templates, you are not saving money. You are building systemic liabilities directly into your cap table and calling it efficiency.</p>
-            </div>
-        </div>
-
-        <div class="border-l-2 border-shadow pl-6 md:pl-10">
-            <h3 class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-4">II. The Due Diligence Defense</h3>
-            <div class="font-sans text-sm md:text-base text-marble opacity-80 leading-loose space-y-6">
-                <p>Legal infrastructure is only tested when the stakes are highest: during a Series A due diligence audit, during an enterprise procurement review, or during a regulatory inquiry.</p>
-                <p>Lex Nova HQ builds the "Due Diligence Defense." We engineer your commercial agreements, your internal IP protocols, and your data architecture so that when opposing counsel or an enterprise buyer looks under the hood of your startup, they see an impenetrable structure.</p>
-            </div>
-        </div>
-
-        <div class="bg-[#080808] border border-shadow p-8 md:p-12 text-center mt-12">
-            <h3 class="font-serif text-3xl text-marble mb-4">Stop guessing your exposure.</h3>
-            <p class="font-sans text-sm text-marble opacity-70 max-w-2xl mx-auto leading-relaxed mb-8">
-                Take the 10-question AI Risk Diagnostic to see exactly where your architecture is failing under current enforcement standards.
+        <article class="prose prose-invert prose-lg max-w-none text-center md:text-left">
+            <p class="font-sans text-lg md:text-xl text-marble leading-relaxed mb-16 opacity-90 border-l-2 border-gold pl-6">
+                The speed of technical deployment has outpaced legacy legal frameworks by a decade. Founders are building global, automated, and AI-driven systems while protecting them with deterministic, static contracts. <span class="text-gold font-semibold">That is a fatal mismatch.</span>
             </p>
-            <a href="scanner.html" class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-8 py-5 hover:bg-marble transition-colors font-bold w-full md:w-auto">
-                Run Diagnostic
-            </a>
-        </div>
 
+            <h3 class="font-serif text-3xl md:text-4xl text-gold mb-6 mt-16">The Illusion of Compliance</h3>
+            <p class="font-sans text-base md:text-lg text-marble leading-loose opacity-70 mb-6">
+                Most founders treat legal architecture as a friction point—a checkbox to tick before launch. They download a standard Terms of Service, copy a Privacy Policy from a competitor, use a generic contractor agreement, and assume they are protected. 
+            </p>
+            <p class="font-sans text-base md:text-lg text-marble leading-loose opacity-70 mb-12">
+                In the era of localized, traditional software, that was merely a risk. In the modern era of borderless SaaS, decentralized remote teams, and autonomous AI, it is corporate suicide. When your enterprise buyer mandates a Vendor Risk audit, your overseas developer claims copyright over your codebase, or your AI agent hallucinates a contract term, a legacy template will not save you. The courts have already decided: <strong class="text-marble font-semibold">without specific, architectural defenses, you hold 100% of the strict liability.</strong>
+            </p>
+
+            <div class="my-24 py-10 border-y border-shadow text-center">
+                <p class="font-serif text-3xl md:text-5xl text-marble italic leading-snug">
+                    "In court, the difference between a $10M negligence penalty and a $0 accident is documented due diligence."
+                </p>
+            </div>
+
+            <h3 class="font-serif text-3xl md:text-4xl text-gold mb-6 mt-16">The Due Diligence Defense</h3>
+            <p class="font-sans text-base md:text-lg text-marble leading-loose opacity-70 mb-6">
+                We do not sell "compliance." Compliance is a static state. We engineer <strong class="text-marble">The Due Diligence Defense</strong>. 
+            </p>
+            <p class="font-sans text-base md:text-lg text-marble leading-loose opacity-70 mb-12">
+                If regulators audit your data flows, or if an enterprise client sues you over a critical system failure, the defense is not a frantic apology. The defense is handing over a physical, air-tight paper trail that proves to a judge or procurement officer: <em>"We locked the scope. We mapped the data flows. We secured the IP chain. We instituted the kill-switches. We did our job."</em> 
+            </p>
+        </article>
     </main>
 
     <hr class="border-shadow">
 
-    <footer class="flex flex-col items-center py-16 bg-[#050505]">
-        <div class="font-serif text-xl tracking-widest text-gold uppercase mb-6 flex items-center gap-4">
-            <img src="logo.png" alt="Lex Nova Pillar" class="h-6 w-auto opacity-50">
-            Lex Nova HQ
+    <section class="max-w-6xl mx-auto px-6 py-32">
+        <div class="mb-16">
+            <h2 class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-4">Division I — Lex Nova</h2>
+            <h3 class="font-serif text-4xl md:text-6xl text-marble leading-tight mb-8">The Shield.</h3>
+            <p class="font-sans text-sm md:text-base text-marble opacity-60 leading-relaxed max-w-3xl">
+                We do not sell compliance. We sell market access, deal velocity, and the commercial infrastructure that lets you close enterprise without a law firm on retainer.
+            </p>
         </div>
-        <p class="font-sans text-xs text-marble opacity-40 uppercase tracking-widest max-w-2xl leading-relaxed text-center mb-8">
-            Commercial Architecture Practice, Not a Law Firm.<br>
-            Review-Ready Drafts Only. No Attorney-Client Relationship.
-        </p>
-        <p class="font-sans text-xs text-marble opacity-30">&copy; 2026 Lex Nova HQ. All rights reserved.</p>
-    </footer>
+
+        <div class="border border-shadow border-l-2 border-l-gold bg-[#080808] p-8 md:p-12 mb-12 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-gold opacity-5 blur-[100px] rounded-full pointer-events-none"></div>
+            
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase">Pillar 01 — AI Governance</div>
+                <span class="inline-block bg-gold text-void font-sans text-[10px] tracking-[0.2em] uppercase px-3 py-1 font-bold">
+                    ACTIVE — PILOT
+                </span>
+            </div>
+            
+            <h4 class="font-serif text-3xl md:text-4xl text-marble mb-6">Prevent the API Ban.</h4>
+            <p class="font-sans text-sm md:text-base text-marble opacity-80 leading-relaxed mb-8 max-w-4xl">
+                Your AI product is live and generating revenue. But one hallucination event, one agentic loop, one enterprise procurement wall — and everything stalls. We architect the liability shield before the incident, not after.
+            </p>
+            
+            <div class="border-t border-shadow pt-8">
+                <h5 class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-4 font-bold">What We Build:</h5>
+                <ul class="space-y-4">
+                    <li class="font-sans text-sm text-marble opacity-80"><span class="text-gold pr-2">▰</span> <strong>The Agentic Shield (Lane A)</strong> — For SaaS and AI startups deploying autonomous systems.</li>
+                    <li class="font-sans text-sm text-marble opacity-80"><span class="text-gold pr-2">▰</span> <strong>The Workplace Shield (Lane B)</strong> — For agencies and SMBs using AI tools to deliver client work.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <div class="border border-shadow p-8 md:p-10 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500 bg-[#030303]">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase">Pillar 02 — SaaS Contracts</div>
+                    <span class="inline-block border border-shadow text-marble font-sans text-[10px] tracking-[0.2em] uppercase px-2 py-1">🔒 Coming Soon</span>
+                </div>
+                <h4 class="font-serif text-2xl mb-4 text-marble">Unblock Procurement.</h4>
+                <p class="font-sans text-sm text-marble opacity-80 leading-relaxed">
+                    Enterprise buyers are ready to sign. Your contract architecture is the reason they haven't. We build the MSA, Order Form, and SLA framework that clears vendor risk desks and closes deals.
+                </p>
+            </div>
+
+            <div class="border border-shadow p-8 md:p-10 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500 bg-[#030303]">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase">Pillar 03 — Cross-Border Privacy</div>
+                    <span class="inline-block border border-shadow text-marble font-sans text-[10px] tracking-[0.2em] uppercase px-2 py-1">🔒 Coming Soon</span>
+                </div>
+                <h4 class="font-serif text-2xl mb-4 text-marble">Unlock the EU Market.</h4>
+                <p class="font-sans text-sm text-marble opacity-80 leading-relaxed">
+                    The EU AI Act is in enforcement. GDPR fines are compounding. Selling into Europe without a Data Processing Agreement and Standard Contractual Clauses is not a risk — it is a certainty of exposure. We build the bridge.
+                </p>
+            </div>
+
+            <div class="border border-shadow p-8 md:p-10 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500 bg-[#030303]">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase">Pillar 04 — Remote Hiring</div>
+                    <span class="inline-block border border-shadow text-marble font-sans text-[10px] tracking-[0.2em] uppercase px-2 py-1">🔒 Coming Soon</span>
+                </div>
+                <h4 class="font-serif text-2xl mb-4 text-marble">Kill the Deel Tax.</h4>
+                <p class="font-sans text-sm text-marble opacity-80 leading-relaxed">
+                    Cross-border contractors without IP assignment deeds own your code. Misclassified employees create tax exposure in jurisdictions you have never visited. We architect the hiring infrastructure that protects your cap table.
+                </p>
+            </div>
+
+            <div class="border border-shadow p-8 md:p-10 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500 bg-[#030303]">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase">Pillar 05 — Corp Structuring</div>
+                    <span class="inline-block border border-shadow text-marble font-sans text-[10px] tracking-[0.2em] uppercase px-2 py-1">🔒 Coming Soon</span>
+                </div>
+                <h4 class="font-serif text-2xl mb-4 text-marble">Be Investable.</h4>
+                <p class="font-sans text-sm text-marble opacity-80 leading-relaxed">
+                    Investors do not fund potential. They fund structure. Delaware incorporation, founder vesting schedules, and equity architecture are not administrative tasks — they are the difference between a fundable company and a conversation that never closes.
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    <hr class="border-shadow">
+
+    <section class="bg-[#0a0a0a] border-t border-shadow pt-32 pb-32 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-16">
+                <h2 class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase mb-4">Division II — Structura Systems</h2>
+                <h3 class="font-serif text-4xl md:text-6xl text-marble leading-tight mb-8">The Engine.</h3>
+                <p class="font-sans text-sm md:text-base text-marble opacity-60 leading-relaxed max-w-3xl mb-8">
+                    Most businesses are not failing because of bad ideas. They are failing because their operations cannot keep pace with their ambition. Structura deploys AI-native operational systems that run the business so the founder can run the strategy.
+                </p>
+                <div class="inline-block border border-gold/30 bg-gold/5 px-4 py-2">
+                    <span class="font-sans text-xs tracking-[0.1em] text-gold uppercase">Structura Systems activates post-pilot. Lex Nova clients receive early access.</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-60 grayscale hover:grayscale-0 transition-all duration-700">
+                
+                <div class="border border-shadow p-8 md:p-10 bg-[#050505]">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase">Pillar 01 — Revenue Ops</div>
+                        <span class="inline-block border border-shadow text-gold font-sans text-[10px] tracking-[0.2em] uppercase px-2 py-1">⚡ Activating Post-Pilot</span>
+                    </div>
+                    <h4 class="font-serif text-2xl mb-4 text-marble">Stop Revenue Leaking Through the Cracks.</h4>
+                    <p class="font-sans text-sm text-marble opacity-80 leading-relaxed">
+                        Leads fall through because no system caught them. Deals stall because no automation followed up. Pricing is inconsistent because no architecture governs it. We deploy AI-orchestrated revenue systems — pipeline intelligence, automated follow-up logic, and deal room architecture.
+                    </p>
+                </div>
+
+                <div class="border border-shadow p-8 md:p-10 bg-[#050505]">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase">Pillar 02 — Delivery Ops</div>
+                        <span class="inline-block border border-shadow text-gold font-sans text-[10px] tracking-[0.2em] uppercase px-2 py-1">⚡ Activating Post-Pilot</span>
+                    </div>
+                    <h4 class="font-serif text-2xl mb-4 text-marble">Stop Scope Creep Before It Starts.</h4>
+                    <p class="font-sans text-sm text-marble opacity-80 leading-relaxed">
+                        Projects overrun because scope was never locked. Clients demand revisions because expectations were never architected. Teams burn out because no system manages capacity. We build AI-assisted delivery infrastructure — automated project routing, scope enforcement logic, and capacity guardrails.
+                    </p>
+                </div>
+
+                <div class="border border-shadow p-8 md:p-10 bg-[#050505]">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase">Pillar 03 — Operational Intel</div>
+                        <span class="inline-block border border-shadow text-gold font-sans text-[10px] tracking-[0.2em] uppercase px-2 py-1">⚡ Activating Post-Pilot</span>
+                    </div>
+                    <h4 class="font-serif text-2xl mb-4 text-marble">Turn Tribal Knowledge Into a Scalable System.</h4>
+                    <p class="font-sans text-sm text-marble opacity-80 leading-relaxed">
+                        When your best operator leaves, everything they know leaves with them. We architect the knowledge infrastructure — AI-indexed SOPs, automated onboarding systems, and decision logic libraries — that makes your business independent of any single person.
+                    </p>
+                </div>
+
+                <div class="border border-shadow p-8 md:p-10 bg-[#050505]">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase">Pillar 04 — Financial Command</div>
+                        <span class="inline-block border border-shadow text-gold font-sans text-[10px] tracking-[0.2em] uppercase px-2 py-1">⚡ Activating Post-Pilot</span>
+                    </div>
+                    <h4 class="font-serif text-2xl mb-4 text-marble">Run the Numbers Without a CFO.</h4>
+                    <p class="font-sans text-sm text-marble opacity-80 leading-relaxed">
+                        Cash flow surprises are a systems failure, not a market failure. Invoicing delays, unpredictable burn, and manual financial reporting are symptoms of missing architecture. We deploy AI-assisted financial operations — automated invoicing logic, cash flow forecasting systems, and payment infrastructure.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <hr class="border-shadow">
+
+    <section class="bg-[#080808]">
+        <div class="max-w-4xl mx-auto px-6 py-32 text-center">
+            <h2 class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-4">The First Step</h2>
+            <h3 class="font-serif text-4xl text-marble mb-8">Stop Guessing. Map Your Exposure.</h3>
+            <p class="font-sans text-sm text-marble opacity-60 max-w-xl mx-auto mb-12 leading-relaxed">
+                Before we build the architecture, we diagnose the gaps. Use our proprietary 10-question engine to quantify your exact financial exposure based on active case law.
+            </p>
+            <a href="scanner.html" class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 mb-16 font-bold">
+                Run AI Risk Diagnostic
+            </a>
+            
+            <hr class="border-shadow mb-12">
+            <footer class="flex flex-col items-center">
+                <div class="mb-6">
+                    <img src="logo.png" alt="Lex Nova HQ Logo" class="h-12 w-auto opacity-80 hover:opacity-100 transition-opacity">
+                </div>
+                <div class="font-serif text-xl tracking-widest text-gold uppercase mb-6 flex items-center gap-4">
+                    Lex Nova HQ
+                </div>
+                <p class="font-sans text-xs text-marble opacity-40 uppercase tracking-widest max-w-2xl leading-relaxed text-center mb-8">
+                    Commercial Architecture Practice, Not a Law Firm.<br>
+                    Review-Ready Drafts Only. No Attorney-Client Relationship.
+                </p>
+                <p class="font-sans text-xs text-marble opacity-30">&copy; 2026 Lex Nova HQ. All rights reserved.</p>
+            </footer>
+        </div>
+    </section>
 
 </body>
 </html>
