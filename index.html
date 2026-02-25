@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lex Nova HQ | Legal Architecture</title>
+    <title>Lex Nova | Commercial Architecture</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,10 +13,14 @@
             theme: {
                 extend: {
                     colors: {
-                        void: '#050505', gold: '#C5A059', marble: '#EAE8E3', shadow: '#1A1A1A'
+                        void: '#050505',
+                        gold: '#C5A059',
+                        marble: '#EAE8E3',
+                        shadow: '#1A1A1A'
                     },
                     fontFamily: {
-                        serif: ['"Cormorant Garamond"', 'serif'], sans: ['"Inter"', 'sans-serif']
+                        serif: ['"Cormorant Garamond"', 'serif'],
+                        sans: ['"Inter"', 'sans-serif']
                     }
                 }
             }
@@ -28,7 +32,7 @@
 
     <nav class="w-full py-8 px-6 md:px-12 flex justify-between items-center z-50 relative">
         <a href="index.html" class="flex items-center gap-4 hover:opacity-80 transition-opacity group">
-            <img src="logo.png" alt="Lex Nova Pillar" class="h-6 md:h-8 w-auto">
+            <img src="logo.png" alt="Lex Nova" class="h-6 md:h-8 w-auto">
             <span class="font-serif text-xl tracking-widest text-gold uppercase mt-1">Lex Nova <span class="text-marble opacity-50 text-sm ml-1">HQ</span></span>
         </a>
         <div class="hidden md:flex gap-8 items-center text-marble opacity-80">
@@ -47,53 +51,442 @@
 
     <hr class="border-shadow">
 
-    <header class="py-32 md:py-48 flex flex-col justify-center items-center text-center px-6">
-        <h2 class="font-sans text-xs tracking-[0.3em] text-gold uppercase mb-6">Commercial Architecture Firm</h2>
-        <h1 class="font-serif text-5xl md:text-8xl leading-tight text-marble mb-8 max-w-5xl">
-            We engineer the structure. <br> You scale the entity.
+    <header class="py-40 flex flex-col justify-center items-center text-center px-6">
+        <h1 class="font-serif text-5xl md:text-7xl lg:text-8xl mb-6 leading-tight">
+            We Kill the <br class="md:hidden"> Billable Hour.
         </h1>
-        <p class="font-sans text-sm md:text-base text-marble opacity-70 leading-relaxed max-w-2xl mx-auto mb-12 uppercase tracking-[0.15em]">
-            Fixed-scope legal architecture for scaling AI and SaaS companies. No billable hours. No bloated timelines.
-        </p>
-        <a href="scanner.html" class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 font-bold">
-            Map Your Exposure
+        
+        <div class="flex items-center gap-4 md:gap-6 mt-4 mb-12">
+            <span class="w-8 md:w-16 h-[1px] bg-gold opacity-50"></span>
+            <p class="font-sans text-xs md:text-base tracking-[0.25em] md:tracking-[0.3em] uppercase text-marble opacity-90">
+                Commercial Architecture for <span class="text-gold font-semibold">AI & SaaS</span>
+            </p>
+            <span class="w-8 md:w-16 h-[1px] bg-gold opacity-50"></span>
+        </div>
+
+        <a href="scanner.html" class="font-sans text-xs tracking-[0.15em] text-marble uppercase border-b border-gold pb-1 hover:text-gold transition-colors duration-500 mt-4">
+            Run the AI Liability Audit
         </a>
     </header>
 
     <hr class="border-shadow">
 
-    <section class="max-w-6xl mx-auto px-6 py-32">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24">
-            <div class="border-l-2 border-shadow pl-8 md:pl-12">
-                <h3 class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-4">The Status Quo</h3>
-                <h4 class="font-serif text-3xl md:text-4xl text-marble mb-6">Law firms sell you time.</h4>
-                <p class="font-sans text-sm md:text-base text-marble opacity-70 leading-loose">
-                    Traditional legal models are broken for scaling tech entities. You are forced to choose between downloading a generic, unenforceable template from the internet, or paying a Big Law firm $1,000 an hour to learn how your agentic system works before they even write a single clause.
+    <section class="max-w-7xl mx-auto px-6 py-32">
+        <div class="mb-20 text-center max-w-4xl mx-auto">
+            <h2 class="font-serif text-4xl md:text-5xl leading-tight text-marble">
+                Traditional law firms are not built for the speed you operate at.
+            </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 border-t border-shadow pt-16">
+            <div class="group">
+                <div class="font-serif text-7xl text-gold opacity-30 mb-6 group-hover:opacity-100 transition-opacity duration-500">01</div>
+                <h4 class="font-serif text-2xl mb-4 text-marble">AI Hallucination Liability</h4>
+                <p class="font-sans text-sm text-marble opacity-60 leading-relaxed">
+                    Your autonomous agent misfires. A client loses money. Your Terms of Service calls it a product. The court agrees. Without a commercial circuit breaker, your cap table absorbs the entire exposure.
                 </p>
             </div>
-            <div class="border-l-2 border-gold pl-8 md:pl-12">
-                <h3 class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-4">The Lex Nova Model</h3>
-                <h4 class="font-serif text-3xl md:text-4xl text-marble mb-6">We sell you completed architecture.</h4>
-                <p class="font-sans text-sm md:text-base text-marble opacity-70 leading-loose">
-                    We deliver Big Law sophistication at productized speed. You get Review-Ready Drafts engineered for your specific tech stack, delivered in 48 hours for a fixed price. Your local counsel spends one hour validating the jurisdiction instead of twenty hours building the foundation.
+            
+            <div class="group">
+                <div class="font-serif text-7xl text-gold opacity-30 mb-6 group-hover:opacity-100 transition-opacity duration-500">02</div>
+                <h4 class="font-serif text-2xl mb-4 text-marble">Agentic System Risk</h4>
+                <p class="font-sans text-sm text-marble opacity-60 leading-relaxed">
+                    Deploying AI agents without kill switches, spend caps, and UETA attribution is not a governance gap. It is an open liability with no ceiling. One retry storm can drain a client account overnight.
                 </p>
+            </div>
+
+            <div class="group">
+                <div class="font-serif text-7xl text-gold opacity-30 mb-6 group-hover:opacity-100 transition-opacity duration-500">03</div>
+                <h4 class="font-serif text-2xl mb-4 text-marble">Procurement Drag</h4>
+                <p class="font-sans text-sm text-marble opacity-60 leading-relaxed">
+                    Your SaaS deal is done. The enterprise buyer is ready to sign. Then their vendor risk team sends a 150-question compliance spreadsheet. Your contract is a ChatGPT template from 2022. The window closes.
+                </p>
+            </div>
+
+            <div class="group">
+                <div class="font-serif text-7xl text-gold opacity-30 mb-6 group-hover:opacity-100 transition-opacity duration-500">04</div>
+                <h4 class="font-serif text-2xl mb-4 text-marble">IP Fragmentation</h4>
+                <p class="font-sans text-sm text-marble opacity-60 leading-relaxed">
+                    You delivered the work. The client refuses to pay — your AI-generated output has no ownership chain. No IP deed, no HITL protocol, no authorship trail. Their lawyer has a stronger argument than yours.
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-24 text-center border-t border-shadow pt-16">
+            <p class="font-serif text-3xl md:text-4xl text-marble italic">
+                This is not a legal problem. This is a <span class="text-gold">revenue</span> problem. <br class="hidden md:block">It has a 48-hour fix.
+            </p>
+        </div>
+    </section>
+
+    <hr class="border-shadow">
+
+    <section class="max-w-6xl mx-auto px-6 py-24">
+        <div class="mb-16 text-center">
+            <h2 class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-4">The Mandate</h2>
+            <h3 class="font-serif text-3xl md:text-5xl text-marble leading-tight">Full Scope of Architecture</h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="border border-shadow p-10 md:p-16 flex flex-col group hover:bg-[#0a0a0a] transition-colors duration-500">
+                <div class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-6">Division 01</div>
+                <h4 class="font-serif text-4xl mb-6 text-marble">Lex Nova <span class="font-serif text-gold italic text-2xl ml-2">The Shield</span></h4>
+                <p class="font-sans text-sm text-marble opacity-60 leading-relaxed mb-10 max-w-md">
+                    Legal engineering for global market access. We build the defenses that protect your cap table and unblock enterprise procurement.
+                </p>
+                <ul class="font-sans text-xs tracking-widest text-marble opacity-80 uppercase space-y-4">
+                    <li class="border-b border-shadow pb-3">Governance & Risk</li>
+                    <li class="border-b border-shadow pb-3">Capital & Equity</li>
+                    <li class="border-b border-shadow pb-3">Market Access</li>
+                    <li class="border-b border-shadow pb-3">Hiring & Talent</li>
+                </ul>
+            </div>
+
+            <div class="border border-shadow p-10 md:p-16 flex flex-col group hover:bg-[#0a0a0a] transition-colors duration-500">
+                <div class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-6">Division 02</div>
+                <h4 class="font-serif text-4xl mb-6 text-marble">Structura <span class="font-serif text-gold italic text-2xl ml-2">The Engine</span></h4>
+                <p class="font-sans text-sm text-marble opacity-60 leading-relaxed mb-10 max-w-md">
+                    Operational logic for automated delivery. We re-engineer your internal systems to eliminate scope creep and fix the bus factor.
+                </p>
+                <ul class="font-sans text-xs tracking-widest text-marble opacity-80 uppercase space-y-4">
+                    <li class="border-b border-shadow pb-3">Revenue Ops</li>
+                    <li class="border-b border-shadow pb-3">Knowledge Ops</li>
+                    <li class="border-b border-shadow pb-3">Delivery Ops</li>
+                    <li class="border-b border-shadow pb-3">Financial Ops</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="mt-16 text-center">
+            <a href="mandate.html" class="font-sans text-xs tracking-[0.15em] text-marble uppercase border-b border-gold pb-1 hover:text-gold transition-colors duration-500">
+                Explore The Full Mandate
+            </a>
+        </div>
+    </section>
+
+    <hr class="border-shadow">
+
+    <section class="max-w-5xl mx-auto px-6 py-32">
+        <div class="mb-16 text-center">
+            <h2 class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-4">Current Operating Layer</h2>
+            <h3 class="font-serif text-3xl md:text-5xl text-marble leading-tight">Architecture Frameworks</h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div onclick="openModal('modal-gov')" class="border border-shadow p-12 flex flex-col justify-between group hover:border-gold transition-colors duration-500 cursor-pointer bg-[#080808] relative overflow-hidden">
+                <div class="absolute top-6 right-6 flex items-center gap-2">
+                    <span class="relative flex h-1.5 w-1.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold opacity-75"></span><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-gold"></span></span>
+                    <span class="font-sans text-[9px] tracking-[0.2em] text-gold uppercase">Active</span>
+                </div>
+                <div>
+                    <h4 class="font-serif text-3xl mb-6 text-marble flex items-center gap-3">
+                        <span class="text-gold">⚖</span> AI Governance
+                    </h4>
+                    <p class="font-sans text-sm text-marble opacity-60 leading-relaxed mb-16 italic">
+                        "Your AI product needs a liability shield before it meets its first enterprise client."
+                    </p>
+                </div>
+                <div class="flex justify-between items-center border-t border-shadow pt-6 group-hover:border-gold transition-colors duration-500">
+                    <span class="font-sans text-xs tracking-widest text-marble opacity-60 uppercase">Framework Active</span>
+                    <span class="font-sans text-xs tracking-widest text-gold uppercase flex items-center gap-2">View Architecture <span class="transition-transform duration-500 group-hover:translate-x-2">→</span></span>
+                </div>
+            </div>
+
+            <div class="border border-shadow p-12 flex flex-col justify-between bg-[#050505] relative opacity-50 grayscale select-none">
+                <div class="absolute top-6 right-6 border border-gold/50 bg-gold/5 px-3 py-1">
+                    <span class="font-sans text-[9px] tracking-[0.2em] text-gold uppercase">Coming Up Next</span>
+                </div>
+                <div>
+                    <h4 class="font-serif text-3xl mb-6 text-marble flex items-center gap-3">
+                        <span class="text-marble opacity-50">⚖</span> SaaS Contracts
+                    </h4>
+                    <p class="font-sans text-sm text-marble opacity-40 leading-relaxed mb-16 italic">
+                        "Enterprise wants to buy. Your paperwork is the reason they won't."
+                    </p>
+                </div>
+                <div class="flex justify-between items-center border-t border-shadow pt-6">
+                    <span class="font-sans text-xs tracking-widest text-marble opacity-40 uppercase">In Development</span>
+                    <span class="font-sans text-xs tracking-widest text-marble opacity-40 uppercase flex items-center gap-2">Locked</span>
+                </div>
             </div>
         </div>
     </section>
 
     <hr class="border-shadow">
 
-    <footer class="flex flex-col items-center py-16 bg-[#050505]">
-        <div class="font-serif text-xl tracking-widest text-gold uppercase mb-6 flex items-center gap-4">
-            <img src="logo.png" alt="Lex Nova Pillar" class="h-6 w-auto opacity-50">
-            Lex Nova HQ
+    <section class="max-w-4xl mx-auto px-6 py-24">
+        <div class="mb-16 text-center">
+            <h2 class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-4">Execution Protocol</h2>
+            <h3 class="font-serif text-3xl md:text-5xl text-marble leading-tight">The Diagnostic Flow</h3>
         </div>
-        <p class="font-sans text-xs text-marble opacity-40 uppercase tracking-widest max-w-2xl leading-relaxed text-center mb-8">
-            Commercial Architecture Practice, Not a Law Firm.<br>
-            Review-Ready Drafts Only. No Attorney-Client Relationship.
-        </p>
-        <p class="font-sans text-xs text-marble opacity-30">&copy; 2026 Lex Nova HQ. All rights reserved.</p>
-    </footer>
+
+        <div class="max-w-2xl mx-auto border-l border-shadow ml-4 md:mx-auto">
+            
+            <div class="relative pl-10 pb-12">
+                <div class="absolute w-2 h-2 bg-gold rounded-full -left-[4px] top-2"></div>
+                <h4 class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-2">Step 01</h4>
+                <h4 class="font-serif text-2xl mb-3 text-marble">The AI Risk Scanner</h4>
+                <p class="font-sans text-sm text-marble opacity-60 leading-relaxed">
+                    You complete a 10-question diagnostic. It identifies your exact financial exposure based on active AI case law and prescribes the correct architectural shield before you pay a single dollar.
+                </p>
+            </div>
+
+            <div class="relative pl-10 pb-12">
+                <div class="absolute w-2 h-2 bg-gold rounded-full -left-[4px] top-2"></div>
+                <h4 class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-2">Step 02</h4>
+                <h4 class="font-serif text-2xl mb-3 text-marble">Checkout & Engagement</h4>
+                <p class="font-sans text-sm text-marble opacity-60 leading-relaxed">
+                    Once your exposure is mapped, you review the Engagement Terms and secure your build slot. The 48-hour drafting sprint is locked in the moment payment clears.
+                </p>
+            </div>
+
+            <div class="relative pl-10 pb-12">
+                <div class="absolute w-2 h-2 bg-gold rounded-full -left-[4px] top-2"></div>
+                <h4 class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-2">Step 03</h4>
+                <h4 class="font-serif text-2xl mb-3 text-marble">The Architecture Blueprint</h4>
+                <p class="font-sans text-sm text-marble opacity-60 leading-relaxed">
+                    Post-payment, you receive the technical intake. This is where the Architect collects your exact operating parameters: LLM APIs in use, client data flows, and jurisdiction.
+                </p>
+            </div>
+
+            <div class="relative pl-10 pb-12">
+                <div class="absolute w-2 h-2 bg-gold rounded-full -left-[4px] top-2"></div>
+                <h4 class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-2">Step 04</h4>
+                <h4 class="font-serif text-2xl mb-3 text-marble">Draft Delivery</h4>
+                <p class="font-sans text-sm text-marble opacity-60 leading-relaxed">
+                    Your Review-Ready documents are delivered to a private Notion Portal, accompanied by Architect Notes addressed directly to your local counsel. They review and stamp. We killed the billable hour.
+                </p>
+            </div>
+            
+        </div>
+    </section>
+
+    <hr class="border-shadow">
+
+    <section class="max-w-5xl mx-auto px-6 py-24">
+        <div class="flex flex-col md:flex-row gap-16 items-center md:items-start">
+            <div class="w-64 h-80 shrink-0 border border-shadow p-2">
+                <div class="w-full h-full bg-shadow grayscale bg-cover bg-center" style="background-image: url('profile.png');"></div>
+            </div>
+            <div class="flex-1 text-center md:text-left">
+                <h2 class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-4">The Architect</h2>
+                <h3 class="font-serif text-4xl text-marble mb-6">Shwetabh Singh</h3>
+                <p class="font-sans text-sm text-marble opacity-60 leading-relaxed mb-8 max-w-lg">
+                    I am a Courtroom Litigator by training, a Tech Geek by hobby, and a Control Freak by nature. I don't trust "legal templates" for the same reason I don't trust "frozen food." They are fast, but full of junk that kills you slowly.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-6 justify-center md:justify-start items-center mb-10">
+                    <a href="https://www.linkedin.com/in/shwetabh-singh/" target="_blank" class="font-sans text-xs tracking-[0.1em] text-marble opacity-80 hover:text-gold uppercase transition-colors duration-500 border-b border-shadow pb-1">
+                        Connect on LinkedIn
+                    </a>
+                </div>
+                <a href="architect.html" class="font-sans text-xs tracking-[0.15em] text-gold uppercase border-b border-gold pb-1 hover:text-marble transition-colors duration-500">
+                    Read the Full Manifesto
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <hr class="border-shadow">
+
+    <section class="bg-[#080808]">
+        <div class="max-w-4xl mx-auto px-6 py-32 text-center">
+            <h2 class="font-serif text-4xl text-marble mb-8">Ready to map your exposure?</h2>
+            <a href="scanner.html" class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 mb-16 font-bold">
+                Run AI Risk Diagnostic
+            </a>
+            <hr class="border-shadow mb-12">
+            <footer class="flex flex-col items-center">
+                <div class="font-serif text-xl tracking-widest text-gold uppercase mb-6 flex items-center gap-4">
+                    <img src="logo.png" alt="Lex Nova" class="h-6 w-auto opacity-50">
+                    Lex Nova HQ
+                </div>
+                
+                <p class="font-sans text-xs text-marble opacity-40 uppercase tracking-widest max-w-2xl leading-relaxed text-center mb-8">
+                    Commercial Architecture Practice, Not a Law Firm.<br>
+                    Review-Ready Drafts Only. No Attorney-Client Relationship.
+                </p>
+
+                <p class="font-sans text-xs text-marble opacity-30">&copy; 2026 Lex Nova HQ. All rights reserved.</p>
+            </footer>
+        </div>
+    </section>
+
+    <div id="modal-gov" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-void/90 backdrop-blur-sm" onclick="closeModal('modal-gov')"></div>
+        
+        <div class="relative bg-[#080808] border border-shadow w-full max-w-4xl max-h-[90vh] overflow-y-auto p-8 md:p-12 shadow-2xl">
+            <button onclick="closeModal('modal-gov')" class="absolute top-6 right-8 font-sans text-xs tracking-widest text-marble opacity-50 hover:text-gold uppercase">Close ✕</button>
+
+            <h2 class="font-serif text-4xl text-marble mb-2">AI Governance Architecture</h2>
+            <p class="font-sans text-sm text-gold italic mb-10">Your AI product is live. Your liability shield is not.</p>
+
+            <div class="mb-10 border-b border-shadow flex gap-8">
+                <button onclick="switchTab('gov', 'a')" id="btn-gov-a" class="font-sans text-xs tracking-[0.15em] uppercase pb-3 border-b-2 border-gold text-gold transition-colors">Lane A: The Agentic Shield</button>
+                <button onclick="switchTab('gov', 'b')" id="btn-gov-b" class="font-sans text-xs tracking-[0.15em] uppercase pb-3 border-b-2 border-transparent text-marble opacity-50 hover:opacity-100 transition-colors">Lane B: The Workplace Shield</button>
+            </div>
+
+            <div id="content-gov-a" class="block">
+                <div class="text-center mb-12 mt-6">
+                    <div class="inline-block border border-shadow bg-[#0a0a0a] px-4 py-1 mb-4">
+                        <span class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase">Engineered For</span>
+                    </div>
+                    <p class="font-serif text-2xl md:text-3xl text-marble leading-snug max-w-2xl mx-auto">
+                        SaaS founders and AI startups building products powered by LLMs or autonomous agents.
+                    </p>
+                </div>
+
+                <div class="mb-16 border border-shadow border-l-2 border-l-gold bg-[#0a0a0a] p-8 md:p-10">
+                    <span class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-3 py-1 font-bold mb-4">
+                        The Exposure / Pain Point
+                    </span>
+                    <p class="font-sans text-sm md:text-base text-marble opacity-80 leading-loose">
+                        Your agent hallucinates and a client loses money. Your API loops and drains their account. An enterprise procurement team demands a compliance pack you don't have. One incident — one bad output — and you're facing a lawsuit you cannot defend because your contract was written for software, not AI.
+                    </p>
+                </div>
+
+                <h4 class="font-sans text-sm tracking-[0.25em] text-marble font-semibold uppercase mb-6 border-b border-shadow pb-4">
+                    <span class="text-gold pr-2">▰</span> What We Build (6 Documents)
+                </h4>
+                <div class="mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-[120px_1.5fr_2fr] gap-4 border-b border-shadow py-4">
+                        <div class="font-sans text-xs tracking-widest text-gold mt-1">DOC_TOS</div>
+                        <div class="font-serif text-xl text-marble">AI Terms of Service</div>
+                        <div class="font-sans text-sm text-marble opacity-60 leading-relaxed">Defines your product as a Service, not a Product. Kills strict liability.</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-[120px_1.5fr_2fr] gap-4 border-b border-shadow py-4">
+                        <div class="font-sans text-xs tracking-widest text-gold mt-1">DOC_AGT</div>
+                        <div class="font-serif text-xl text-marble">Agentic Addendum</div>
+                        <div class="font-sans text-sm text-marble opacity-60 leading-relaxed">Financial circuit breaker, kill switch, UETA agency attribution.</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-[120px_1.5fr_2fr] gap-4 border-b border-shadow py-4">
+                        <div class="font-sans text-xs tracking-widest text-gold mt-1">DOC_AUP</div>
+                        <div class="font-serif text-xl text-marble">Acceptable Use Policy</div>
+                        <div class="font-sans text-sm text-marble opacity-60 leading-relaxed">Prompt injection ban, prohibited use cases, watermark preservation.</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-[120px_1.5fr_2fr] gap-4 border-b border-shadow py-4">
+                        <div class="font-sans text-xs tracking-widest text-gold mt-1">DOC_SLA</div>
+                        <div class="font-serif text-xl text-marble">AI SLA</div>
+                        <div class="font-sans text-sm text-marble opacity-60 leading-relaxed">Redefines latency to "First Token." Protects you from uptime breach claims.</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-[120px_1.5fr_2fr] gap-4 border-b border-shadow py-4">
+                        <div class="font-sans text-xs tracking-widest text-gold mt-1">DOC_DPA</div>
+                        <div class="font-serif text-xl text-marble">Data Processing Agmt</div>
+                        <div class="font-sans text-sm text-marble opacity-60 leading-relaxed">Mandates RAG architecture. GDPR-ready. Protects your model from disgorgement.</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-[120px_1.5fr_2fr] gap-4 border-b border-shadow py-4">
+                        <div class="font-sans text-xs tracking-widest text-gold mt-1">DOC_PP</div>
+                        <div class="font-serif text-xl text-marble">AI Privacy Policy</div>
+                        <div class="font-sans text-sm text-marble opacity-60 leading-relaxed">Jurisdiction-aware data flows, model training disclosure, and GDPR user rights.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-gov-b" class="hidden">
+                <div class="text-center mb-12 mt-6">
+                    <div class="inline-block border border-shadow bg-[#0a0a0a] px-4 py-1 mb-4">
+                        <span class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase">Engineered For</span>
+                    </div>
+                    <p class="font-serif text-2xl md:text-3xl text-marble leading-snug max-w-2xl mx-auto">
+                        Agencies and SMBs using AI tools (ChatGPT, Midjourney) to deliver work for clients.
+                    </p>
+                </div>
+
+                <div class="mb-16 border border-shadow border-l-2 border-l-gold bg-[#0a0a0a] p-8 md:p-10">
+                    <span class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-3 py-1 font-bold mb-4">
+                        The Exposure / Pain Point
+                    </span>
+                    <p class="font-sans text-sm md:text-base text-marble opacity-80 leading-loose">
+                        Your team pastes a client brief into ChatGPT. You deliver an AI-generated campaign. The client's legal team refuses to pay — "you can't own AI output." You have no policy, no IP chain, no paper trail. Your invoice is dead and your reputation is at risk.
+                    </p>
+                </div>
+
+                <h4 class="font-sans text-sm tracking-[0.25em] text-marble font-semibold uppercase mb-6 border-b border-shadow pb-4">
+                    <span class="text-gold pr-2">▰</span> What We Build (5 Documents)
+                </h4>
+                <div class="mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-[120px_1.5fr_2fr] gap-4 border-b border-shadow py-4">
+                        <div class="font-sans text-xs tracking-widest text-gold mt-1">DOC_HND</div>
+                        <div class="font-serif text-xl text-marble">AI Employee Handbook</div>
+                        <div class="font-sans text-sm text-marble opacity-60 leading-relaxed">Traffic Light Policy. Defines which tools are permitted, restricted, or banned.</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-[120px_1.5fr_2fr] gap-4 border-b border-shadow py-4">
+                        <div class="font-sans text-xs tracking-widest text-gold mt-1">DOC_IP</div>
+                        <div class="font-serif text-xl text-marble">IP Assignment Deed</div>
+                        <div class="font-sans text-sm text-marble opacity-60 leading-relaxed">Ensures your company owns every prompt, output, and derivative work.</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-[120px_1.5fr_2fr] gap-4 border-b border-shadow py-4">
+                        <div class="font-sans text-xs tracking-widest text-gold mt-1">DOC_SOP</div>
+                        <div class="font-serif text-xl text-marble">HITL Protocol</div>
+                        <div class="font-sans text-sm text-marble opacity-60 leading-relaxed">Human-in-the-Loop workflow that proves authorship and secures your IP.</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-[120px_1.5fr_2fr] gap-4 border-b border-shadow py-4">
+                        <div class="font-sans text-xs tracking-widest text-gold mt-1">DOC_SCAN</div>
+                        <div class="font-serif text-xl text-marble">Shadow AI Scanner</div>
+                        <div class="font-sans text-sm text-marble opacity-60 leading-relaxed">Anonymous survey to find hidden AI usage before it becomes a liability.</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-[120px_1.5fr_2fr] gap-4 border-b border-shadow py-4">
+                        <div class="font-sans text-xs tracking-widest text-gold mt-1">DOC_DPIA</div>
+                        <div class="font-serif text-xl text-marble">Impact Assessment</div>
+                        <div class="font-sans text-sm text-marble opacity-60 leading-relaxed">EU AI Act risk filter. Scores your use cases as High Risk or Limited Risk.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-shadow/30 p-6 border border-shadow flex flex-col md:flex-row justify-between items-center gap-6 mt-4">
+                <div>
+                    <p class="font-sans text-xs tracking-widest text-marble opacity-60 uppercase mb-2">Identify Your Liability</p>
+                    <p class="font-serif text-2xl text-gold">Free Diagnostic <span class="font-sans text-xs tracking-widest text-marble opacity-50 uppercase ml-2">3 Minutes</span></p>
+                </div>
+                <a href="scanner.html" class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-8 py-4 hover:bg-marble transition-colors w-full md:w-auto text-center font-bold">
+                    Run AI Risk Diagnostic
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-saas" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-void/90 backdrop-blur-sm" onclick="closeModal('modal-saas')"></div>
+        <div class="relative bg-[#080808] border border-shadow w-full max-w-4xl max-h-[90vh] overflow-y-auto p-8 md:p-12 shadow-2xl">
+            <button onclick="closeModal('modal-saas')" class="absolute top-6 right-8 font-sans text-xs tracking-widest text-marble opacity-50 hover:text-gold uppercase">Close ✕</button>
+            <h2 class="font-serif text-4xl text-marble mb-2">SaaS Contract Architecture</h2>
+            <p class="font-sans text-sm text-gold italic mb-10">Enterprise wants to buy. Your paperwork is the reason they won't.</p>
+            <div class="mb-10 border border-gold/50 bg-gold/5 p-6">
+                <p class="font-sans text-sm text-marble opacity-80 leading-relaxed text-center">
+                    This division is currently locked and in development. Check back soon for the full SaaS architecture rollout.
+                </p>
+            </div>
+            <div class="bg-shadow/30 p-6 border border-shadow flex justify-center items-center">
+                <p class="font-sans text-xs tracking-widest text-marble opacity-40 uppercase">Coming Up Next</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.body.style.overflow = 'auto'; 
+        }
+
+        function switchTab(modal, lane) {
+            document.getElementById(`btn-${modal}-a`).className = "font-sans text-xs tracking-[0.15em] uppercase pb-3 border-b-2 border-transparent text-marble opacity-50 hover:opacity-100 transition-colors";
+            document.getElementById(`btn-${modal}-b`).className = "font-sans text-xs tracking-[0.15em] uppercase pb-3 border-b-2 border-transparent text-marble opacity-50 hover:opacity-100 transition-colors";
+            
+            document.getElementById(`content-${modal}-a`).classList.add('hidden');
+            document.getElementById(`content-${modal}-a`).classList.remove('block');
+            document.getElementById(`content-${modal}-b`).classList.add('hidden');
+            document.getElementById(`content-${modal}-b`).classList.remove('block');
+            
+            document.getElementById(`btn-${modal}-${lane}`).className = "font-sans text-xs tracking-[0.15em] uppercase pb-3 border-b-2 border-gold text-gold transition-colors";
+            
+            document.getElementById(`content-${modal}-${lane}`).classList.remove('hidden');
+            document.getElementById(`content-${modal}-${lane}`).classList.add('block');
+        }
+    </script>
 
 </body>
 </html>
