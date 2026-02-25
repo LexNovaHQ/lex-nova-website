@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Architect | Lex Nova HQ</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        void: '#050505',
+                        gold: '#C5A059',
+                        marble: '#EAE8E3',
+                        shadow: '#1A1A1A'
+                    },
+                    fontFamily: {
+                        serif: ['"Cormorant Garamond"', 'serif'],
+                        sans: ['"Inter"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-void text-marble font-sans antialiased selection:bg-gold selection:text-void relative">
+
+    <nav class="w-full py-8 px-6 md:px-12 flex justify-between items-center z-50 relative">
+        <a href="index.html" class="flex items-center gap-4 hover:opacity-80 transition-opacity group">
+            <img src="logo.png" alt="Lex Nova Pillar" class="h-6 md:h-8 w-auto">
+            <span class="font-serif text-xl tracking-widest text-gold uppercase mt-1">Lex Nova <span class="text-marble opacity-50 text-sm ml-1">HQ</span></span>
+        </a>
+        <div class="hidden md:flex gap-8 items-center text-marble opacity-80">
+            <a href="mandate.html" class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">Division Mandate</a>
+            <a href="engagement.html" class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">Engagement</a>
+            <a href="architect.html" class="font-sans text-xs tracking-[0.15em] uppercase text-gold transition-colors duration-500">The Architect</a>
+        </div>
+        <a href="scanner.html" class="font-sans text-xs tracking-[0.1em] uppercase text-void bg-gold px-6 py-3 hover:bg-marble hover:text-void transition-colors duration-500 font-bold flex items-center gap-3">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-void opacity-40"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-void"></span>
+            </span>
+            Run Diagnostic
+        </a>
+    </nav>
+
+    <hr class="border-shadow">
+
+    <header class="py-32 px-6 max-w-4xl mx-auto text-center">
+        <h1 class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-6">The Architect</h1>
+        <h2 class="font-serif text-5xl md:text-7xl leading-tight text-marble mb-6">Shwetabh Singh</h2>
+        <p class="font-sans text-sm text-marble opacity-60 leading-relaxed max-w-2xl mx-auto uppercase tracking-[0.15em]">
+            Founder & Principal Architect. Lex Nova HQ.
+        </p>
+    </header>
+
+    <hr class="border-shadow">
+
+    <section class="max-w-7xl mx-auto px-6 py-32">
+        <div class="flex flex-col lg:flex-row gap-16 lg:gap-24 items-start">
+            
+            <div class="w-full lg:w-4/12 shrink-0 lg:sticky lg:top-12">
+                <div class="aspect-[3/4] border border-shadow p-2 mb-10 bg-[#050505]">
+                    <div class="w-full h-full bg-shadow grayscale bg-cover bg-center" style="background-image: url('profile.png');"></div>
+                </div>
+
+                <div class="border-l-2 border-gold pl-6 mb-10 bg-gradient-to-r from-gold/5 to-transparent py-4">
+                    <ul class="space-y-4 font-sans text-[11px] md:text-xs tracking-[0.15em] text-marble uppercase">
+                        <li><span class="text-gold pr-2">▰</span> Courtroom Litigator by training.</li>
+                        <li><span class="text-gold pr-2">▰</span> Tech Geek by obsession.</li>
+                        <li><span class="text-gold pr-2">▰</span> Control Freak by nature.</li>
+                    </ul>
+                </div>
+
+                <div class="flex flex-col gap-5 border-t border-shadow pt-8">
+                    <a href="https://www.linkedin.com/in/shwetabh-singh/" target="_blank" rel="noopener noreferrer" class="font-sans text-xs tracking-[0.15em] text-marble opacity-80 hover:text-gold uppercase transition-colors duration-500 flex items-center gap-3">
+                        <span class="w-4 h-[1px] bg-gold"></span> LinkedIn Profile
+                    </a>
+                    <a href="mailto:shwetabh.singh@lexnovahq.com" class="font-sans text-xs tracking-[0.15em] text-marble opacity-80 hover:text-gold uppercase transition-colors duration-500 flex items-center gap-3">
+                        <span class="w-4 h-[1px] bg-gold"></span> Direct Dispatch
+                    </a>
+                </div>
+            </div>
+
+            <div class="w-full lg:w-8/12 flex flex-col gap-20 pt-4">
+                
+                <div>
+                    <h4 class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-6 border-b border-shadow pb-4 inline-block">Act I — The Origin</h4>
+                    <h3 class="font-serif text-3xl md:text-4xl text-marble leading-snug mb-8">
+                        I was not trained in a boardroom. <br>I was trained in a courtroom.
+                    </h3>
+                    <div class="font-sans text-sm md:text-base text-marble opacity-70 leading-loose space-y-6">
+                        <p>
+                            I graduated from a premier National Law University and spent my early career arguing before Judges in a Common Law jurisdiction. Litigation teaches you one brutal truth that corporate law never does — contracts do not fail because the law is complicated. They fail because the logic is flawed. A single poorly drafted clause, a single undefined term, a single assumption left unaddressed — and everything unravels in front of a Judge who has no patience for ambiguity.
+                        </p>
+                        <p>
+                            That training rewired how I think about commercial documents. Every clause is a potential argument. Every undefined term is a loaded weapon pointed in the wrong direction.
+                        </p>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-6 border-b border-shadow pb-4 inline-block">Act II — The Obsession</h4>
+                    <h3 class="font-serif text-3xl md:text-4xl text-marble leading-snug mb-8">
+                        Generic is not a starting point. <br>It is a liability dressed as a solution.
+                    </h3>
+                    <div class="font-sans text-sm md:text-base text-marble opacity-70 leading-loose space-y-6">
+                        <p>
+                            I don't trust legal templates for the same reason I don't trust frozen food. They are fast. They look fine. And they are full of junk that kills you slowly.
+                        </p>
+                        <p>
+                            I am a Control Freak by nature. Whether I am building a system or drafting a Master Services Agreement, I need absolute precision over every ingredient. I have watched too many founders copy-paste ChatGPT-generated contracts into enterprise procurement processes and wonder why the deal died.
+                        </p>
+                        <p>
+                            The document looked legal. The logic was broken. That is the difference between a template and architecture.
+                        </p>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-6 border-b border-shadow pb-4 inline-block">Act III — The Gap</h4>
+                    <h3 class="font-serif text-3xl md:text-4xl text-marble leading-snug mb-8">
+                        Two bad options. <br>Nothing in between.
+                    </h3>
+                    <div class="font-sans text-sm md:text-base text-marble opacity-70 leading-loose space-y-6">
+                        <p>
+                            When the AI and SaaS boom accelerated, I saw the same failure pattern repeating at scale. Brilliant founders deploying autonomous agents and scaling cross-border teams — using Terms of Service designed for 2012 e-commerce stores. 
+                        </p>
+                        <p>
+                            No hallucination waivers. No kill switch clauses. No IP assignment chains. No UETA attribution for agentic systems. They were not saving money by avoiding lawyers. They were building systemic liabilities directly into their cap tables and calling it efficiency.
+                        </p>
+                        <p>
+                            At the same time, their alternative was a Big Law firm billing $1,000 an hour to write 50-page contracts that killed the deal velocity they needed to survive. 
+                        </p>
+                        <p>
+                            I built Lex Nova HQ to occupy that gap. Not as a law firm. As a Legal Architecture practice. The sophistication of Big Law, delivered at the speed and price of a productized system.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-[#080808] border border-shadow border-l-2 border-l-gold p-8 md:p-12 mt-4">
+                    <h4 class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-6 inline-block">Act IV — The Promise</h4>
+                    <div class="font-sans text-sm md:text-base text-marble opacity-90 leading-loose space-y-6">
+                        <p>
+                            I am blunt. I am honest. I challenge my clients when the logic is wrong.
+                        </p>
+                        <p>
+                            I do not write legal essays. I engineer Review-Ready architecture — fixed scope, fixed price, 48-hour delivery — that unblocks enterprise procurement, shields your revenue, and gives your local counsel something worth stamping instead of rebuilding from scratch.
+                        </p>
+                        <p class="pt-4 font-serif text-2xl italic text-gold">
+                            If you want a lawyer who will bill you by the hour to tell you "maybe," there are thousands of them.
+                        </p>
+                        <p class="font-serif text-2xl italic text-gold">
+                            If you want a Legal Architect who will obsess over your infrastructure so you can scale without fear — let's build.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <hr class="border-shadow">
+
+    <section class="max-w-5xl mx-auto px-6 py-32 text-center md:text-left">
+        <div class="border-y border-shadow py-16 md:py-24 px-4 md:px-16 bg-[#050505] text-center">
+            <h4 class="font-serif text-3xl md:text-5xl text-marble leading-snug mb-8">
+                "I don't trust legal templates for the same reason I don't trust frozen food. They are fast, but full of junk that kills you slowly."
+            </h4>
+            <p class="font-sans text-xs tracking-[0.2em] text-gold uppercase">
+                — The Lex Nova Architecture Standard
+            </p>
+        </div>
+    </section>
+
+    <hr class="border-shadow">
+
+    <section class="bg-[#080808]">
+        <div class="max-w-4xl mx-auto px-6 py-32 text-center">
+            <h2 class="font-serif text-4xl text-marble mb-8">The architecture exists. The only variable is when you deploy it.</h2>
+            
+            <a href="scanner.html" class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 mb-16 font-bold">
+                Run AI Risk Diagnostic
+            </a>
+
+            <hr class="border-shadow mb-12">
+            
+            <footer class="flex flex-col items-center">
+                <div class="font-serif text-xl tracking-widest text-gold uppercase mb-6 flex items-center gap-4">
+                    <img src="logo.png" alt="Lex Nova Pillar" class="h-6 w-auto opacity-50">
+                    Lex Nova HQ
+                </div>
+                
+                <p class="font-sans text-xs text-marble opacity-40 uppercase tracking-widest max-w-2xl leading-relaxed text-center mb-8">
+                    Commercial Architecture Practice, Not a Law Firm.<br>
+                    Review-Ready Drafts Only. No Attorney-Client Relationship.
+                </p>
+
+                <p class="font-sans text-xs text-marble opacity-30">&copy; 2026 Lex Nova HQ. All rights reserved.</p>
+            </footer>
+        </div>
+    </section>
+
+</body>
+</html>

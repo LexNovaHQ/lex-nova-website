@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Mandate | Lex Nova HQ</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        void: '#050505', gold: '#C5A059', marble: '#EAE8E3', shadow: '#1A1A1A'
+                    },
+                    fontFamily: {
+                        serif: ['"Cormorant Garamond"', 'serif'], sans: ['"Inter"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-void text-marble font-sans antialiased selection:bg-gold selection:text-void relative">
+
+    <nav class="w-full py-8 px-6 md:px-12 flex justify-between items-center z-50 relative">
+        <a href="index.html" class="flex items-center gap-4 hover:opacity-80 transition-opacity group">
+            <img src="logo.png" alt="Lex Nova Pillar" class="h-6 md:h-8 w-auto">
+            <span class="font-serif text-xl tracking-widest text-gold uppercase mt-1">Lex Nova <span class="text-marble opacity-50 text-sm ml-1">HQ</span></span>
+        </a>
+        <div class="hidden md:flex gap-8 items-center text-marble opacity-80">
+            <a href="mandate.html" class="font-sans text-xs tracking-[0.15em] uppercase text-gold transition-colors duration-500">Division Mandate</a>
+            <a href="engagement.html" class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">Engagement</a>
+            <a href="architect.html" class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">The Architect</a>
+        </div>
+        <a href="scanner.html" class="font-sans text-xs tracking-[0.1em] uppercase text-void bg-gold px-6 py-3 hover:bg-marble hover:text-void transition-colors duration-500 font-bold flex items-center gap-3">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-void opacity-40"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-void"></span>
+            </span>
+            Run Diagnostic
+        </a>
+    </nav>
+
+    <hr class="border-shadow">
+
+    <header class="py-32 flex flex-col justify-center items-center text-center px-6">
+        <h1 class="font-sans text-xs tracking-[0.3em] text-gold uppercase mb-6">Our Thesis</h1>
+        <h2 class="font-serif text-5xl md:text-7xl leading-tight text-marble mb-8 max-w-4xl">
+            Compliance is an illusion. <br> Architecture is defense.
+        </h2>
+    </header>
+
+    <hr class="border-shadow">
+
+    <main class="max-w-4xl mx-auto px-6 py-24 space-y-24">
+        
+        <div class="border-l-2 border-shadow pl-6 md:pl-10">
+            <h3 class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-4">I. The Template Trap</h3>
+            <div class="font-sans text-sm md:text-base text-marble opacity-80 leading-loose space-y-6">
+                <p>A generic Terms of Service document downloaded from the internet will not protect your AI company. A SaaS template built in 2018 does not account for algorithmic disgorgement, vector data provenance, or UETA §14 agentic strict liability.</p>
+                <p>When you rely on templates, you are not saving money. You are building systemic liabilities directly into your cap table and calling it efficiency.</p>
+            </div>
+        </div>
+
+        <div class="border-l-2 border-shadow pl-6 md:pl-10">
+            <h3 class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-4">II. The Due Diligence Defense</h3>
+            <div class="font-sans text-sm md:text-base text-marble opacity-80 leading-loose space-y-6">
+                <p>Legal infrastructure is only tested when the stakes are highest: during a Series A due diligence audit, during an enterprise procurement review, or during a regulatory inquiry.</p>
+                <p>Lex Nova HQ builds the "Due Diligence Defense." We engineer your commercial agreements, your internal IP protocols, and your data architecture so that when opposing counsel or an enterprise buyer looks under the hood of your startup, they see an impenetrable structure.</p>
+            </div>
+        </div>
+
+        <div class="bg-[#080808] border border-shadow p-8 md:p-12 text-center mt-12">
+            <h3 class="font-serif text-3xl text-marble mb-4">Stop guessing your exposure.</h3>
+            <p class="font-sans text-sm text-marble opacity-70 max-w-2xl mx-auto leading-relaxed mb-8">
+                Take the 10-question AI Risk Diagnostic to see exactly where your architecture is failing under current enforcement standards.
+            </p>
+            <a href="scanner.html" class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-8 py-5 hover:bg-marble transition-colors font-bold w-full md:w-auto">
+                Run Diagnostic
+            </a>
+        </div>
+
+    </main>
+
+    <hr class="border-shadow">
+
+    <footer class="flex flex-col items-center py-16 bg-[#050505]">
+        <div class="font-serif text-xl tracking-widest text-gold uppercase mb-6 flex items-center gap-4">
+            <img src="logo.png" alt="Lex Nova Pillar" class="h-6 w-auto opacity-50">
+            Lex Nova HQ
+        </div>
+        <p class="font-sans text-xs text-marble opacity-40 uppercase tracking-widest max-w-2xl leading-relaxed text-center mb-8">
+            Commercial Architecture Practice, Not a Law Firm.<br>
+            Review-Ready Drafts Only. No Attorney-Client Relationship.
+        </p>
+        <p class="font-sans text-xs text-marble opacity-30">&copy; 2026 Lex Nova HQ. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>
