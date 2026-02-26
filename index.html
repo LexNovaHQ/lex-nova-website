@@ -52,6 +52,10 @@
     <hr class="border-shadow">
 
     <header class="py-40 flex flex-col justify-center items-center text-center px-6">
+        <div class="mb-8 border border-gold/30 bg-gold/5 px-4 py-1 animate-pulse">
+            <span class="font-sans text-[10px] tracking-[0.3em] text-gold uppercase">Founding Client Rate: $997 (Limited Slots)</span>
+        </div>
+
         <h1 class="font-serif text-5xl md:text-7xl lg:text-8xl mb-6 leading-tight">
             We Kill the <br class="md:hidden"> Billable Hour.
         </h1>
@@ -182,8 +186,11 @@
                     <h4 class="font-serif text-3xl mb-6 text-marble flex items-center gap-3">
                         <span class="text-gold">⚖</span> AI Governance
                     </h4>
-                    <p class="font-sans text-sm text-marble opacity-60 leading-relaxed mb-16 italic">
+                    <p class="font-sans text-sm text-marble opacity-60 leading-relaxed mb-6 italic">
                         "Your AI product needs a liability shield before it meets its first enterprise client."
+                    </p>
+                    <p class="font-sans text-lg text-marble mb-10">
+                        Sprint Rate: <span class="text-gold font-bold">$997</span>
                     </p>
                 </div>
                 <div class="flex justify-between items-center border-t border-shadow pt-6 group-hover:border-gold transition-colors duration-500">
@@ -278,6 +285,9 @@
                     <a href="https://www.linkedin.com/in/shwetabh-singh/" target="_blank" class="font-sans text-xs tracking-[0.1em] text-marble opacity-80 hover:text-gold uppercase transition-colors duration-500 border-b border-shadow pb-1">
                         Connect on LinkedIn
                     </a>
+                    <a href="mailto:shwetabh.singh@lexnovahq.com" class="font-sans text-xs tracking-[0.1em] text-marble opacity-80 hover:text-gold uppercase transition-colors duration-500 border-b border-shadow pb-1">
+                        shwetabh.singh@lexnovahq.com
+                    </a>
                 </div>
                 <a href="architect.html" class="font-sans text-xs tracking-[0.15em] text-gold uppercase border-b border-gold pb-1 hover:text-marble transition-colors duration-500">
                     Read the Full Manifesto
@@ -314,7 +324,7 @@
     <div id="modal-gov" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-void/90 backdrop-blur-sm" onclick="closeModal('modal-gov')"></div>
         
-        <div class="relative bg-[#080808] border border-shadow w-full max-w-4xl max-h-[90vh] overflow-y-auto p-8 md:p-12 shadow-2xl">
+        <div class="relative bg-[#080808] border border-shadow w-full max-w-5xl max-h-[90vh] overflow-y-auto p-8 md:p-12 shadow-2xl">
             <button onclick="closeModal('modal-gov')" class="absolute top-6 right-8 font-sans text-xs tracking-widest text-marble opacity-50 hover:text-gold uppercase">Close ✕</button>
 
             <h2 class="font-serif text-4xl text-marble mb-2">AI Governance Architecture</h2>
@@ -432,15 +442,46 @@
                 </div>
             </div>
 
-            <div class="bg-shadow/30 p-6 border border-shadow flex flex-col md:flex-row justify-between items-center gap-6 mt-4">
-                <div>
-                    <p class="font-sans text-xs tracking-widest text-marble opacity-60 uppercase mb-2">Identify Your Liability</p>
-                    <p class="font-serif text-2xl text-gold">Free Diagnostic <span class="font-sans text-xs tracking-widest text-marble opacity-50 uppercase ml-2">3 Minutes</span></p>
+            <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8 border-t border-shadow pt-10">
+                
+                <div class="border border-gold/30 p-8 bg-gold/5 flex flex-col justify-between">
+                    <div>
+                        <h5 class="font-serif text-2xl text-gold mb-3">The Architectural Build</h5>
+                        <ul class="text-sm space-y-3 opacity-90 mb-6 font-sans text-marble">
+                            <li class="flex gap-2"><span>•</span> Custom Document Generation</li>
+                            <li class="flex gap-2"><span>•</span> Implementation Playbook</li>
+                            <li class="flex gap-2"><span>•</span> Architect’s Video Walkthrough</li>
+                            <li class="flex gap-2"><span>•</span> 48-Hour Delivery Guarantee</li>
+                        </ul>
+                        <div class="text-4xl font-serif text-marble mb-8">$997 <span class="text-sm opacity-50 italic">USD</span></div>
+                    </div>
+                    <a href="scanner.html" class="inline-block text-center w-full bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase py-4 hover:bg-marble transition-colors font-bold">
+                        Run AI Risk Diagnostic
+                    </a>
                 </div>
-                <a href="scanner.html" class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-8 py-4 hover:bg-marble transition-colors w-full md:w-auto text-center font-bold">
-                    Run AI Risk Diagnostic
-                </a>
+
+                <div class="border border-shadow p-8 bg-[#0a0a0a] flex flex-col justify-between">
+                    <div>
+                        <h5 class="font-serif text-2xl text-marble mb-3">Not ready to build?</h5>
+                        <p class="font-sans text-sm text-marble opacity-60 mb-6 leading-relaxed">
+                            Request the <strong class="text-marble">AI Risk Overview</strong>. We will manually send you the exact liability checklist we use to audit tech companies before we write a single clause.
+                        </p>
+                    </div>
+                    
+                    <form action="https://formspree.io/f/mbdapvew" method="POST" class="flex flex-col gap-4">
+                        <input type="hidden" name="Form_Source" value="LEAD MAGNET REQUEST: AI Risk Overview">
+                        <input type="text" name="Name" required placeholder="Full Name" class="bg-void border border-shadow p-3 text-sm text-marble focus:border-gold outline-none transition-colors">
+                        <input type="email" name="Email" required placeholder="Work Email" class="bg-void border border-shadow p-3 text-sm text-marble focus:border-gold outline-none transition-colors">
+                        <input type="text" name="Company" required placeholder="Company URL" class="bg-void border border-shadow p-3 text-sm text-marble focus:border-gold outline-none transition-colors">
+                        
+                        <button type="submit" class="w-full border border-shadow bg-void text-marble text-[10px] font-bold uppercase tracking-widest py-4 hover:border-gold hover:text-gold transition-colors mt-2">
+                            The Architect Will Email You Shortly
+                        </button>
+                    </form>
+                </div>
+
             </div>
+
         </div>
     </div>
 
@@ -488,5 +529,6 @@
         }
     </script>
 
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v67327c56f0bb4ef8b305cae61679db8f1769101564043" integrity="sha512-rdcWY47ByXd76cbCFzznIcEaCN71jqkWBBqlwhF1SY7KubdLKZiEGeP7AyieKZlGP9hbY/MhGrwXzJC/HulNyg==" data-cf-beacon='{"version":"2024.11.0","token":"dfc3f5e5add24a01a5276f49e5abec40","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
