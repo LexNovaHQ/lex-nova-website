@@ -37,7 +37,7 @@
     </style>
 </head>
 
-<body class="bg-void text-marble font-sans antialiased selection:bg-gold selection:text-void min-h-screen flex flex-col">
+<body class="bg-void text-marble font-sans antialiased selection:bg-gold selection:text-void min-h-screen flex flex-col relative">
 
     <nav class="w-full py-8 px-6 md:px-12 flex justify-between items-center z-50 relative border-b border-shadow">
         <a href="index.html" class="flex items-center gap-4 hover:opacity-80 transition-opacity group">
@@ -170,7 +170,80 @@
         </div>
     </main>
 
+    <div id="exit-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-void/90 backdrop-blur-sm" onclick="closeExitModal()"></div>
+        <div class="relative bg-[#080808] border border-shadow w-full max-w-xl p-8 md:p-12 shadow-2xl text-center">
+            <h2 class="font-serif text-3xl md:text-4xl text-marble mb-4">Leaving your architecture exposed?</h2>
+            <p class="font-sans text-sm text-marble opacity-70 leading-relaxed mb-8">
+                You haven't completed your diagnostic. Drop your email below and we will send you a secure link to finish mapping your liability when you have more time.
+            </p>
+            
+            <form id="exit-form" onsubmit="processExitForm(event)" class="flex flex-col gap-4 mb-8">
+                <input type="email" id="exit-email" required placeholder="Enter your work email" class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors text-center">
+                <button type="submit" id="exit-submit-btn" class="bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-8 py-4 hover:bg-marble transition-colors duration-500 font-bold w-full">
+                    Save My Progress
+                </button>
+            </form>
+            
+            <button onclick="closeExitModal()" class="font-sans text-xs tracking-widest text-marble opacity-50 hover:text-gold uppercase transition-colors border-b border-transparent hover:border-gold pb-1">
+                Continue to diagnostic
+            </button>
+        </div>
+    </div>
+
     <script>
+        // --- 1. EXIT INTENT LOGIC ---
+        let exitIntentFired = false;
+
+        document.addEventListener('mouseleave', function(e) {
+            const dashboardVisible = !document.getElementById('state-dashboard').classList.contains('hidden-state');
+            const gateVisible = !document.getElementById('state-gate').classList.contains('hidden-state');
+            
+            // Only fire if leaving from the top, not already fired, and haven't finished the quiz
+            if (e.clientY < 0 && !exitIntentFired && !dashboardVisible && !gateVisible) {
+                exitIntentFired = true;
+                document.getElementById('exit-modal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Lock scrolling
+            }
+        });
+
+        function closeExitModal() {
+            document.getElementById('exit-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto'; // Unlock scrolling
+            
+            // THE FIX: Reset the trap after a brief 1-second cooldown so it works again
+            setTimeout(() => {
+                exitIntentFired = false;
+            }, 1000);
+        }
+
+        async function processExitForm(e) {
+            e.preventDefault(); 
+            
+            const btn = document.getElementById('exit-submit-btn');
+            btn.innerText = "Saved.";
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            const email = document.getElementById('exit-email').value;
+            const formspreeEndpoint = "https://formspree.io/f/xeelvyyo"; 
+            
+            try {
+                await fetch(formspreeEndpoint, {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, notes: "Captured via Exit Intent on Scanner" })
+                });
+            } catch (error) {
+                console.log("Exit intent sync failed.");
+            }
+
+            setTimeout(() => {
+                closeExitModal();
+            }, 1500);
+        }
+
+
+        // --- 2. QUESTION DATABASE ---
         const questions = [
             {
                 id: 1, lane: 'master',
@@ -273,6 +346,7 @@
         let intScore = 0;
         let unsureFlag = false;
 
+        // --- 3. CORE LOGIC ---
         function switchState(hideId, showId) {
             document.getElementById(hideId).classList.remove('fade-enter-active');
             setTimeout(() => {
@@ -383,10 +457,7 @@
             try {
                 await fetch(formspreeEndpoint, {
                     method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         name: leadName,
                         email: leadEmail,
