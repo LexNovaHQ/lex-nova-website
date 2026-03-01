@@ -12,14 +12,7 @@
 <!-- ============================================================
 ADD THIS AT THE VERY TOP OF <head>, BEFORE THE TAILWIND SCRIPT
 ============================================================ -->
-<script type="importmap">
-{
-  "imports": {
-    "firebase/app": "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js",
-    "firebase/firestore": "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js"
-  }
-}
-</script>
+
 
     <script>
         tailwind.config = {
@@ -210,8 +203,8 @@ REPLACE THE ENTIRE <script> BLOCK AT THE BOTTOM OF THE FILE
 closing </script> tag before </body>)
 
 <script type="module">
-  import { initializeApp } from "firebase/app";
-  import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/firestore";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
   // Firebase config
   const firebaseConfig = {
