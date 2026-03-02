@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Portal | Lex Nova HQ</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        void:   '#050505',
+                        gold:   '#C5A059',
+                        marble: '#EAE8E3',
+                        shadow: '#1A1A1A'
+                    },
+                    fontFamily: {
+                        serif: ['"Cormorant Garamond"', 'serif'],
+                        sans:  ['"Inter"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-void text-marble font-sans antialiased selection:bg-gold selection:text-void min-h-screen flex flex-col">
+
+    <nav class="w-full py-8 px-6 md:px-12 flex justify-center items-center border-b border-shadow">
+        <a href="https://lexnovahq.com" class="hover:opacity-80 transition-opacity">
+            <span class="font-serif text-lg tracking-widest text-gold uppercase mt-1">Lex Nova <span class="text-marble opacity-50 text-xs ml-1">HQ</span></span>
+        </a>
+    </nav>
+
+    <main class="flex-grow flex items-center justify-center p-6">
+        <div class="max-w-md w-full">
+
+            <!-- Default: Email Entry State -->
+            <div id="state-input">
+                <div class="text-center mb-12">
+                    <div class="inline-block border border-gold/40 bg-gold/5 px-6 py-2 mb-8">
+                        <span class="font-sans text-[10px] tracking-[0.3em] text-gold uppercase">Client Portal</span>
+                    </div>
+                    <h1 class="font-serif text-4xl md:text-5xl leading-tight text-marble mb-4">
+                        Access Your<br>Architecture.
+                    </h1>
+                    <p class="font-sans text-xs text-marble opacity-50 leading-relaxed">
+                        Enter the email address you used at checkout. We'll send you a secure, one-click access link.
+                    </p>
+                </div>
+
+                <div class="bg-[#080808] border border-shadow p-8">
+                    <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Work Email</label>
+                    <input
+                        type="email"
+                        id="email-input"
+                        placeholder="you@company.com"
+                        class="w-full bg-[#050505] border border-shadow focus:border-gold focus:ring-1 focus:ring-gold outline-none p-3 text-marble font-sans text-sm transition-all mb-6"
+                    >
+                    <button
+                        id="send-btn"
+                        onclick="sendMagicLink()"
+                        class="w-full bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-6 py-4 hover:bg-marble transition-colors duration-500 font-bold"
+                    >
+                        Send Access Link →
+                    </button>
+                    <p id="error-msg" class="hidden mt-4 font-sans text-xs text-red-400 text-center"></p>
+                </div>
+
+                <p class="text-center font-sans text-[10px] text-marble opacity-30 mt-6 leading-relaxed">
+                    No password required. Link expires after one use.<br>
+                    Only registered clients can access this portal.
+                </p>
+            </div>
+
+            <!-- Sent State -->
+            <div id="state-sent" class="hidden text-center">
+                <div class="inline-block border border-gold/40 bg-gold/5 px-6 py-2 mb-8">
+                    <span class="font-sans text-[10px] tracking-[0.3em] text-gold uppercase">Link Sent</span>
+                </div>
+                <h1 class="font-serif text-4xl md:text-5xl leading-tight text-marble mb-6">
+                    Check Your<br>Inbox.
+                </h1>
+                <p class="font-sans text-xs text-marble opacity-60 leading-relaxed mb-4">
+                    A secure access link has been sent to<br>
+                    <span id="sent-email" class="text-gold"></span>
+                </p>
+                <p class="font-sans text-xs text-marble opacity-40 leading-relaxed mb-12">
+                    Click the link in the email to access your portal.<br>
+                    Check your spam folder if you don't see it within 2 minutes.
+                </p>
+                <button
+                    onclick="resetToInput()"
+                    class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-40 uppercase hover:opacity-80 transition-opacity border-b border-marble/20 pb-1"
+                >
+                    ← Use a different email
+                </button>
+            </div>
+
+            <!-- Verifying State (handles magic link return) -->
+            <div id="state-verifying" class="hidden text-center">
+                <div class="inline-block border border-gold/40 bg-gold/5 px-6 py-2 mb-8">
+                    <span class="font-sans text-[10px] tracking-[0.3em] text-gold uppercase">Verifying</span>
+                </div>
+                <h1 class="font-serif text-4xl leading-tight text-marble mb-6">
+                    Securing<br>Your Session.
+                </h1>
+                <p class="font-sans text-xs text-marble opacity-50">Please wait...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="state-error" class="hidden text-center">
+                <div class="inline-block border border-red-500/40 bg-red-500/5 px-6 py-2 mb-8">
+                    <span class="font-sans text-[10px] tracking-[0.3em] text-red-400 uppercase">Access Denied</span>
+                </div>
+                <h1 class="font-serif text-4xl leading-tight text-marble mb-6">
+                    Link Expired<br>or Invalid.
+                </h1>
+                <p class="font-sans text-xs text-marble opacity-60 leading-relaxed mb-8">
+                    This access link has expired or has already been used. Request a new one below.
+                </p>
+                <button
+                    onclick="resetToInput()"
+                    class="bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-8 py-4 hover:bg-marble transition-colors duration-500 font-bold"
+                >
+                    Request New Link →
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="flex flex-col items-center py-8 bg-[#050505] border-t border-shadow">
+        <p class="font-sans text-xs text-marble opacity-30 uppercase tracking-widest text-center">
+            Commercial Architecture Practice, Not a Law Firm.<br>
+            <span class="opacity-60">© 2026 Lex Nova HQ. All rights reserved.</span>
+        </p>
+    </footer>
+
+    <script type="module">
+        import { initializeApp }          from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink }
+                                          from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey:            "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
+            authDomain:        "lexnova-hq.firebaseapp.com",
+            projectId:         "lexnova-hq",
+            storageBucket:     "lexnova-hq.firebasestorage.app",
+            messagingSenderId: "539475214055",
+            appId:             "1:539475214055:web:c01a99ec94ff073a9b6c42"
+        };
+
+        const app  = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const PORTAL_URL = "https://portal.lexnovahq.com";
+
+        // ── State helpers ──────────────────────────────────────────────
+        function showState(id) {
+            ['state-input','state-sent','state-verifying','state-error'].forEach(s => {
+                document.getElementById(s).classList.add('hidden');
+            });
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        window.resetToInput = () => showState('state-input');
+
+        // ── Send magic link ────────────────────────────────────────────
+        window.sendMagicLink = async () => {
+            const email  = document.getElementById('email-input').value.trim();
+            const errEl  = document.getElementById('error-msg');
+            const btn    = document.getElementById('send-btn');
+
+            errEl.classList.add('hidden');
+
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                errEl.textContent = "Please enter a valid email address.";
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            btn.textContent = "Sending...";
+            btn.disabled    = true;
+
+            const actionCodeSettings = {
+                url:             PORTAL_URL,
+                handleCodeInApp: true
+            };
+
+            try {
+                await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+                window.localStorage.setItem('emailForSignIn', email);
+                document.getElementById('sent-email').textContent = email;
+                showState('state-sent');
+            } catch (err) {
+                console.error(err);
+                errEl.textContent = "Something went wrong. Please try again.";
+                errEl.classList.remove('hidden');
+                btn.textContent = "Send Access Link →";
+                btn.disabled    = false;
+            }
+        };
+
+        // Allow Enter key to submit
+        document.getElementById('email-input').addEventListener('keydown', e => {
+            if (e.key === 'Enter') window.sendMagicLink();
+        });
+
+        // ── Handle magic link return ───────────────────────────────────
+        if (isSignInWithEmailLink(auth, window.location.href)) {
+            showState('state-verifying');
+
+            let email = window.localStorage.getItem('emailForSignIn');
+
+            if (!email) {
+                // Different device — ask for email again
+                email = window.prompt("Please enter your email to confirm your identity:");
+            }
+
+            if (email) {
+                signInWithEmailLink(auth, email, window.location.href)
+                    .then(() => {
+                        window.localStorage.removeItem('emailForSignIn');
+                        window.location.href = PORTAL_URL + "/dashboard.html";
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        showState('state-error');
+                    });
+            } else {
+                showState('state-error');
+            }
+        }
+    </script>
+
+</body>
+</html>
