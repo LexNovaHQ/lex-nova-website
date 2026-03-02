@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "lex-nova-website",
+  "name": "lexnovahq-portal",
   "compatibility_date": "2025-09-27",
   "observability": {
     "enabled": true
