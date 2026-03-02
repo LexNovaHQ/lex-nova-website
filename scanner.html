@@ -8,8 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     
-    
-
     <script>
         tailwind.config = {
             theme: {
@@ -79,8 +77,7 @@
 
                 <div id="question-container" class="mb-12">
                     <h3 id="question-text" class="font-serif text-3xl md:text-4xl leading-snug text-marble mb-8">Loading...</h3>
-                    <div id="options-container" class="flex flex-col gap-4">
-                        </div>
+                    <div id="options-container" class="flex flex-col gap-4"></div>
                 </div>
             </div>
 
@@ -104,7 +101,7 @@
                     Your complete exposure figures, regulatory anchors, and specific gap breakdown are calculated. Enter your details to unlock your report.
                 </p>
                 
-                <form id="gate-form" onsubmit="processFormspree(event)" class="flex flex-col gap-5 text-left">
+                <form id="gate-form" onsubmit="processGateForm(event)" class="flex flex-col gap-5 text-left">
                     <div>
                         <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Full Name</label>
                         <input type="text" id="lead-name" required class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors">
@@ -172,6 +169,7 @@
         </div>
     </main>
 
+    <!-- EXIT INTENT MODAL -->
     <div id="exit-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-void/90 backdrop-blur-sm" onclick="closeExitModal()"></div>
         <div class="relative bg-[#080808] border border-shadow w-full max-w-xl p-8 md:p-12 shadow-2xl text-center">
@@ -179,354 +177,377 @@
             <p class="font-sans text-sm text-marble opacity-70 leading-relaxed mb-8">
                 You haven't completed your diagnostic. Drop your email below and we will send you a secure link to finish mapping your liability when you have more time.
             </p>
-            
             <form id="exit-form" onsubmit="processExitForm(event)" class="flex flex-col gap-4 mb-8">
                 <input type="email" id="exit-email" required placeholder="Enter your work email" class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors text-center">
                 <button type="submit" id="exit-submit-btn" class="bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-8 py-4 hover:bg-marble transition-colors duration-500 font-bold w-full">
                     Save My Progress
                 </button>
             </form>
-            
             <button onclick="closeExitModal()" class="font-sans text-xs tracking-widest text-marble opacity-50 hover:text-gold uppercase transition-colors border-b border-transparent hover:border-gold pb-1">
                 Continue to diagnostic
             </button>
         </div>
     </div>
 
-   
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-  // Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
-    authDomain: "lexnova-hq.firebaseapp.com",
-    projectId: "lexnova-hq",
-    storageBucket: "lexnova-hq.firebasestorage.app",
-    messagingSenderId: "539475214055",
-    appId: "1:539475214055:web:c01a99ec94ff073a9b6c42"
-  };
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
+            authDomain: "lexnova-hq.firebaseapp.com",
+            projectId: "lexnova-hq",
+            storageBucket: "lexnova-hq.firebasestorage.app",
+            messagingSenderId: "539475214055",
+            appId: "1:539475214055:web:c01a99ec94ff073a9b6c42"
+        };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const LEAD_WEBHOOK = "https://hook.eu1.make.com/q7nnd3klwdmlmtesq5no4yfsmk3v8ua7";
 
-  // Make.com Scenario 1 webhook
-  const LEAD_WEBHOOK = "https://hook.eu1.make.com/q7nnd3klwdmlmtesq5no4yfsmk3v8ua7";
+        // ============================================================
+        // SCORING STATE
+        // ============================================================
+        let currentRoute = [];
+        let currentIndex = 0;
+        let extScore = 0;
+        let intScore = 0;
+        let unsureFlag = false;
 
-  // ============================================================
-  // EXIT INTENT LOGIC
-  // ============================================================
-  let exitIntentFired = false;
+        // ============================================================
+        // QUESTION DATABASE
+        // ============================================================
+        const questions = [
+            {
+                id: 1, lane: 'master',
+                text: "What is your primary AI exposure surface right now?",
+                options: [
+                    { text: "We build AI into our product (Agents, Customer-facing)", logic: 'A' },
+                    { text: "We use AI internally (Content, Operations, Delivery)", logic: 'B' },
+                    { text: "Both. We build with AI and use it internally.", logic: 'C' }
+                ]
+            },
+            {
+                id: 2, lane: 'external',
+                text: "If your AI agent can take real-world actions, do your contracts contain a defined liability cap specifically for autonomous agent actions?",
+                options: [
+                    { text: "Yes, explicitly defined.", extPts: 0 },
+                    { text: "We have a general liability cap, not agent-specific.", extPts: 20 },
+                    { text: "No cap / I'm not sure.", extPts: 40, unsure: true }
+                ]
+            },
+            {
+                id: 3, lane: 'external',
+                text: "Do your Terms of Service address AI hallucinations — outputs that are false, misleading, or fabricated?",
+                options: [
+                    { text: "Yes, with a specific disclaimer and waiver.", extPts: 0 },
+                    { text: "We have a general disclaimer, not AI-specific.", extPts: 25 },
+                    { text: "No / I'm not sure.", extPts: 50, unsure: true }
+                ]
+            },
+            {
+                id: 4, lane: 'external',
+                text: "Does your product process personal data from EU or UK users?",
+                options: [
+                    { text: "Yes — we have a signed DPA and SCCs in place.", extPts: 0 },
+                    { text: "Yes — but no DPA or SCCs.", extPts: 45, unsure: true },
+                    { text: "No EU/UK users.", extPts: 0 }
+                ]
+            },
+            {
+                id: 5, lane: 'external',
+                text: "Does your AI product make or assist with consequential decisions — credit, hiring, healthcare, or legal?",
+                options: [
+                    { text: "No.", extPts: 0 },
+                    { text: "Yes — with human review documented.", extPts: 10 },
+                    { text: "Yes — fully automated / I'm not sure.", extPts: 60, unsure: true }
+                ]
+            },
+            {
+                id: 6, lane: 'internal',
+                text: "Do your employees use AI tools (ChatGPT, Claude, Gemini, Copilot) for work tasks?",
+                options: [
+                    { text: "Yes — with a formal AI usage policy.", intPts: 0 },
+                    { text: "Yes — informally, no policy.", intPts: 35, unsure: true },
+                    { text: "No.", intPts: 0 }
+                ]
+            },
+            {
+                id: 7, lane: 'internal',
+                text: "When employees use AI to create content, code, or documents — who owns the output?",
+                options: [
+                    { text: "Clearly defined in our IP or employment agreements.", intPts: 0 },
+                    { text: "We assume we own it, but it's not documented.", intPts: 40, unsure: true },
+                    { text: "We haven't thought about this.", intPts: 55, unsure: true }
+                ]
+            },
+            {
+                id: 8, lane: 'internal',
+                text: "Has your company run an audit to identify which AI tools employees are using without approval?",
+                options: [
+                    { text: "Yes — formal Shadow AI audit completed.", intPts: 0 },
+                    { text: "Informal check only.", intPts: 25 },
+                    { text: "No audit conducted.", intPts: 45, unsure: true }
+                ]
+            },
+            {
+                id: 9, lane: 'internal',
+                text: "Do you have a documented Human-in-the-Loop (HITL) protocol for AI-assisted decisions?",
+                options: [
+                    { text: "Yes, formally documented protocol.", intPts: 0 },
+                    { text: "Humans are in the loop, but undocumented.", intPts: 30 },
+                    { text: "No protocol / I'm not sure.", intPts: 40, unsure: true },
+                    { text: "We don't use AI for these decisions.", intPts: 0 }
+                ]
+            }
+        ];
 
-  document.addEventListener('mouseleave', function(e) {
-      const dashboardVisible = !document.getElementById('state-dashboard').classList.contains('hidden-state');
-      const gateVisible = !document.getElementById('state-gate').classList.contains('hidden-state');
-      
-      if (e.clientY < 0 && !exitIntentFired && !dashboardVisible && !gateVisible) {
-          exitIntentFired = true;
-          document.getElementById('exit-modal').classList.remove('hidden');
-          document.body.style.overflow = 'hidden';
-      }
-  });
+        // ============================================================
+        // CORE FUNCTIONS
+        // ============================================================
+        function switchState(hideId, showId) {
+            document.getElementById(hideId).classList.remove('fade-enter-active');
+            setTimeout(() => {
+                document.getElementById(hideId).classList.add('hidden-state');
+                document.getElementById(showId).classList.remove('hidden-state');
+                setTimeout(() => {
+                    document.getElementById(showId).classList.add('fade-enter-active');
+                }, 50);
+            }, 400);
+        }
 
-  window.closeExitModal = function() {
-      document.getElementById('exit-modal').classList.add('hidden');
-      document.body.style.overflow = 'auto';
-      setTimeout(() => { exitIntentFired = false; }, 1000);
-  }
+        function getTierData(score, isExt) {
+            if (isExt) {
+                if (score > 75) return { color: 'bg-danger',   text: 'Critical', low: 1500000, high: 10000000 };
+                if (score > 50) return { color: 'bg-warning',  text: 'High',     low: 400000,  high: 1500000  };
+                if (score > 25) return { color: 'bg-moderate', text: 'Moderate', low: 75000,   high: 400000   };
+                return             { color: 'bg-safe',     text: 'Low',      low: 0,       high: 75000    };
+            } else {
+                if (score > 75) return { color: 'bg-danger',   text: 'Critical', low: 600000,  high: 2000000  };
+                if (score > 50) return { color: 'bg-warning',  text: 'High',     low: 200000,  high: 600000   };
+                if (score > 25) return { color: 'bg-moderate', text: 'Moderate', low: 30000,   high: 200000   };
+                return             { color: 'bg-safe',     text: 'Low',      low: 0,       high: 30000    };
+            }
+        }
 
-  window.processExitForm = async function(e) {
-      e.preventDefault();
-      
-      const btn = document.getElementById('exit-submit-btn');
-      btn.innerText = "Saved.";
-      btn.classList.add('opacity-50', 'cursor-not-allowed');
-      
-      const email = document.getElementById('exit-email').value;
+        function formatCash(n) {
+            if (n >= 1000000) return "$" + (n / 1000000).toFixed(1) + "M";
+            if (n >= 1000)    return "$" + (n / 1000).toFixed(0) + "k";
+            return "$" + n;
+        }
 
-      const leadData = {
-          email: email,
-          name: "",
-          company: "",
-          leadType: "ghost_lead",
-          source: "scanner_exit",
-          productRiskScore: 0,
-          internalOpsScore: 0,
-          uncertaintyFlag: false,
-          status: "new",
-          createdAt: serverTimestamp(),
-          lastTouched: serverTimestamp(),
-          notes: "Captured via Exit Intent on Scanner"
-      };
+        function renderQuestion(q) {
+            document.getElementById('question-text').innerText = q.text;
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left bg-[#080808] border border-shadow p-5 text-marble font-sans text-sm hover:border-gold hover:text-gold transition-colors duration-300";
+                btn.innerText = opt.text;
+                btn.onclick = () => handleAnswer(q, opt);
+                container.appendChild(btn);
+            });
+            if (currentRoute.length > 0) {
+                document.getElementById('progress-bar').style.width = `${((currentIndex + 1) / currentRoute.length) * 100}%`;
+                document.getElementById('progress-text').innerText = `Question ${currentIndex + 1} of ${currentRoute.length}`;
+            }
+        }
 
-      // Write to Firestore
-      try {
-          await addDoc(collection(db, "leads"), leadData);
-      } catch (err) {
-          console.log("Firestore write failed:", err);
-      }
+        function handleAnswer(question, option) {
+            if (question.lane === 'master') {
+                if (option.logic === 'A') currentRoute = questions.filter(q => q.lane === 'external');
+                else if (option.logic === 'B') currentRoute = questions.filter(q => q.lane === 'internal');
+                else if (option.logic === 'C') currentRoute = questions.filter(q => q.lane !== 'master');
+                currentIndex = 0;
+                renderQuestion(currentRoute[currentIndex]);
+                return;
+            }
+            if (option.extPts) extScore += option.extPts;
+            if (option.intPts) intScore += option.intPts;
+            if (option.unsure) unsureFlag = true;
+            currentIndex++;
+            if (currentIndex < currentRoute.length) {
+                renderQuestion(currentRoute[currentIndex]);
+            } else {
+                showGate();
+            }
+        }
 
-      // Notify via Make.com
-      try {
-          await fetch(LEAD_WEBHOOK, {
-              method: 'POST',
-              headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-              body: JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
-          });
-      } catch (err) {
-          console.log("Make.com webhook failed:", err);
-      }
+        function showGate() {
+            const extData = getTierData(extScore, true);
+            const intData = getTierData(intScore, false);
+            document.getElementById('gate-ext-color').className = `w-full h-2 mb-3 ${extData.color}`;
+            document.getElementById('gate-ext-label').innerText = extData.text;
+            document.getElementById('gate-ext-label').className = `font-sans text-xs tracking-widest uppercase text-${extData.color.split('-')[1]}`;
+            document.getElementById('gate-int-color').className = `w-full h-2 mb-3 ${intData.color}`;
+            document.getElementById('gate-int-label').innerText = intData.text;
+            document.getElementById('gate-int-label').className = `font-sans text-xs tracking-widest uppercase text-${intData.color.split('-')[1]}`;
+            switchState('state-quiz', 'state-gate');
+        }
 
-      setTimeout(() => { closeExitModal(); }, 1500);
-  }
+        function loadDashboard() {
+            const extData = getTierData(extScore, true);
+            const intData = getTierData(intScore, false);
 
-  // ============================================================
-  // QUESTION DATABASE
-  // ============================================================
-  const questions = [
-      {
-          id: 1, lane: 'master',
-          text: "What is your primary AI exposure surface right now?",
-          options: [
-              { text: "We build AI into our product (Agents, Customer-facing)", logic: 'A' },
-              { text: "We use AI internally (Content, Operations, Delivery)", logic: 'B' },
-              { text: "Both. We build with AI and use it internally.", logic: 'C' }
-          ]
-      },
-      {
-          id: 2, lane: 'external',
-          text: "If your AI agent can take real-world actions, do your contracts contain a defined liability cap specifically for autonomous agent actions?",
-          options: [
-              { text: "Yes, explicitly defined.", extPts: 0 },
-              { text: "We have a general liability cap, not agent-specific.", extPts: 20 },
-              { text: "No cap / I'm not sure.", extPts: 40, unsure: true }
-          ]
-      },
-      {
-          id: 3, lane: 'external',
-          text: "Do your Terms of Service address AI hallucinations — outputs that are false, misleading, or fabricated?",
-          options: [
-              { text: "Yes, with a specific disclaimer and waiver.", extPts: 0 },
-              { text: "We have a general disclaimer, not AI-specific.", extPts: 25 },
-              { text: "No / I'm not sure.", extPts: 50, unsure: true }
-          ]
-      },
-      {
-          id: 4, lane: 'external',
-          text: "Does your product process personal data from EU or UK users?",
-          options: [
-              { text: "Yes — we have a signed DPA and SCCs in place.", extPts: 0 },
-              { text: "Yes — but no DPA or SCCs.", extPts: 45, unsure: true },
-              { text: "No EU/UK users.", extPts: 0 }
-          ]
-      },
-      {
-          id: 5, lane: 'external',
-          text: "Does your AI product make or assist with consequential decisions — credit, hiring, healthcare, or legal?",
-          options: [
-              { text: "No.", extPts: 0 },
-              { text: "Yes — with human review documented.", extPts: 10 },
-              { text: "Yes — fully automated / I'm not sure.", extPts: 60, unsure: true }
-          ]
-      },
-      {
-          id: 6, lane: 'internal',
-          text: "Do your employees use AI tools (ChatGPT, Claude, Gemini, Copilot) for work tasks?",
-          options: [
-              { text: "Yes — with a formal AI usage policy.", intPts: 0 },
-              { text: "Yes — informally, no policy.", intPts: 35, unsure: true },
-              { text: "No.", intPts: 0 }
-          ]
-      },
-      {
-          id: 7, lane: 'internal',
-          text: "When employees use AI to create content, code, or documents — who owns the output?",
-          options: [
-              { text: "Clearly defined in our IP or employment agreements.", intPts: 0 },
-              { text: "We assume we own it, but it's not documented.", intPts: 40, unsure: true },
-              { text: "We haven't thought about this.", intPts: 55, unsure: true }
-          ]
-      },
-      {
-          id: 8, lane: 'internal',
-          text: "Has your company run an audit to identify which AI tools employees are using without approval?",
-          options: [
-              { text: "Yes — formal Shadow AI audit completed.", intPts: 0 },
-              { text: "Informal check only.", intPts: 25 },
-              { text: "No audit conducted.", intPts: 45, unsure: true }
-          ]
-      },
-      {
-          id: 9, lane: 'internal',
-          text: "Do you have a documented Human-in-the-Loop (HITL) protocol for AI-assisted decisions?",
-          options: [
-              { text: "Yes, formally documented protocol.", intPts: 0 },
-              { text: "Humans are in the loop, but undocumented.", intPts: 30 },
-              { text: "No protocol / I'm not sure.", intPts: 40, unsure: true },
-              { text: "We don't use AI for these decisions.", intPts: 0 }
-          ]
-      }
-  ];
+            // Tier badges
+            document.getElementById('ext-tier').className = `font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void ${extData.color}`;
+            document.getElementById('ext-tier').innerText = extData.text;
+            document.getElementById('int-tier').className = `font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void ${intData.color}`;
+            document.getElementById('int-tier').innerText = intData.text;
 
-  let currentRoute = [];
-  let currentIndex = 0;
-  let extScore = 0;
-  let intScore = 0;
-  let unsureFlag = false;
+            // Scores
+            document.getElementById('ext-score').innerText = extScore;
+            document.getElementById('int-score').innerText = intScore;
 
-  // ============================================================
-  // CORE LOGIC
-  // ============================================================
-  function switchState(hideId, showId) {
-      document.getElementById(hideId).classList.remove('fade-enter-active');
-      setTimeout(() => {
-          document.getElementById(hideId).classList.add('hidden-state');
-          document.getElementById(showId).classList.remove('hidden-state');
-          setTimeout(() => {
-              document.getElementById(showId).classList.add('fade-enter-active');
-          }, 50);
-      }, 400);
-  }
+            // Exposure range
+            const totalLow  = extData.low  + intData.low;
+            const totalHigh = extData.high + intData.high;
+            document.getElementById('exposure-dollar').innerText = `${formatCash(totalLow)} – ${formatCash(totalHigh)}+`;
 
-  window.startScanner = function() {
-      const navLinks = document.getElementById('nav-links');
-      if(navLinks) {
-          navLinks.style.opacity = '0';
-          setTimeout(() => { navLinks.style.display = 'none'; }, 500);
-      }
-      renderQuestion(questions[0]);
-      switchState('state-welcome', 'state-quiz');
-  }
+            // Ignorance disclaimer
+            if (unsureFlag) document.getElementById('ignorance-disclaimer').classList.remove('hidden');
 
-  function renderQuestion(q) {
-      document.getElementById('question-text').innerText = q.text;
-      const container = document.getElementById('options-container');
-      container.innerHTML = '';
-      
-      q.options.forEach((opt) => {
-          const btn = document.createElement('button');
-          btn.className = "w-full text-left bg-[#080808] border border-shadow p-5 text-marble font-sans text-sm hover:border-gold hover:text-gold transition-colors duration-300";
-          btn.innerText = opt.text;
-          btn.onclick = () => selectOption(opt);
-          container.appendChild(btn);
-      });
+            // CTA routing
+            const ctaBtn = document.getElementById('cta-btn');
+            if (extScore > 50 && intScore > 40) {
+                document.getElementById('cta-heading').innerText = "You have active exposure on both surfaces.";
+                document.getElementById('cta-body').innerText = "Your diagnostic shows critical gaps in your external product architecture and your internal AI operations. The Complete Stack covers both.";
+                ctaBtn.innerText = "Apply for The Complete Stack";
+                ctaBtn.href = "offer-bundle.html";
+            } else if (extScore > 50) {
+                document.getElementById('cta-heading').innerText = "Your primary exposure is in your product architecture.";
+                document.getElementById('cta-body').innerText = "Your commercial agreements and user consent architecture are void under active case law. The Agentic Shield closes each gap directly.";
+                ctaBtn.innerText = "Apply for The Agentic Shield";
+                ctaBtn.href = "offer-agentic.html";
+            } else if (intScore > 40) {
+                document.getElementById('cta-heading').innerText = "Your primary exposure is operational.";
+                document.getElementById('cta-body').innerText = "Your team's AI outputs are falling into the public domain, and you lack documented behavioral oversight. The Workplace Shield addresses this.";
+                ctaBtn.innerText = "Apply for The Workplace Shield";
+                ctaBtn.href = "offer-workplace.html";
+            } else {
+                document.getElementById('cta-heading').innerText = "Your baseline architecture is stronger than most.";
+                document.getElementById('cta-body').innerText = "Your diagnostic shows low active exposure, but quiet gaps remain. A targeted Gap Review will surface them before they become enforcement events.";
+                ctaBtn.innerText = "Apply for a Gap Review";
+                ctaBtn.href = "offer-gap.html";
+            }
 
-      const total = currentRoute.length || 1;
-      const current = currentIndex + 1;
-      document.getElementById('progress-text').innerText = `Question ${current} of ${total}`;
-      document.getElementById('progress-bar').style.width = `${(current / total) * 100}%`;
-  }
+            switchState('state-gate', 'state-dashboard');
+        }
 
-  function selectOption(option) {
-      if (option.logic) {
-          if (option.logic === 'A') currentRoute = questions.filter(q => q.lane === 'external');
-          else if (option.logic === 'B') currentRoute = questions.filter(q => q.lane === 'internal');
-          else if (option.logic === 'C') currentRoute = questions.filter(q => q.lane !== 'master');
-          
-          currentIndex = 0;
-          renderQuestion(currentRoute[currentIndex]);
-          return;
-      }
+        // ============================================================
+        // EXIT INTENT
+        // ============================================================
+        let exitIntentFired = false;
 
-      if (option.extPts) extScore += option.extPts;
-      if (option.intPts) intScore += option.intPts;
-      if (option.unsure) unsureFlag = true;
+        document.addEventListener('mouseleave', function(e) {
+            const dashboardVisible = !document.getElementById('state-dashboard').classList.contains('hidden-state');
+            const gateVisible = !document.getElementById('state-gate').classList.contains('hidden-state');
+            if (e.clientY < 0 && !exitIntentFired && !dashboardVisible && !gateVisible) {
+                exitIntentFired = true;
+                document.getElementById('exit-modal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        });
 
-      currentIndex++;
-      if (currentIndex < currentRoute.length) {
-          renderQuestion(currentRoute[currentIndex]);
-      } else {
-          const extData = getTierData(extScore, true);
-          const intData = getTierData(intScore, false);
+        window.closeExitModal = function() {
+            document.getElementById('exit-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            setTimeout(() => { exitIntentFired = false; }, 1000);
+        }
 
-          document.getElementById('gate-ext-color').className = `w-full h-2 mb-3 ${extData.color}`;
-          document.getElementById('gate-ext-label').innerText = extData.text;
-          document.getElementById('gate-ext-label').className = `font-sans text-xs tracking-widest uppercase text-${extData.color.split('-')[1]}`;
+        window.processExitForm = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('exit-submit-btn');
+            btn.innerText = "Saved.";
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
 
-          document.getElementById('gate-int-color').className = `w-full h-2 mb-3 ${intData.color}`;
-          document.getElementById('gate-int-label').innerText = intData.text;
-          document.getElementById('gate-int-label').className = `font-sans text-xs tracking-widest uppercase text-${intData.color.split('-')[1]}`;
+            const email = document.getElementById('exit-email').value;
+            const leadData = {
+                email, name: "", company: "",
+                leadType: "ghost_lead",
+                source: "scanner_exit",
+                productRiskScore: 0,
+                internalOpsScore: 0,
+                uncertaintyFlag: false,
+                status: "new",
+                notes: "Captured via Exit Intent on Scanner"
+            };
 
-          switchState('state-quiz', 'state-gate');
-      }
-  }
+            try { await addDoc(collection(db, "leads"), { ...leadData, createdAt: serverTimestamp(), lastTouched: serverTimestamp() }); }
+            catch(err) { console.log("Firestore write failed:", err); }
 
-  function getTierData(score, isExternal) {
-      if (score >= 80) return { color: 'bg-danger', text: 'Critical Exposure' };
-      if (score >= 50) return { color: 'bg-warning', text: 'High Exposure' };
-      if (score >= 25) return { color: 'bg-moderate', text: 'Moderate Exposure' };
-      return { color: 'bg-safe', text: 'Low Exposure' };
-  }
+            try {
+                await fetch(LEAD_WEBHOOK, {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
+                });
+            } catch(err) { console.log("Webhook failed:", err); }
 
-  // ============================================================
-  // GATE FORM — warm lead capture
-  // ============================================================
-  window.processFormspree = async function(e) {
-      e.preventDefault();
-      
-      const btn = document.getElementById('gate-submit-btn');
-      btn.innerText = "Analyzing...";
-      btn.classList.add('opacity-50', 'cursor-not-allowed');
-      
-      const leadName = document.getElementById('lead-name').value;
-      const leadEmail = document.getElementById('lead-email').value;
-      const leadCompany = document.getElementById('lead-company').value;
+            setTimeout(() => { closeExitModal(); }, 1500);
+        }
 
-      // Store in localStorage for apply.html
-      localStorage.setItem('ln_name', leadName);
-      localStorage.setItem('ln_email', leadEmail);
-      localStorage.setItem('ln_company', leadCompany);
+        // ============================================================
+        // GATE FORM — warm lead
+        // ============================================================
+        window.processGateForm = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('gate-submit-btn');
+            btn.innerText = "Analyzing...";
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
 
-      const leadData = {
-          name: leadName,
-          email: leadEmail,
-          company: leadCompany,
-          leadType: "warm_lead",
-          source: "scanner",
-          productRiskScore: extScore,
-          internalOpsScore: intScore,
-          uncertaintyFlag: unsureFlag,
-          status: "new",
-          createdAt: serverTimestamp(),
-          lastTouched: serverTimestamp(),
-          notes: ""
-      };
+            const leadName    = document.getElementById('lead-name').value;
+            const leadEmail   = document.getElementById('lead-email').value;
+            const leadCompany = document.getElementById('lead-company').value;
 
-      // Write to Firestore
-      try {
-          await addDoc(collection(db, "leads"), leadData);
-      } catch (err) {
-          console.log("Firestore write failed:", err);
-      }
+            localStorage.setItem('ln_name',    leadName);
+            localStorage.setItem('ln_email',   leadEmail);
+            localStorage.setItem('ln_company', leadCompany);
 
-      // Notify via Make.com
-      try {
-          await fetch(LEAD_WEBHOOK, {
-              method: 'POST',
-              headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                  ...leadData,
-                  createdAt: new Date().toISOString()
-              })
-          });
-      } catch (err) {
-          console.log("Make.com webhook failed:", err);
-      }
+            const leadData = {
+                name: leadName, email: leadEmail, company: leadCompany,
+                leadType: "warm_lead",
+                source: "scanner",
+                productRiskScore: extScore,
+                internalOpsScore: intScore,
+                uncertaintyFlag: unsureFlag,
+                status: "new",
+                notes: ""
+            };
 
-      // Show dashboard regardless of backend success
-      showDashboard();
-  }
+            try { await addDoc(collection(db, "leads"), { ...leadData, createdAt: serverTimestamp(), lastTouched: serverTimestamp() }); }
+            catch(err) { console.log("Firestore write failed:", err); }
 
-  function showDashboard() {
-      const exposureEl = document.getElementById('exposure-dollar');
-      const totalExposure = (extScore * 1200) + (intScore * 800);
-      const formatted = '$' + totalExposure.toLocaleString();
-      exposureEl.innerText = formatted;
-      switchState('state-gate', 'state-dashboard');
-  }
+            try {
+                await fetch(LEAD_WEBHOOK, {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
+                });
+            } catch(err) { console.log("Webhook failed:", err); }
 
-</script>
+            loadDashboard();
+        }
+
+        // ============================================================
+        // START
+        // ============================================================
+        window.startScanner = function() {
+            const navLinks = document.getElementById('nav-links');
+            if (navLinks) {
+                navLinks.style.opacity = '0';
+                setTimeout(() => { navLinks.style.display = 'none'; }, 500);
+            }
+            currentRoute = [questions[0]];
+            currentIndex = 0;
+            renderQuestion(questions[0]);
+            switchState('state-welcome', 'state-quiz');
+        }
+
+    </script>
+
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v67327c56f0bb4ef8b305cae61679db8f1769101564043" integrity="sha512-rdcWY47ByXd76cbCFzznIcEaCN71jqkWBBqlwhF1SY7KubdLKZiEGeP7AyieKZlGP9hbY/MhGrwXzJC/HulNyg==" data-cf-beacon='{"version":"2024.11.0","token":"dfc3f5e5add24a01a5276f49e5abec40","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
-
