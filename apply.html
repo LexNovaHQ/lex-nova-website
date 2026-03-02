@@ -286,159 +286,199 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            
-            // Auto-fill from Scanner
-            const storedName = localStorage.getItem('ln_name');
-            const storedEmail = localStorage.getItem('ln_email');
-            const storedCompany = localStorage.getItem('ln_company');
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-            if (storedName) {
-                const nameParts = storedName.trim().split(' ');
-                document.getElementById('apply-fname').value = nameParts[0] || '';
-                document.getElementById('apply-lname').value = nameParts.slice(1).join(' ') || '';
-            }
-            if (storedEmail) document.getElementById('apply-email').value = storedEmail;
-            if (storedCompany) document.getElementById('apply-company').value = storedCompany;
+    const firebaseConfig = {
+        apiKey: "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
+        authDomain: "lexnova-hq.firebaseapp.com",
+        projectId: "lexnova-hq",
+        storageBucket: "lexnova-hq.firebasestorage.app",
+        messagingSenderId: "539475214055",
+        appId: "1:539475214055:web:c01a99ec94ff073a9b6c42"
+    };
 
-            // Auto-select Plan
-            const urlParams = new URLSearchParams(window.location.search);
-            const selectedPlan = urlParams.get('plan');
-            
-            if(selectedPlan) {
-                const radioBtn = document.querySelector(`input[name="plan_selection"][value="${selectedPlan}"]`);
-                if(radioBtn) {
-                    radioBtn.checked = true;
-                    updateButtonLabel(selectedPlan);
-                }
-            } else {
-                document.querySelector('input[name="plan_selection"][value="agentic"]').checked = true;
-            }
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+    const CHECKOUT_WEBHOOK = "https://hook.eu1.make.com/r77qw3emv27csjq2eag7ibqku1juve4t";
 
-            const radios = document.querySelectorAll('input[name="plan_selection"]');
-            radios.forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    updateButtonLabel(e.target.value);
-                });
-            });
+    const PLAN_PRICES = {
+        agentic:   997,
+        workplace: 997,
+        bundle:    2000,
+        gap:       0
+    };
+
+    // ============================================================
+    // DOM READY — autofill + plan selection
+    // ============================================================
+    document.addEventListener("DOMContentLoaded", () => {
+
+        // Autofill from Scanner localStorage
+        const storedName    = localStorage.getItem('ln_name');
+        const storedEmail   = localStorage.getItem('ln_email');
+        const storedCompany = localStorage.getItem('ln_company');
+
+        if (storedName) {
+            const parts = storedName.trim().split(' ');
+            document.getElementById('apply-fname').value = parts[0] || '';
+            document.getElementById('apply-lname').value = parts.slice(1).join(' ') || '';
+        }
+        if (storedEmail)   document.getElementById('apply-email').value   = storedEmail;
+        if (storedCompany) document.getElementById('apply-company').value = storedCompany;
+
+        // Auto-select plan from URL param
+        const urlParams     = new URLSearchParams(window.location.search);
+        const selectedPlan  = urlParams.get('plan');
+
+        if (selectedPlan) {
+            const radioBtn = document.querySelector(`input[name="plan_selection"][value="${selectedPlan}"]`);
+            if (radioBtn) { radioBtn.checked = true; updateButtonLabel(selectedPlan); }
+        } else {
+            const defaultRadio = document.querySelector('input[name="plan_selection"][value="agentic"]');
+            if (defaultRadio) defaultRadio.checked = true;
+        }
+
+        // Listen for plan changes
+        document.querySelectorAll('input[name="plan_selection"]').forEach(radio => {
+            radio.addEventListener('change', (e) => updateButtonLabel(e.target.value));
         });
+    });
 
-        function updateButtonLabel(planValue) {
-            const btn = document.getElementById('checkout-btn');
-            const isAccepted = document.getElementById('engagement-checkbox').checked;
-            
-            if(!isAccepted) {
-                btn.innerText = "Accept Terms To Continue";
-                return;
-            }
+    // ============================================================
+    // BUTTON LABEL
+    // ============================================================
+    window.updateButtonLabel = function(planValue) {
+        const btn        = document.getElementById('checkout-btn');
+        const isAccepted = document.getElementById('engagement-checkbox').checked;
+        if (!isAccepted) { btn.innerText = "Accept Terms To Continue"; return; }
+        btn.innerText = planValue === 'gap' ? "Submit For Scoping" : "Initialize Payment Gateway";
+    }
 
-            if(planValue === 'gap') {
-                btn.innerText = "Submit For Scoping";
-            } else {
-                btn.innerText = "Initialize Payment Gateway";
-            }
+    // ============================================================
+    // ENGAGEMENT MODAL
+    // ============================================================
+    window.openEngagementModal = function() {
+        document.getElementById('engagement-modal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        checkScrollBottom();
+    }
+
+    window.closeEngagementModal = function() {
+        document.getElementById('engagement-modal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    window.checkScrollBottom = function() {
+        const container = document.getElementById('engagement-scroll-container');
+        const btn       = document.getElementById('accept-modal-btn');
+        const instruction = document.getElementById('scroll-instruction');
+        if (container.scrollHeight - container.scrollTop <= container.clientHeight + 5) {
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gold/50', 'text-void/50');
+            btn.classList.add('bg-gold', 'text-void', 'hover:bg-marble');
+            instruction.classList.add('hidden');
+            btn.onclick = acceptEngagement;
+        }
+    }
+
+    function acceptEngagement() {
+        document.getElementById('engagement-checkbox').checked = true;
+        const visualCheckbox = document.getElementById('visual-checkbox');
+        visualCheckbox.classList.add('bg-gold', 'border-gold');
+        visualCheckbox.classList.remove('bg-void');
+        document.getElementById('check-icon').classList.remove('hidden');
+        document.getElementById('checkout-btn').classList.remove('opacity-50', 'cursor-not-allowed');
+        const selectedPlan = document.querySelector('input[name="plan_selection"]:checked')?.value;
+        if (selectedPlan) updateButtonLabel(selectedPlan);
+        closeEngagementModal();
+    }
+
+    window.preventDirectCheck = function(e) {
+        e.preventDefault();
+        if (!document.getElementById('engagement-checkbox').checked) openEngagementModal();
+    }
+
+    // ============================================================
+    // CHECKOUT — Firebase + Make.com + redirect
+    // ============================================================
+    window.processCheckout = async function(event) {
+        event.preventDefault();
+
+        if (!document.getElementById('engagement-checkbox').checked) {
+            alert("You must read and accept the Engagement Letter before proceeding.");
+            openEngagementModal();
+            return;
         }
 
-        // Modal Logic
-        function openEngagementModal() {
-            document.getElementById('engagement-modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden'; 
-            checkScrollBottom(); 
+        const btn          = document.getElementById('checkout-btn');
+        const originalText = btn.innerText;
+        btn.innerText      = "Securing Architecture...";
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+        const firstName  = document.getElementById('apply-fname').value.trim();
+        const lastName   = document.getElementById('apply-lname').value.trim();
+        const email      = document.getElementById('apply-email').value.trim();
+        const company    = document.getElementById('apply-company').value.trim();
+        const jurisdiction = document.getElementById('apply-jurisdiction').value;
+        const plan       = document.querySelector('input[name="plan_selection"]:checked')?.value || 'agentic';
+        const price      = PLAN_PRICES[plan] || 0;
+
+        const clientData = {
+            name:         `${firstName} ${lastName}`,
+            firstName,
+            lastName,
+            email,
+            company,
+            jurisdiction,
+            plan,
+            price,
+            elAccepted:   true,
+            elAcceptedAt: new Date().toISOString(),
+            status:       "pending_payment",
+            source:       "apply",
+            adminNotes:   "",
+            intakeData:   {},
+            heatmapData:  {},
+            documents:    {}
+        };
+
+        // Write to Firestore /clients
+        try {
+            await addDoc(collection(db, "clients"), {
+                ...clientData,
+                submittedAt:   serverTimestamp(),
+                intakeSentAt:  null,
+                deliveredAt:   null,
+                lastLogin:     null
+            });
+        } catch (err) {
+            console.log("Firestore write failed:", err);
         }
 
-        function closeEngagementModal() {
-            document.getElementById('engagement-modal').classList.add('hidden');
-            document.body.style.overflow = 'auto'; 
+        // Notify via Make.com Scenario 2
+        try {
+            await fetch(CHECKOUT_WEBHOOK, {
+                method:  "POST",
+                headers: { "Content-Type": "application/json" },
+                body:    JSON.stringify(clientData)
+            });
+        } catch (err) {
+            console.log("Webhook failed:", err);
         }
 
-        function checkScrollBottom() {
-            const container = document.getElementById('engagement-scroll-container');
-            const btn = document.getElementById('accept-modal-btn');
-            const instruction = document.getElementById('scroll-instruction');
-            
-            // Allow a small 5px margin of error for different browser calculations
-            if (container.scrollHeight - container.scrollTop <= container.clientHeight + 5) {
-                btn.disabled = false;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gold/50', 'text-void/50');
-                btn.classList.add('bg-gold', 'text-void', 'hover:bg-marble');
-                instruction.classList.add('hidden');
-                btn.onclick = acceptEngagement;
-            }
+        // Redirect to confirmation page
+        // Gap Review → scoping flow (no payment yet)
+        // All others → confirmation page (PayPal link to be added)
+        if (plan === 'gap') {
+            window.location.href = "confirmation.html?plan=gap";
+        } else {
+            window.location.href = `confirmation.html?plan=${plan}&price=${price}&email=${encodeURIComponent(email)}&name=${encodeURIComponent(firstName)}`;
         }
+    }
 
-        function acceptEngagement() {
-            const realCheckbox = document.getElementById('engagement-checkbox');
-            const visualCheckbox = document.getElementById('visual-checkbox');
-            const checkIcon = document.getElementById('check-icon');
-            const submitBtn = document.getElementById('checkout-btn');
-
-            realCheckbox.checked = true;
-            visualCheckbox.classList.add('bg-gold', 'border-gold');
-            visualCheckbox.classList.remove('bg-void');
-            checkIcon.classList.remove('hidden');
-            
-            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            
-            const selectedPlan = document.querySelector('input[name="plan_selection"]:checked').value;
-            updateButtonLabel(selectedPlan);
-
-            closeEngagementModal();
-        }
-
-        function preventDirectCheck(e) {
-            e.preventDefault();
-            if(!document.getElementById('engagement-checkbox').checked) {
-                openEngagementModal();
-            }
-        }
-
-        // Processing the Order
-        async function processCheckout(event) {
-            event.preventDefault();
-            
-            if(!document.getElementById('engagement-checkbox').checked) {
-                alert("You must read and accept the Engagement Letter before proceeding.");
-                openEngagementModal();
-                return;
-            }
-            
-            const btn = document.getElementById('checkout-btn');
-            const originalText = btn.innerText;
-            btn.innerText = "Securing Architecture...";
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
-
-            const selectedPlan = document.querySelector('input[name="plan_selection"]:checked').value;
-            
-            // Grab the Form Data
-            const form = document.getElementById("checkout-form");
-            const formData = new FormData(form);
-            
-            // Fire to Formspree silently (using your live endpoint)
-            try {
-                await fetch("https://formspree.io/f/xeelvyyo", {
-                    method: "POST",
-                    body: formData,
-                    headers: { 'Accept': 'application/json' }
-                });
-            } catch (error) {
-                console.log("Formspree sync failed, proceeding to payment.");
-            }
-
-            // Handoff to Payment or Form
-            setTimeout(() => {
-                if(selectedPlan === 'gap') {
-                    alert("Logic: Redirecting to Typeform/Airtable for Gap Review Intake.");
-                    // window.location.href = "YOUR_TYPEFORM_LINK";
-                } else {
-                    alert(`Logic: Triggering Dodo Payments/Paddle overlay for ${selectedPlan.toUpperCase()}.`);
-                    // Dodo Payments/Paddle SDK snippet goes here.
-                }
-                
-                btn.innerText = originalText;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-            }, 1000);
-        }
-    </script>
+</script>
 </body>
+
 </html>
