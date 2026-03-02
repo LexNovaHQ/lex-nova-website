@@ -270,8 +270,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
-
+        import { getFirestore, collection, doc, setDoc, serverTimestamp } from 
+"https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
         const firebaseConfig = {
             apiKey: "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
             authDomain: "lexnova-hq.firebaseapp.com",
@@ -440,16 +440,21 @@
 
             // Write to Firestore /clients
             try {
-                await addDoc(collection(db, "clients"), {
-                    ...clientData,
-                    submittedAt:  serverTimestamp(),
-                    intakeSentAt: null,
-                    deliveredAt:  null,
-                    lastLogin:    null
-                });
-            } catch (err) {
-                console.log("Firestore write failed:", err);
-            }
+    const docId = `${firstName}_${company}_${Date.now()}`
+        .replace(/\s+/g, '_')
+        .replace(/[^a-zA-Z0-9_]/g, '')
+        .toLowerCase();
+    
+    await setDoc(doc(db, "clients", docId), {
+        ...clientData,
+        submittedAt:  serverTimestamp(),
+        intakeSentAt: null,
+        deliveredAt:  null,
+        lastLogin:    null
+    });
+} catch (err) {
+    console.log("Firestore write failed:", err);
+}
 
             // Notify via Make.com Scenario 2
             try {
@@ -473,3 +478,4 @@
     </script>
 </body>
 </html>
+
