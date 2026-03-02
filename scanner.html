@@ -9,10 +9,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     
-<!-- ============================================================
-ADD THIS AT THE VERY TOP OF <head>, BEFORE THE TAILWIND SCRIPT
-============================================================ -->
-
 
     <script>
         tailwind.config = {
@@ -197,11 +193,7 @@ ADD THIS AT THE VERY TOP OF <head>, BEFORE THE TAILWIND SCRIPT
         </div>
     </div>
 
-   <!-- ============================================================
-REPLACE THE ENTIRE <script> BLOCK AT THE BOTTOM OF THE FILE
-(everything from the EXIT INTENT LOGIC comment down to the 
-closing </script> tag before </body>)
-
+   
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
@@ -537,3 +529,4 @@ import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.g
 </script>
 </body>
 </html>
+
