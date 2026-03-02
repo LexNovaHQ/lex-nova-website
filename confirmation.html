@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engagement Confirmed | Lex Nova HQ</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        void:   '#050505',
+                        gold:   '#C5A059',
+                        marble: '#EAE8E3',
+                        shadow: '#1A1A1A'
+                    },
+                    fontFamily: {
+                        serif: ['"Cormorant Garamond"', 'serif'],
+                        sans:  ['"Inter"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-void text-marble font-sans antialiased selection:bg-gold selection:text-void min-h-screen flex flex-col">
+
+    <nav class="w-full py-8 px-6 md:px-12 flex justify-center items-center border-b border-shadow">
+        <a href="index.html" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
+            <span class="font-serif text-lg tracking-widest text-gold uppercase mt-1">Lex Nova <span class="text-marble opacity-50 text-xs ml-1">HQ</span></span>
+        </a>
+    </nav>
+
+    <main class="flex-grow flex items-center justify-center p-6 w-full py-20">
+        <div class="max-w-2xl w-full">
+
+            <!-- Confirmation Header -->
+            <div class="text-center mb-16">
+                <div class="inline-block border border-gold/40 bg-gold/5 px-6 py-2 mb-8">
+                    <span class="font-sans text-[10px] tracking-[0.3em] text-gold uppercase">Engagement Active</span>
+                </div>
+                <h1 class="font-serif text-5xl md:text-6xl leading-tight text-marble mb-6">
+                    Architecture<br>Secured.
+                </h1>
+                <p class="font-sans text-sm text-marble opacity-60 leading-relaxed max-w-lg mx-auto">
+                    Your payment has been received and your build slot is locked. The 48-hour delivery clock starts the moment you submit your Technical Intake.
+                </p>
+            </div>
+
+            <!-- What They Bought -->
+            <div class="bg-[#080808] border border-shadow p-8 mb-8">
+                <h3 class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase mb-6 border-b border-shadow pb-4">Your Engagement</h3>
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-2">Kit Confirmed</p>
+                        <h2 id="plan-name" class="font-serif text-3xl text-marble mb-1">The Agentic Shield</h2>
+                        <p id="plan-desc" class="font-sans text-xs text-marble opacity-50 leading-relaxed max-w-sm">6-document stack protecting your external product liability, agentic risk, and user consent.</p>
+                    </div>
+                    <div class="text-right shrink-0 ml-6">
+                        <p id="plan-price" class="font-serif text-3xl text-gold">$997</p>
+                        <p class="font-sans text-[10px] tracking-widest text-marble opacity-40 uppercase mt-1">Paid</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two Next Steps -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+
+                <!-- Step 1 — Email -->
+                <div class="bg-[#080808] border border-shadow p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-6 h-6 rounded-full bg-gold flex items-center justify-center shrink-0">
+                            <span class="font-sans text-[10px] font-bold text-void">1</span>
+                        </div>
+                        <h4 class="font-sans text-xs tracking-[0.15em] text-marble uppercase">Check Your Email</h4>
+                    </div>
+                    <p class="font-sans text-xs text-marble opacity-60 leading-relaxed">
+                        A confirmation and onboarding email has been sent to your work address. It contains your engagement reference and what to expect next.
+                    </p>
+                </div>
+
+                <!-- Step 2 — Intake -->
+                <div class="bg-[#080808] border border-gold/30 p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-6 h-6 rounded-full bg-gold flex items-center justify-center shrink-0">
+                            <span class="font-sans text-[10px] font-bold text-void">2</span>
+                        </div>
+                        <h4 class="font-sans text-xs tracking-[0.15em] text-marble uppercase">Complete Your Intake</h4>
+                    </div>
+                    <p class="font-sans text-xs text-marble opacity-60 leading-relaxed mb-5">
+                        The Technical Vault captures the specific details we need to architect your documents. Your 48-hour clock starts on submission.
+                    </p>
+                    <a id="intake-btn" href="intake.html" class="inline-block w-full text-center bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-6 py-4 hover:bg-marble transition-colors duration-500 font-bold">
+                        Open Technical Vault →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Delivery Promise -->
+            <div class="border-l-2 border-gold pl-6 py-2">
+                <p class="font-sans text-xs text-marble opacity-70 leading-relaxed">
+                    <strong class="text-gold uppercase tracking-widest text-[10px]">Delivery Promise:</strong> Your Review-Ready Drafts will be delivered to your email within 48 hours of intake submission. If we miss the window, we extend your revision entitlement at no charge.
+                </p>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="flex flex-col items-center py-12 bg-[#050505] border-t border-shadow">
+        <div class="font-serif text-xl tracking-widest text-gold uppercase mb-6">Lex Nova HQ</div>
+        <p class="font-sans text-xs text-marble opacity-40 uppercase tracking-widest max-w-2xl leading-relaxed text-center mb-4">
+            Commercial Architecture Practice, Not a Law Firm.<br>
+            Review-Ready Drafts Only. No Attorney-Client Relationship.
+        </p>
+        <p class="font-sans text-xs text-marble opacity-30">&copy; 2026 Lex Nova HQ. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const PLANS = {
+            agentic: {
+                name:  "The Agentic Shield",
+                desc:  "6-document stack protecting your external product liability, agentic risk, and user consent.",
+                price: "$997"
+            },
+            workplace: {
+                name:  "The Workplace Shield",
+                desc:  "5-document stack securing your internal AI operations, IP provenance, and HR policies.",
+                price: "$997"
+            },
+            bundle: {
+                name:  "The Complete Stack",
+                desc:  "Full 11-document enterprise infrastructure covering both internal and external surfaces.",
+                price: "$2,000"
+            }
+        };
+
+        const params = new URLSearchParams(window.location.search);
+        const plan   = params.get('plan') || 'agentic';
+        const data   = PLANS[plan] || PLANS['agentic'];
+
+        document.getElementById('plan-name').innerText  = data.name;
+        document.getElementById('plan-desc').innerText  = data.desc;
+        document.getElementById('plan-price').innerText = data.price;
+    </script>
+
+</body>
+</html>
