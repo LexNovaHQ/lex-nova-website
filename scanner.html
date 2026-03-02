@@ -70,11 +70,9 @@
                     <span id="progress-text">Question 1 of 10</span>
                     <span class="text-gold">Logic Engine</span>
                 </div>
-                
                 <div class="w-full h-1 bg-shadow mb-12">
                     <div id="progress-bar" class="h-full bg-gold transition-all duration-500" style="width: 10%;"></div>
                 </div>
-
                 <div id="question-container" class="mb-12">
                     <h3 id="question-text" class="font-serif text-3xl md:text-4xl leading-snug text-marble mb-8">Loading...</h3>
                     <div id="options-container" class="flex flex-col gap-4"></div>
@@ -82,7 +80,6 @@
             </div>
 
             <div id="state-gate" class="hidden-state fade-enter text-center max-w-xl mx-auto">
-                
                 <div class="grid grid-cols-2 gap-6 mb-10">
                     <div class="border border-shadow bg-[#080808] p-5">
                         <h5 class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase mb-3">Product Risk</h5>
@@ -95,12 +92,10 @@
                         <span id="gate-int-label" class="font-sans text-xs tracking-widest text-marble uppercase">Calculating</span>
                     </div>
                 </div>
-
                 <h2 class="font-serif text-4xl leading-tight text-marble mb-4">Your diagnostic is ready.</h2>
                 <p class="font-sans text-sm text-marble opacity-60 leading-relaxed mb-8">
                     Your complete exposure figures, regulatory anchors, and specific gap breakdown are calculated. Enter your details to unlock your report.
                 </p>
-                
                 <form id="gate-form" onsubmit="processGateForm(event)" class="flex flex-col gap-5 text-left">
                     <div>
                         <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Full Name</label>
@@ -121,7 +116,6 @@
             </div>
 
             <div id="state-dashboard" class="hidden-state fade-enter w-full max-w-4xl mx-auto">
-                
                 <div class="border border-danger/30 bg-danger/5 p-8 md:p-12 mb-8 text-center relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-full h-1 bg-danger"></div>
                     <h4 class="font-sans text-[10px] tracking-[0.2em] text-danger uppercase mb-4 font-bold">Estimated Baseline Exposure</h4>
@@ -130,7 +124,6 @@
                         Based on active regulatory penalty structures and current civil liability caps.
                     </p>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div class="border border-shadow bg-[#080808] p-8">
                         <div class="flex justify-between items-center mb-6">
@@ -139,7 +132,6 @@
                         </div>
                         <div class="text-4xl font-serif text-marble mb-2"><span id="ext-score">0</span><span class="text-xl opacity-30">/100</span></div>
                     </div>
-
                     <div class="border border-shadow bg-[#080808] p-8">
                         <div class="flex justify-between items-center mb-6">
                             <h5 class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase">Internal / IP Liability</h5>
@@ -148,13 +140,11 @@
                         <div class="text-4xl font-serif text-marble mb-2"><span id="int-score">0</span><span class="text-xl opacity-30">/100</span></div>
                     </div>
                 </div>
-
                 <div id="ignorance-disclaimer" class="hidden border-l-2 border-warning pl-6 py-2 mb-12">
                     <p class="font-sans text-xs text-warning opacity-90 leading-relaxed max-w-2xl">
                         <strong class="uppercase tracking-widest">Note on Enforcement:</strong> Ignorance of an architectural gap does not shield you from strict liability. Undocumented compliance is legally prosecuted as non-compliance.
                     </p>
                 </div>
-
                 <div class="border border-gold bg-[#080808] p-8 md:p-12 text-center mt-12">
                     <h3 id="cta-heading" class="font-serif text-3xl text-marble mb-4">Your architecture requires patching.</h3>
                     <p id="cta-body" class="font-sans text-sm text-marble opacity-70 max-w-2xl mx-auto leading-relaxed mb-8">
@@ -192,7 +182,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
-        // Firebase config
+
         const firebaseConfig = {
             apiKey: "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
             authDomain: "lexnova-hq.firebaseapp.com",
@@ -203,7 +193,7 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const db  = getFirestore(app);
         const LEAD_WEBHOOK = "https://hook.eu1.make.com/q7nnd3klwdmlmtesq5no4yfsmk3v8ua7";
 
         // ============================================================
@@ -211,9 +201,9 @@
         // ============================================================
         let currentRoute = [];
         let currentIndex = 0;
-        let extScore = 0;
-        let intScore = 0;
-        let unsureFlag = false;
+        let extScore     = 0;
+        let intScore     = 0;
+        let unsureFlag   = false;
 
         // ============================================================
         // QUESTION DATABASE
@@ -224,81 +214,81 @@
                 text: "What is your primary AI exposure surface right now?",
                 options: [
                     { text: "We build AI into our product (Agents, Customer-facing)", logic: 'A' },
-                    { text: "We use AI internally (Content, Operations, Delivery)", logic: 'B' },
-                    { text: "Both. We build with AI and use it internally.", logic: 'C' }
+                    { text: "We use AI internally (Content, Operations, Delivery)",   logic: 'B' },
+                    { text: "Both. We build with AI and use it internally.",           logic: 'C' }
                 ]
             },
             {
                 id: 2, lane: 'external',
                 text: "If your AI agent can take real-world actions, do your contracts contain a defined liability cap specifically for autonomous agent actions?",
                 options: [
-                    { text: "Yes, explicitly defined.", extPts: 0 },
+                    { text: "Yes, explicitly defined.",                        extPts: 0  },
                     { text: "We have a general liability cap, not agent-specific.", extPts: 20 },
-                    { text: "No cap / I'm not sure.", extPts: 40, unsure: true }
+                    { text: "No cap / I'm not sure.",                          extPts: 40, unsure: true }
                 ]
             },
             {
                 id: 3, lane: 'external',
                 text: "Do your Terms of Service address AI hallucinations — outputs that are false, misleading, or fabricated?",
                 options: [
-                    { text: "Yes, with a specific disclaimer and waiver.", extPts: 0 },
-                    { text: "We have a general disclaimer, not AI-specific.", extPts: 25 },
-                    { text: "No / I'm not sure.", extPts: 50, unsure: true }
+                    { text: "Yes, with a specific disclaimer and waiver.",     extPts: 0  },
+                    { text: "We have a general disclaimer, not AI-specific.",  extPts: 25 },
+                    { text: "No / I'm not sure.",                              extPts: 50, unsure: true }
                 ]
             },
             {
                 id: 4, lane: 'external',
                 text: "Does your product process personal data from EU or UK users?",
                 options: [
-                    { text: "Yes — we have a signed DPA and SCCs in place.", extPts: 0 },
-                    { text: "Yes — but no DPA or SCCs.", extPts: 45, unsure: true },
-                    { text: "No EU/UK users.", extPts: 0 }
+                    { text: "Yes — we have a signed DPA and SCCs in place.", extPts: 0  },
+                    { text: "Yes — but no DPA or SCCs.",                      extPts: 45, unsure: true },
+                    { text: "No EU/UK users.",                                extPts: 0  }
                 ]
             },
             {
                 id: 5, lane: 'external',
                 text: "Does your AI product make or assist with consequential decisions — credit, hiring, healthcare, or legal?",
                 options: [
-                    { text: "No.", extPts: 0 },
-                    { text: "Yes — with human review documented.", extPts: 10 },
-                    { text: "Yes — fully automated / I'm not sure.", extPts: 60, unsure: true }
+                    { text: "No.",                                             extPts: 0  },
+                    { text: "Yes — with human review documented.",             extPts: 10 },
+                    { text: "Yes — fully automated / I'm not sure.",           extPts: 60, unsure: true }
                 ]
             },
             {
                 id: 6, lane: 'internal',
                 text: "Do your employees use AI tools (ChatGPT, Claude, Gemini, Copilot) for work tasks?",
                 options: [
-                    { text: "Yes — with a formal AI usage policy.", intPts: 0 },
-                    { text: "Yes — informally, no policy.", intPts: 35, unsure: true },
-                    { text: "No.", intPts: 0 }
+                    { text: "Yes — with a formal AI usage policy.", intPts: 0  },
+                    { text: "Yes — informally, no policy.",          intPts: 35, unsure: true },
+                    { text: "No.",                                   intPts: 0  }
                 ]
             },
             {
                 id: 7, lane: 'internal',
                 text: "When employees use AI to create content, code, or documents — who owns the output?",
                 options: [
-                    { text: "Clearly defined in our IP or employment agreements.", intPts: 0 },
-                    { text: "We assume we own it, but it's not documented.", intPts: 40, unsure: true },
-                    { text: "We haven't thought about this.", intPts: 55, unsure: true }
+                    { text: "Clearly defined in our IP or employment agreements.", intPts: 0  },
+                    { text: "We assume we own it, but it's not documented.",       intPts: 40, unsure: true },
+                    { text: "We haven't thought about this.",                       intPts: 55, unsure: true }
                 ]
             },
             {
                 id: 8, lane: 'internal',
                 text: "Has your company run an audit to identify which AI tools employees are using without approval?",
                 options: [
-                    { text: "Yes — formal Shadow AI audit completed.", intPts: 0 },
-                    { text: "Informal check only.", intPts: 25 },
-                    { text: "No audit conducted.", intPts: 45, unsure: true }
+                    { text: "Yes — formal Shadow AI audit completed.", intPts: 0  },
+                    { text: "Informal check only.",                    intPts: 25 },
+                    { text: "No audit conducted.",                     intPts: 45, unsure: true }
                 ]
             },
             {
                 id: 9, lane: 'internal',
                 text: "Do you have a documented Human-in-the-Loop (HITL) protocol for AI-assisted decisions?",
                 options: [
-                    { text: "Yes, formally documented protocol.", intPts: 0 },
+                    { text: "Yes, formally documented protocol.",      intPts: 0  },
                     { text: "Humans are in the loop, but undocumented.", intPts: 30 },
-                    { text: "No protocol / I'm not sure.", intPts: 40, unsure: true },
-                    { text: "We don't use AI for these decisions.", intPts: 0 }
+                    { text: "No protocol / I'm not sure.",              intPts: 40, unsure: true },
+                    { text: "We don't use AI for these decisions.",     intPts: 0  }
                 ]
             }
         ];
@@ -350,13 +340,13 @@
             });
             if (currentRoute.length > 0) {
                 document.getElementById('progress-bar').style.width = `${((currentIndex + 1) / currentRoute.length) * 100}%`;
-                document.getElementById('progress-text').innerText = `Question ${currentIndex + 1} of ${currentRoute.length}`;
+                document.getElementById('progress-text').innerText  = `Question ${currentIndex + 1} of ${currentRoute.length}`;
             }
         }
 
         function handleAnswer(question, option) {
             if (question.lane === 'master') {
-                if (option.logic === 'A') currentRoute = questions.filter(q => q.lane === 'external');
+                if (option.logic === 'A')      currentRoute = questions.filter(q => q.lane === 'external');
                 else if (option.logic === 'B') currentRoute = questions.filter(q => q.lane === 'internal');
                 else if (option.logic === 'C') currentRoute = questions.filter(q => q.lane !== 'master');
                 currentIndex = 0;
@@ -378,11 +368,11 @@
             const extData = getTierData(extScore, true);
             const intData = getTierData(intScore, false);
             document.getElementById('gate-ext-color').className = `w-full h-2 mb-3 ${extData.color}`;
-            document.getElementById('gate-ext-label').innerText = extData.text;
-            document.getElementById('gate-ext-label').className = `font-sans text-xs tracking-widest uppercase text-${extData.color.split('-')[1]}`;
-            document.getElementById('gate-int-color').className = `w-full h-2 mb-3 ${intData.color}`;
-            document.getElementById('gate-int-label').innerText = intData.text;
-            document.getElementById('gate-int-label').className = `font-sans text-xs tracking-widest uppercase text-${intData.color.split('-')[1]}`;
+            document.getElementById('gate-ext-label').innerText  = extData.text;
+            document.getElementById('gate-ext-label').className  = `font-sans text-xs tracking-widest uppercase text-${extData.color.split('-')[1]}`;
+            document.getElementById('gate-int-color').className  = `w-full h-2 mb-3 ${intData.color}`;
+            document.getElementById('gate-int-label').innerText  = intData.text;
+            document.getElementById('gate-int-label').className  = `font-sans text-xs tracking-widest uppercase text-${intData.color.split('-')[1]}`;
             switchState('state-quiz', 'state-gate');
         }
 
@@ -390,46 +380,41 @@
             const extData = getTierData(extScore, true);
             const intData = getTierData(intScore, false);
 
-            // Tier badges
             document.getElementById('ext-tier').className = `font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void ${extData.color}`;
-            document.getElementById('ext-tier').innerText = extData.text;
-            document.getElementById('int-tier').className = `font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void ${intData.color}`;
-            document.getElementById('int-tier').innerText = intData.text;
+            document.getElementById('ext-tier').innerText  = extData.text;
+            document.getElementById('int-tier').className  = `font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void ${intData.color}`;
+            document.getElementById('int-tier').innerText  = intData.text;
 
-            // Scores
             document.getElementById('ext-score').innerText = extScore;
             document.getElementById('int-score').innerText = intScore;
 
-            // Exposure range
             const totalLow  = extData.low  + intData.low;
             const totalHigh = extData.high + intData.high;
             document.getElementById('exposure-dollar').innerText = `${formatCash(totalLow)} – ${formatCash(totalHigh)}+`;
 
-            // Ignorance disclaimer
             if (unsureFlag) document.getElementById('ignorance-disclaimer').classList.remove('hidden');
 
-            // CTA routing
             const ctaBtn = document.getElementById('cta-btn');
             if (extScore > 50 && intScore > 40) {
                 document.getElementById('cta-heading').innerText = "You have active exposure on both surfaces.";
-                document.getElementById('cta-body').innerText = "Your diagnostic shows critical gaps in your external product architecture and your internal AI operations. The Complete Stack covers both.";
+                document.getElementById('cta-body').innerText    = "Your diagnostic shows critical gaps in your external product architecture and your internal AI operations. The Complete Stack covers both.";
                 ctaBtn.innerText = "Apply for The Complete Stack";
-                ctaBtn.href = "offer-bundle.html";
+                ctaBtn.href      = "offer-bundle.html";
             } else if (extScore > 50) {
                 document.getElementById('cta-heading').innerText = "Your primary exposure is in your product architecture.";
-                document.getElementById('cta-body').innerText = "Your commercial agreements and user consent architecture are void under active case law. The Agentic Shield closes each gap directly.";
+                document.getElementById('cta-body').innerText    = "Your commercial agreements and user consent architecture are void under active case law. The Agentic Shield closes each gap directly.";
                 ctaBtn.innerText = "Apply for The Agentic Shield";
-                ctaBtn.href = "offer-agentic.html";
+                ctaBtn.href      = "offer-agentic.html";
             } else if (intScore > 40) {
                 document.getElementById('cta-heading').innerText = "Your primary exposure is operational.";
-                document.getElementById('cta-body').innerText = "Your team's AI outputs are falling into the public domain, and you lack documented behavioral oversight. The Workplace Shield addresses this.";
+                document.getElementById('cta-body').innerText    = "Your team's AI outputs are falling into the public domain, and you lack documented behavioral oversight. The Workplace Shield addresses this.";
                 ctaBtn.innerText = "Apply for The Workplace Shield";
-                ctaBtn.href = "offer-workplace.html";
+                ctaBtn.href      = "offer-workplace.html";
             } else {
                 document.getElementById('cta-heading').innerText = "Your baseline architecture is stronger than most.";
-                document.getElementById('cta-body').innerText = "Your diagnostic shows low active exposure, but quiet gaps remain. A targeted Gap Review will surface them before they become enforcement events.";
+                document.getElementById('cta-body').innerText    = "Your diagnostic shows low active exposure, but quiet gaps remain. A targeted Gap Review will surface them before they become enforcement events.";
                 ctaBtn.innerText = "Apply for a Gap Review";
-                ctaBtn.href = "offer-gap.html";
+                ctaBtn.href      = "offer-gap.html";
             }
 
             switchState('state-gate', 'state-dashboard');
@@ -442,7 +427,7 @@
 
         document.addEventListener('mouseleave', function(e) {
             const dashboardVisible = !document.getElementById('state-dashboard').classList.contains('hidden-state');
-            const gateVisible = !document.getElementById('state-gate').classList.contains('hidden-state');
+            const gateVisible      = !document.getElementById('state-gate').classList.contains('hidden-state');
             if (e.clientY < 0 && !exitIntentFired && !dashboardVisible && !gateVisible) {
                 exitIntentFired = true;
                 document.getElementById('exit-modal').classList.remove('hidden');
@@ -462,34 +447,41 @@
             btn.innerText = "Saved.";
             btn.classList.add('opacity-50', 'cursor-not-allowed');
 
-            const email = document.getElementById('exit-email').value;
+            const email    = document.getElementById('exit-email').value.trim();
             const leadData = {
-                email, name: "", company: "",
-                leadType: "ghost_lead",
-                source: "scanner_exit",
+                email,
+                name:             "",
+                company:          "",
+                leadType:         "ghost_lead",
+                source:           "scanner_exit",
                 productRiskScore: 0,
                 internalOpsScore: 0,
-                uncertaintyFlag: false,
-                status: "new",
-                notes: "Captured via Exit Intent on Scanner"
+                uncertaintyFlag:  false,
+                status:           "new",
+                notes:            "Captured via Exit Intent on Scanner"
             };
 
             try {
-    const docId = `ghost_${email}_${Date.now()}`
-        .replace(/\s+/g, '_')
-        .replace(/[^a-zA-Z0-9_]/g, '')
-        .toLowerCase();
-    await setDoc(doc(db, "leads", docId), { ...leadData, createdAt: serverTimestamp(), lastTouched: serverTimestamp() });
-} catch(err) { console.log("Firestore write failed:", err); }
+                const docId = `ghost_${email}_${Date.now()}`
+                    .replace(/\s+/g, '_')
+                    .replace(/[^a-zA-Z0-9_]/g, '')
+                    .toLowerCase();
+                await setDoc(doc(db, "leads", docId), {
+                    ...leadData,
+                    createdAt:   serverTimestamp(),
+                    lastTouched: serverTimestamp()
+                });
+            } catch(err) { console.log("Firestore write failed:", err); }
 
             try {
-    const docId = `${leadName}_${leadCompany}_${Date.now()}`
-        .replace(/\s+/g, '_')
-        .replace(/[^a-zA-Z0-9_]/g, '')
-        .toLowerCase();
-    await setDoc(doc(db, "leads", docId), { ...leadData, createdAt: serverTimestamp(), lastTouched: serverTimestamp() });
-} catch(err) { console.log("Firestore write failed:", err); }
-            setTimeout(() => { closeExitModal(); }, 1500);
+                await fetch(LEAD_WEBHOOK, {
+                    method:  'POST',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
+                });
+            } catch(err) { console.log("Webhook failed:", err); }
+
+            setTimeout(() => { window.closeExitModal(); }, 1500);
         }
 
         // ============================================================
@@ -501,33 +493,44 @@
             btn.innerText = "Analyzing...";
             btn.classList.add('opacity-50', 'cursor-not-allowed');
 
-            const leadName    = document.getElementById('lead-name').value;
-            const leadEmail   = document.getElementById('lead-email').value;
-            const leadCompany = document.getElementById('lead-company').value;
+            const leadName    = document.getElementById('lead-name').value.trim();
+            const leadEmail   = document.getElementById('lead-email').value.trim();
+            const leadCompany = document.getElementById('lead-company').value.trim();
 
             localStorage.setItem('ln_name',    leadName);
             localStorage.setItem('ln_email',   leadEmail);
             localStorage.setItem('ln_company', leadCompany);
 
             const leadData = {
-                name: leadName, email: leadEmail, company: leadCompany,
-                leadType: "warm_lead",
-                source: "scanner",
+                name:             leadName,
+                email:            leadEmail,
+                company:          leadCompany,
+                leadType:         "warm_lead",
+                source:           "scanner",
                 productRiskScore: extScore,
                 internalOpsScore: intScore,
-                uncertaintyFlag: unsureFlag,
-                status: "new",
-                notes: ""
+                uncertaintyFlag:  unsureFlag,
+                status:           "new",
+                notes:            ""
             };
 
-            try { await addDoc(collection(db, "leads"), { ...leadData, createdAt: serverTimestamp(), lastTouched: serverTimestamp() }); }
-            catch(err) { console.log("Firestore write failed:", err); }
+            try {
+                const docId = `${leadName}_${leadCompany}_${Date.now()}`
+                    .replace(/\s+/g, '_')
+                    .replace(/[^a-zA-Z0-9_]/g, '')
+                    .toLowerCase();
+                await setDoc(doc(db, "leads", docId), {
+                    ...leadData,
+                    createdAt:   serverTimestamp(),
+                    lastTouched: serverTimestamp()
+                });
+            } catch(err) { console.log("Firestore write failed:", err); }
 
             try {
                 await fetch(LEAD_WEBHOOK, {
-                    method: 'POST',
+                    method:  'POST',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
+                    body:    JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
                 });
             } catch(err) { console.log("Webhook failed:", err); }
 
@@ -554,4 +557,3 @@
     <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v67327c56f0bb4ef8b305cae61679db8f1769101564043" integrity="sha512-rdcWY47ByXd76cbCFzznIcEaCN71jqkWBBqlwhF1SY7KubdLKZiEGeP7AyieKZlGP9hbY/MhGrwXzJC/HulNyg==" data-cf-beacon='{"version":"2024.11.0","token":"dfc3f5e5add24a01a5276f49e5abec40","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
-
