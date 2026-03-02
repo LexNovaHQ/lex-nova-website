@@ -471,14 +471,20 @@
         // Redirect to confirmation page
         // Gap Review → scoping flow (no payment yet)
         // All others → confirmation page (PayPal link to be added)
-        if (plan === 'gap') {
-            window.location.href = "confirmation.html?plan=gap";
-        } else {
-            window.location.href = `confirmation.html?plan=${plan}&price=${price}&email=${encodeURIComponent(email)}&name=${encodeURIComponent(firstName)}`;
-        }
-    }
+       const PAYPAL_LINKS = {
+    agentic:   "https://www.paypal.com/ncp/payment/WNH78KQCXDBL6",
+    workplace: "https://www.paypal.com/ncp/payment/7DUHPJJ4XVUVJ",
+    bundle:    "https://www.paypal.com/ncp/payment/X3PJ47FEDUSPW"
+};
+
+if (plan === 'gap') {
+    window.location.href = "confirmation.html?plan=gap";
+} else {
+    window.location.href = PAYPAL_LINKS[plan];
+}
 
 </script>
 </body>
 
 </html>
+
