@@ -191,8 +191,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
-
+        import { getFirestore, collection, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
         // Firebase config
         const firebaseConfig = {
             apiKey: "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
@@ -475,17 +474,21 @@
                 notes: "Captured via Exit Intent on Scanner"
             };
 
-            try { await addDoc(collection(db, "leads"), { ...leadData, createdAt: serverTimestamp(), lastTouched: serverTimestamp() }); }
-            catch(err) { console.log("Firestore write failed:", err); }
+            try {
+    const docId = `ghost_${email}_${Date.now()}`
+        .replace(/\s+/g, '_')
+        .replace(/[^a-zA-Z0-9_]/g, '')
+        .toLowerCase();
+    await setDoc(doc(db, "leads", docId), { ...leadData, createdAt: serverTimestamp(), lastTouched: serverTimestamp() });
+} catch(err) { console.log("Firestore write failed:", err); }
 
             try {
-                await fetch(LEAD_WEBHOOK, {
-                    method: 'POST',
-                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
-                });
-            } catch(err) { console.log("Webhook failed:", err); }
-
+    const docId = `${leadName}_${leadCompany}_${Date.now()}`
+        .replace(/\s+/g, '_')
+        .replace(/[^a-zA-Z0-9_]/g, '')
+        .toLowerCase();
+    await setDoc(doc(db, "leads", docId), { ...leadData, createdAt: serverTimestamp(), lastTouched: serverTimestamp() });
+} catch(err) { console.log("Firestore write failed:", err); }
             setTimeout(() => { closeExitModal(); }, 1500);
         }
 
@@ -551,3 +554,4 @@
     <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v67327c56f0bb4ef8b305cae61679db8f1769101564043" integrity="sha512-rdcWY47ByXd76cbCFzznIcEaCN71jqkWBBqlwhF1SY7KubdLKZiEGeP7AyieKZlGP9hbY/MhGrwXzJC/HulNyg==" data-cf-beacon='{"version":"2024.11.0","token":"dfc3f5e5add24a01a5276f49e5abec40","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
+
