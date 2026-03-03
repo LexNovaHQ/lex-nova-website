@@ -26,12 +26,16 @@
         @keyframes fi { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         .opt-wrap input:checked ~ div { border-color: #C5A059; background: rgba(197,160,89,0.05); }
         .chk-wrap input:checked ~ div { border-color: #C5A059; background: rgba(197,160,89,0.05); }
-        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #050505; } ::-webkit-scrollbar-thumb { background: #1A1A1A; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #1A1A1A; }
     </style>
-    <!-- Firebase Compat SDK v10 -->
+    <!-- Firebase Compat SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <!-- PayPal SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AchGCRgEtFO_TvYIOAI9xRjtw0cC1wWMr0zEwHItOYcrjnmSYNycP2foYe6tXod0W1ica20zrk0qdeK1&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
 </head>
 
 <body class="bg-void text-marble font-sans antialiased min-h-screen flex flex-col">
@@ -47,9 +51,7 @@
         </div>
     </nav>
 
-    <!-- ═══════════════════════════════════════════ -->
-    <!-- LOADING SCREEN                              -->
-    <!-- ═══════════════════════════════════════════ -->
+    <!-- LOADING -->
     <div id="screen-loading" class="flex-grow flex items-center justify-center">
         <div class="text-center">
             <div class="w-8 h-8 border border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -57,9 +59,7 @@
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════ -->
-    <!-- LOGIN SCREEN                                -->
-    <!-- ═══════════════════════════════════════════ -->
+    <!-- LOGIN -->
     <div id="screen-login" class="hidden flex-grow flex items-center justify-center px-6">
         <div class="w-full max-w-md fade-in">
             <div class="text-center mb-12">
@@ -88,9 +88,7 @@
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════ -->
-    <!-- DASHBOARD                                   -->
-    <!-- ═══════════════════════════════════════════ -->
+    <!-- DASHBOARD -->
     <main id="screen-dashboard" class="hidden flex-grow w-full max-w-5xl mx-auto px-6 py-12 fade-in">
 
         <!-- Welcome Bar -->
@@ -135,34 +133,42 @@
         </div>
 
         <!-- Tab Nav -->
-        <div class="flex gap-8 border-b border-shadow mb-8">
-            <button id="tab-btn-intake" onclick="switchTab('intake')" class="font-sans text-xs tracking-[0.15em] uppercase pb-4 opacity-50 hover:opacity-100 transition-opacity">
-                The Vault
-            </button>
-            <button id="tab-btn-docs" onclick="switchTab('docs')" class="font-sans text-xs tracking-[0.15em] uppercase pb-4 opacity-50 hover:opacity-100 transition-opacity">
-                Documents
-            </button>
-            <button id="tab-btn-heatmap" onclick="switchTab('heatmap')" class="font-sans text-xs tracking-[0.15em] uppercase pb-4 opacity-50 hover:opacity-100 transition-opacity">
-                Risk Heatmap
-            </button>
-            <button id="tab-btn-walkthrough" onclick="switchTab('walkthrough')" class="font-sans text-xs tracking-[0.15em] uppercase pb-4 opacity-50 hover:opacity-100 transition-opacity">
-                Walkthrough
-            </button>
+        <div class="flex gap-8 border-b border-shadow mb-8 overflow-x-auto">
+            <button id="tab-btn-intake" onclick="switchTab('intake')" class="font-sans text-xs tracking-[0.15em] uppercase pb-4 opacity-50 hover:opacity-100 transition-opacity whitespace-nowrap">The Vault</button>
+            <button id="tab-btn-docs" onclick="switchTab('docs')" class="font-sans text-xs tracking-[0.15em] uppercase pb-4 opacity-50 hover:opacity-100 transition-opacity whitespace-nowrap">Documents</button>
+            <button id="tab-btn-heatmap" onclick="switchTab('heatmap')" class="font-sans text-xs tracking-[0.15em] uppercase pb-4 opacity-50 hover:opacity-100 transition-opacity whitespace-nowrap">Risk Heatmap</button>
+            <button id="tab-btn-walkthrough" onclick="switchTab('walkthrough')" class="font-sans text-xs tracking-[0.15em] uppercase pb-4 opacity-50 hover:opacity-100 transition-opacity whitespace-nowrap">Walkthrough</button>
         </div>
 
-        <!-- ═══ TAB: VAULT (INTAKE FORM) ═══ -->
+        <!-- ═══ TAB: VAULT ═══ -->
         <div id="tab-intake" class="hidden fade-in">
-
-            <!-- Post-submission confirmation -->
-            <div id="intake-submitted" class="hidden bg-[#080808] border border-gold/30 p-12 text-center fade-in">
+            <div id="intake-submitted" class="hidden bg-[#080808] border border-gold/30 p-12 text-center fade-in mb-8">
                 <div class="inline-block border border-gold/40 bg-gold/5 px-5 py-2 mb-6">
                     <span class="font-sans text-[10px] tracking-[0.3em] text-gold uppercase">Vault Submitted</span>
                 </div>
                 <h3 class="font-serif text-3xl text-marble mb-3">The Architect Has Been Briefed.</h3>
-                <p class="font-sans text-xs text-marble opacity-50 leading-relaxed max-w-md mx-auto">Your technical parameters are locked. The 48-hour build window is now active. You will receive an email when your documents are ready for collection.</p>
+                <p class="font-sans text-xs text-marble opacity-50 leading-relaxed max-w-md mx-auto">Your technical parameters are locked. The 48-hour build window is now active. You will receive an email when your documents are ready.</p>
             </div>
 
-            <!-- Intake Form -->
+            <!-- Bundle Upsell Banner — shown post-intake if plan = agentic_shield only -->
+            <div id="bundle-upsell" class="hidden bg-[#080808] border border-gold/20 p-8 mb-8 fade-in">
+                <div class="flex flex-col md:flex-row justify-between items-start gap-6">
+                    <div class="flex-1">
+                        <div class="inline-block border border-gold/40 bg-gold/5 px-4 py-1 mb-4">
+                            <span class="font-sans text-[9px] tracking-[0.3em] text-gold uppercase">Architect Recommendation</span>
+                        </div>
+                        <h3 class="font-serif text-2xl text-marble mb-2">Your external surface is covered. Your internal surface is still open.</h3>
+                        <p class="font-sans text-xs text-marble opacity-50 leading-relaxed max-w-xl">Companies building AI products externally also operate AI tools internally. The Workplace Shield covers your team's IP exposure, shadow AI risk, and internal compliance gaps. Most Agentic Shield clients add it within 30 days.</p>
+                        <p class="font-sans text-[10px] text-gold mt-3">Agentic Shield + Workplace Shield — The Complete Stack. Save $500.</p>
+                    </div>
+                    <div class="flex-shrink-0 text-center">
+                        <p class="font-serif text-3xl text-gold mb-1">$1,000</p>
+                        <p class="font-sans text-[10px] text-marble opacity-40 mb-4">upgrade from your current kit</p>
+                        <a href="https://lexnovahq.com/offer-bundle.html" class="inline-block bg-gold text-void font-sans text-[10px] tracking-[0.2em] uppercase px-6 py-3 hover:bg-marble transition-colors font-bold">Add Workplace Shield</a>
+                    </div>
+                </div>
+            </div>
+
             <div id="intake-form-wrap">
                 <div class="mb-8">
                     <div class="inline-block border border-gold/40 bg-gold/5 px-5 py-2 mb-5">
@@ -171,187 +177,117 @@
                     <h2 class="font-serif text-4xl text-marble mb-3">Configure Your Architecture.</h2>
                     <p class="font-sans text-xs text-marble opacity-50 leading-relaxed max-w-xl">Your responses determine which legal clauses are injected into your documents. Answer accurately. The 48-hour build begins the moment you submit.</p>
                 </div>
-
                 <div class="bg-[#080808] border border-shadow p-8 space-y-10">
 
-                    <!-- Q1: Agent Type -->
+                    <!-- Q1 -->
                     <div>
                         <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-1">01 — Agent Classification</p>
                         <p class="font-serif text-xl text-marble mb-5">What best describes your AI system?</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <label class="opt-wrap cursor-pointer">
-                                <input type="radio" name="q_agent_type" value="fully_autonomous" class="hidden">
-                                <div class="border border-shadow p-4 transition-all hover:border-gold/40">
-                                    <p class="font-sans text-xs text-marble font-semibold mb-1">Fully Autonomous Agent</p>
-                                    <p class="font-sans text-[10px] text-marble opacity-40 leading-relaxed">Operates independently, takes actions without human approval per step.</p>
-                                </div>
-                            </label>
-                            <label class="opt-wrap cursor-pointer">
-                                <input type="radio" name="q_agent_type" value="human_in_loop" class="hidden">
-                                <div class="border border-shadow p-4 transition-all hover:border-gold/40">
-                                    <p class="font-sans text-xs text-marble font-semibold mb-1">Human-in-the-Loop Agent</p>
-                                    <p class="font-sans text-[10px] text-marble opacity-40 leading-relaxed">Recommends actions, human approves before execution.</p>
-                                </div>
-                            </label>
-                            <label class="opt-wrap cursor-pointer">
-                                <input type="radio" name="q_agent_type" value="chatbot" class="hidden">
-                                <div class="border border-shadow p-4 transition-all hover:border-gold/40">
-                                    <p class="font-sans text-xs text-marble font-semibold mb-1">Conversational AI / Chatbot</p>
-                                    <p class="font-sans text-[10px] text-marble opacity-40 leading-relaxed">Responds to queries, no backend action execution.</p>
-                                </div>
-                            </label>
-                            <label class="opt-wrap cursor-pointer">
-                                <input type="radio" name="q_agent_type" value="hybrid" class="hidden">
-                                <div class="border border-shadow p-4 transition-all hover:border-gold/40">
-                                    <p class="font-sans text-xs text-marble font-semibold mb-1">Hybrid System</p>
-                                    <p class="font-sans text-[10px] text-marble opacity-40 leading-relaxed">Mix of autonomous and supervised modes depending on context.</p>
-                                </div>
-                            </label>
+                            <label class="opt-wrap cursor-pointer"><input type="radio" name="q_agent_type" value="fully_autonomous" class="hidden">
+                                <div class="border border-shadow p-4 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble font-semibold mb-1">Fully Autonomous Agent</p><p class="font-sans text-[10px] text-marble opacity-40 leading-relaxed">Operates independently, takes actions without human approval per step.</p></div></label>
+                            <label class="opt-wrap cursor-pointer"><input type="radio" name="q_agent_type" value="human_in_loop" class="hidden">
+                                <div class="border border-shadow p-4 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble font-semibold mb-1">Human-in-the-Loop Agent</p><p class="font-sans text-[10px] text-marble opacity-40 leading-relaxed">Recommends actions, human approves before execution.</p></div></label>
+                            <label class="opt-wrap cursor-pointer"><input type="radio" name="q_agent_type" value="chatbot" class="hidden">
+                                <div class="border border-shadow p-4 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble font-semibold mb-1">Conversational AI / Chatbot</p><p class="font-sans text-[10px] text-marble opacity-40 leading-relaxed">Responds to queries, no backend action execution.</p></div></label>
+                            <label class="opt-wrap cursor-pointer"><input type="radio" name="q_agent_type" value="hybrid" class="hidden">
+                                <div class="border border-shadow p-4 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble font-semibold mb-1">Hybrid System</p><p class="font-sans text-[10px] text-marble opacity-40 leading-relaxed">Mix of autonomous and supervised modes.</p></div></label>
                         </div>
                     </div>
 
-                    <!-- Q2: Actions -->
+                    <!-- Q2 -->
                     <div>
                         <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-1">02 — Action Scope</p>
-                        <p class="font-serif text-xl text-marble mb-2">What actions can your agent take? <span class="text-marble opacity-30 text-sm">(select all that apply)</span></p>
-                        <p class="font-sans text-[10px] text-marble opacity-40 mb-5">This determines which liability caps and indemnity clauses are triggered.</p>
+                        <p class="font-serif text-xl text-marble mb-2">What actions can your agent take? <span class="text-marble opacity-30 text-sm">(select all)</span></p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_actions" value="read_data" class="hidden">
-                                <div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Read / retrieve data</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_actions" value="write_data" class="hidden">
-                                <div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Write / modify data or files</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_actions" value="send_comms" class="hidden">
-                                <div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Send emails / messages on behalf of user</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_actions" value="financial_tx" class="hidden">
-                                <div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Execute financial transactions</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_actions" value="third_party_api" class="hidden">
-                                <div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Call third-party APIs or services</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_actions" value="user_interface" class="hidden">
-                                <div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Interact with browser / UI on user's behalf</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_actions" value="read_data" class="hidden"><div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Read / retrieve data</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_actions" value="write_data" class="hidden"><div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Write / modify data or files</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_actions" value="send_comms" class="hidden"><div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Send emails / messages on behalf of user</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_actions" value="financial_tx" class="hidden"><div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Execute financial transactions</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_actions" value="third_party_api" class="hidden"><div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Call third-party APIs or services</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_actions" value="user_interface" class="hidden"><div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Interact with browser / UI on user's behalf</p></div></label>
                         </div>
                     </div>
 
-                    <!-- Q3: Data -->
+                    <!-- Q3 -->
                     <div>
                         <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-1">03 — Data Classification</p>
-                        <p class="font-serif text-xl text-marble mb-2">What data does your agent process? <span class="text-marble opacity-30 text-sm">(select all that apply)</span></p>
+                        <p class="font-serif text-xl text-marble mb-2">What data does your agent process? <span class="text-marble opacity-30 text-sm">(select all)</span></p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_data" value="pii" class="hidden">
-                                <div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Personal Identifiable Information (PII)</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_data" value="financial" class="hidden">
-                                <div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Financial or payment data</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_data" value="health" class="hidden">
-                                <div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Health or medical data</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_data" value="biometric" class="hidden">
-                                <div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Biometric data (voice, face, etc.)</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_data" value="minor_data" class="hidden">
-                                <div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Data belonging to minors (under 18)</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_data" value="no_personal" class="hidden">
-                                <div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">No personal data — purely operational</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_data" value="pii" class="hidden"><div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Personal Identifiable Information (PII)</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_data" value="financial" class="hidden"><div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Financial or payment data</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_data" value="health" class="hidden"><div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Health or medical data</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_data" value="biometric" class="hidden"><div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Biometric data (voice, face, etc.)</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_data" value="minor_data" class="hidden"><div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Data belonging to minors (under 18)</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_data" value="no_personal" class="hidden"><div class="border border-shadow p-3 transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">No personal data — purely operational</p></div></label>
                         </div>
                     </div>
 
-                    <!-- Q4: Geography -->
+                    <!-- Q4 -->
                     <div>
                         <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-1">04 — Jurisdiction Exposure</p>
-                        <p class="font-serif text-xl text-marble mb-2">Where are your end users located? <span class="text-marble opacity-30 text-sm">(select all that apply)</span></p>
-                        <p class="font-sans text-[10px] text-marble opacity-40 mb-5">This determines which regulatory frameworks are injected (GDPR, CCPA, etc.).</p>
+                        <p class="font-serif text-xl text-marble mb-2">Where are your end users located? <span class="text-marble opacity-30 text-sm">(select all)</span></p>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_geo" value="us" class="hidden">
-                                <div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">United States</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_geo" value="eu" class="hidden">
-                                <div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">European Union</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_geo" value="uk" class="hidden">
-                                <div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">United Kingdom</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_geo" value="canada" class="hidden">
-                                <div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Canada</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_geo" value="aus_nz" class="hidden">
-                                <div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Australia / NZ</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_geo" value="global" class="hidden">
-                                <div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Global / Unknown</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_geo" value="us" class="hidden"><div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">United States</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_geo" value="eu" class="hidden"><div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">European Union</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_geo" value="uk" class="hidden"><div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">United Kingdom</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_geo" value="canada" class="hidden"><div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Canada</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_geo" value="aus_nz" class="hidden"><div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Australia / NZ</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_geo" value="global" class="hidden"><div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Global / Unknown</p></div></label>
                         </div>
                     </div>
 
-                    <!-- Q5: AI Provider -->
+                    <!-- Q5 -->
                     <div>
                         <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-1">05 — AI Infrastructure</p>
-                        <p class="font-serif text-xl text-marble mb-2">Which AI providers power your system? <span class="text-marble opacity-30 text-sm">(select all that apply)</span></p>
+                        <p class="font-serif text-xl text-marble mb-2">Which AI providers power your system? <span class="text-marble opacity-30 text-sm">(select all)</span></p>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_provider" value="openai" class="hidden">
-                                <div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">OpenAI</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_provider" value="anthropic" class="hidden">
-                                <div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Anthropic</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_provider" value="google" class="hidden">
-                                <div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Google / Gemini</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_provider" value="azure" class="hidden">
-                                <div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Azure OpenAI</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_provider" value="self_hosted" class="hidden">
-                                <div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Self-Hosted / Open Source</p></div></label>
-                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_provider" value="other_provider" class="hidden">
-                                <div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Other</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_provider" value="openai" class="hidden"><div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">OpenAI</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_provider" value="anthropic" class="hidden"><div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Anthropic</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_provider" value="google" class="hidden"><div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Google / Gemini</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_provider" value="azure" class="hidden"><div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Azure OpenAI</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_provider" value="self_hosted" class="hidden"><div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Self-Hosted / Open Source</p></div></label>
+                            <label class="chk-wrap cursor-pointer"><input type="checkbox" name="q_provider" value="other_provider" class="hidden"><div class="border border-shadow p-3 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Other</p></div></label>
                         </div>
                     </div>
 
-                    <!-- Q6: Memory -->
+                    <!-- Q6 -->
                     <div>
                         <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-1">06 — Agent Memory</p>
                         <p class="font-serif text-xl text-marble mb-5">Does your agent retain memory between sessions?</p>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <label class="opt-wrap cursor-pointer"><input type="radio" name="q_memory" value="session_only" class="hidden">
-                                <div class="border border-shadow p-4 text-center transition-all hover:border-gold/40">
-                                    <p class="font-sans text-xs text-marble font-semibold mb-1">Session Only</p>
-                                    <p class="font-sans text-[10px] text-marble opacity-40">Resets after each conversation</p>
-                                </div>
-                            </label>
-                            <label class="opt-wrap cursor-pointer"><input type="radio" name="q_memory" value="persistent" class="hidden">
-                                <div class="border border-shadow p-4 text-center transition-all hover:border-gold/40">
-                                    <p class="font-sans text-xs text-marble font-semibold mb-1">Persistent</p>
-                                    <p class="font-sans text-[10px] text-marble opacity-40">Remembers user across sessions</p>
-                                </div>
-                            </label>
-                            <label class="opt-wrap cursor-pointer"><input type="radio" name="q_memory" value="long_term" class="hidden">
-                                <div class="border border-shadow p-4 text-center transition-all hover:border-gold/40">
-                                    <p class="font-sans text-xs text-marble font-semibold mb-1">Long-Term / Vector DB</p>
-                                    <p class="font-sans text-[10px] text-marble opacity-40">Semantic memory store</p>
-                                </div>
-                            </label>
+                            <label class="opt-wrap cursor-pointer"><input type="radio" name="q_memory" value="session_only" class="hidden"><div class="border border-shadow p-4 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble font-semibold mb-1">Session Only</p><p class="font-sans text-[10px] text-marble opacity-40">Resets after each conversation</p></div></label>
+                            <label class="opt-wrap cursor-pointer"><input type="radio" name="q_memory" value="persistent" class="hidden"><div class="border border-shadow p-4 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble font-semibold mb-1">Persistent</p><p class="font-sans text-[10px] text-marble opacity-40">Remembers user across sessions</p></div></label>
+                            <label class="opt-wrap cursor-pointer"><input type="radio" name="q_memory" value="long_term" class="hidden"><div class="border border-shadow p-4 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble font-semibold mb-1">Long-Term / Vector DB</p><p class="font-sans text-[10px] text-marble opacity-40">Semantic memory store</p></div></label>
                         </div>
                     </div>
 
-                    <!-- Q7: Existing Counsel -->
+                    <!-- Q7 -->
                     <div>
                         <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-1">07 — Local Counsel</p>
                         <p class="font-serif text-xl text-marble mb-5">Do you have existing legal counsel who will review and localise these documents?</p>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <label class="opt-wrap cursor-pointer"><input type="radio" name="q_counsel" value="yes" class="hidden">
-                                <div class="border border-shadow p-4 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Yes — counsel identified</p></div></label>
-                            <label class="opt-wrap cursor-pointer"><input type="radio" name="q_counsel" value="sourcing" class="hidden">
-                                <div class="border border-shadow p-4 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Sourcing counsel now</p></div></label>
-                            <label class="opt-wrap cursor-pointer"><input type="radio" name="q_counsel" value="no" class="hidden">
-                                <div class="border border-shadow p-4 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Not yet</p></div></label>
+                            <label class="opt-wrap cursor-pointer"><input type="radio" name="q_counsel" value="yes" class="hidden"><div class="border border-shadow p-4 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Yes — counsel identified</p></div></label>
+                            <label class="opt-wrap cursor-pointer"><input type="radio" name="q_counsel" value="sourcing" class="hidden"><div class="border border-shadow p-4 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Sourcing counsel now</p></div></label>
+                            <label class="opt-wrap cursor-pointer"><input type="radio" name="q_counsel" value="no" class="hidden"><div class="border border-shadow p-4 text-center transition-all hover:border-gold/40"><p class="font-sans text-xs text-marble">Not yet</p></div></label>
                         </div>
                     </div>
 
-                    <!-- Q8: Additional Context -->
+                    <!-- Q8 -->
                     <div>
                         <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-1">08 — Architect's Brief</p>
                         <p class="font-serif text-xl text-marble mb-2">Anything the Architect should know?</p>
-                        <p class="font-sans text-[10px] text-marble opacity-40 mb-4">Edge cases, specific integrations, regulatory concerns, or deployment context not covered above.</p>
                         <textarea id="q_notes" rows="4" placeholder="Optional. Leave blank if not applicable."
                             class="w-full bg-void border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-all resize-none"></textarea>
                     </div>
 
                     <div class="pt-4 border-t border-shadow">
                         <p id="intake-error" class="hidden font-sans text-[10px] text-red-400 mb-4"></p>
-                        <button onclick="submitIntake()"
-                            class="w-full bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase py-5 hover:bg-marble transition-colors font-bold">
+                        <button onclick="submitIntake()" class="w-full bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase py-5 hover:bg-marble transition-colors font-bold">
                             Submit to The Architect — Lock the Build
                         </button>
-                        <p class="font-sans text-[9px] text-marble opacity-25 text-center mt-4 leading-relaxed">
-                            By submitting, you confirm the information above is accurate. The 48-hour SLA begins immediately upon submission.
-                        </p>
+                        <p class="font-sans text-[9px] text-marble opacity-25 text-center mt-4 leading-relaxed">By submitting, you confirm the information above is accurate. The 48-hour SLA begins immediately upon submission.</p>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -365,6 +301,31 @@
                 <h2 class="font-serif text-4xl text-marble mb-2">Your Architecture.</h2>
                 <p class="font-sans text-xs text-marble opacity-40">Review-Ready drafts. Each document requires local counsel review before execution.</p>
             </div>
+
+            <!-- Maintenance CTA — shows on delivered, hidden if maintenanceActive -->
+            <div id="maintenance-cta" class="hidden bg-[#080808] border border-gold/30 p-8 mb-8 fade-in">
+                <div class="flex flex-col md:flex-row justify-between items-start gap-6">
+                    <div class="flex-1">
+                        <div class="inline-block border border-gold/40 bg-gold/5 px-4 py-1 mb-4">
+                            <span class="font-sans text-[9px] tracking-[0.3em] text-gold uppercase">Protect Your Investment</span>
+                        </div>
+                        <h3 class="font-serif text-2xl text-marble mb-2">Laws change quarterly. Your documents shouldn't go stale.</h3>
+                        <p class="font-sans text-xs text-marble opacity-50 leading-relaxed max-w-xl mb-3">The EU AI Act enforcement phases are rolling. The FTC is escalating. Colorado's AI Act is live. Liability Maintenance keeps your architecture current — we push updates directly to your portal as regulations evolve.</p>
+                        <div class="flex flex-wrap gap-4 text-[10px] font-sans text-marble opacity-40 uppercase tracking-widest">
+                            <span>✓ Quarterly document updates</span>
+                            <span>✓ Regulatory monitoring</span>
+                            <span>✓ Portal push notifications</span>
+                            <span>✓ 3-month minimum commitment</span>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0 text-center min-w-[160px]">
+                        <p class="font-serif text-3xl text-gold mb-1">$297<span class="font-sans text-sm opacity-50">/mo</span></p>
+                        <p class="font-sans text-[10px] text-marble opacity-40 mb-4">3-month minimum · then rolling 30-day</p>
+                        <div id="paypal-maintenance-btn"></div>
+                    </div>
+                </div>
+            </div>
+
             <div id="docs-locked-notice" class="hidden bg-[#080808] border border-shadow p-8 text-center mb-6">
                 <p class="font-sans text-xs text-marble opacity-40">Documents will appear here once your build is complete. You will be notified by email.</p>
             </div>
@@ -378,12 +339,61 @@
                     <span class="font-sans text-[10px] tracking-[0.3em] text-gold uppercase">Risk Surface Analysis</span>
                 </div>
                 <h2 class="font-serif text-4xl text-marble mb-2">Exposure Heatmap.</h2>
-                <p class="font-sans text-xs text-marble opacity-40">Auto-generated from your intake parameters. Red = active exposure covered by your documents.</p>
+                <p class="font-sans text-xs text-marble opacity-40">Auto-generated from your intake parameters. Shows current coverage and emerging regulatory risks.</p>
             </div>
-            <div id="heatmap-locked-notice" class="hidden bg-[#080808] border border-shadow p-8 text-center">
+
+            <div id="heatmap-locked-notice" class="hidden bg-[#080808] border border-shadow p-8 text-center mb-6">
                 <p class="font-sans text-xs text-marble opacity-40">The heatmap populates after intake submission.</p>
             </div>
-            <div id="heatmap-grid" class="space-y-3"></div>
+
+            <!-- Current Exposure -->
+            <div id="heatmap-current-wrap" class="hidden">
+                <p class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-30 uppercase mb-4">Current Exposure</p>
+                <div id="heatmap-grid" class="space-y-3 mb-12"></div>
+            </div>
+
+            <!-- Regulatory Radar -->
+            <div id="heatmap-radar-wrap" class="hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <p class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-30 uppercase">Regulatory Radar — Upcoming Risks</p>
+                    <p id="radar-updated" class="font-sans text-[9px] text-marble opacity-20"></p>
+                </div>
+                <div id="radar-grid" class="space-y-3 mb-8"></div>
+            </div>
+
+            <!-- Flagship CTA -->
+            <div id="flagship-cta" class="hidden bg-[#080808] border border-red-900/40 p-8 mb-6 fade-in">
+                <div class="flex flex-col md:flex-row justify-between items-start gap-6">
+                    <div>
+                        <div class="inline-block border border-red-800/50 bg-red-900/10 px-4 py-1 mb-4">
+                            <span class="font-sans text-[9px] tracking-[0.3em] text-red-400 uppercase">Critical Exposure Detected</span>
+                        </div>
+                        <h3 class="font-serif text-2xl text-marble mb-2">Your risk profile exceeds Kit coverage.</h3>
+                        <p class="font-sans text-xs text-marble opacity-50 leading-relaxed max-w-xl">Multiple critical and high-severity gaps identified. A Flagship engagement provides bespoke architecture, stakeholder sessions, and direct Architect access — built for your specific operating reality.</p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <a href="https://lexnovahq.com/apply.html?plan=flagship" class="inline-block border border-gold text-gold font-sans text-[10px] tracking-[0.2em] uppercase px-6 py-3 hover:bg-gold hover:text-void transition-all">Speak to The Architect</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gap Review CTA -->
+            <div id="gap-review-cta" class="hidden bg-[#080808] border border-shadow p-8 fade-in">
+                <div class="flex flex-col md:flex-row justify-between items-start gap-6">
+                    <div>
+                        <div class="inline-block border border-gold/40 bg-gold/5 px-4 py-1 mb-4">
+                            <span class="font-sans text-[9px] tracking-[0.3em] text-gold uppercase">New Regulatory Risk Detected</span>
+                        </div>
+                        <h3 class="font-serif text-2xl text-marble mb-2">A new law affects your architecture.</h3>
+                        <p class="font-sans text-xs text-marble opacity-50 leading-relaxed max-w-xl">Regulatory changes since your build have created gaps in your coverage. A Gap Review is a focused assessment of exactly what changed and what needs updating — without rebuilding everything.</p>
+                        <p class="font-sans text-[10px] text-gold mt-3">Maintenance subscribers receive these updates automatically.</p>
+                    </div>
+                    <div class="flex-shrink-0 text-center">
+                        <a href="https://lexnovahq.com/offer-gap.html" class="inline-block border border-gold text-gold font-sans text-[10px] tracking-[0.2em] uppercase px-6 py-3 hover:bg-gold hover:text-void transition-all mb-3 block">Request Gap Review</a>
+                        <p class="font-sans text-[9px] text-marble opacity-30">Scoped & priced post-intake</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ═══ TAB: WALKTHROUGH ═══ -->
@@ -398,36 +408,27 @@
             <div id="walkthrough-locked" class="bg-[#080808] border border-shadow p-16 text-center">
                 <div class="w-16 h-16 border border-shadow rounded-full flex items-center justify-center mx-auto mb-6">
                     <svg class="w-6 h-6 text-marble opacity-20" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
                     </svg>
                 </div>
                 <p class="font-sans text-xs text-marble opacity-30 tracking-widest uppercase">Unlocks on Delivery</p>
             </div>
             <div id="walkthrough-video" class="hidden bg-[#080808] border border-shadow p-8">
-                <div id="video-embed" class="aspect-video w-full bg-shadow flex items-center justify-center mb-6">
-                    <p class="font-sans text-xs text-marble opacity-30">Video loading...</p>
-                </div>
+                <div id="video-embed" class="aspect-video w-full bg-shadow"></div>
             </div>
         </div>
 
     </main>
 
-    <!-- ═══════════════════════════════════════════ -->
-    <!-- FOOTER                                      -->
-    <!-- ═══════════════════════════════════════════ -->
     <footer class="border-t border-shadow py-6 px-6 md:px-12 flex justify-between items-center">
         <p class="font-sans text-[9px] tracking-widest text-marble opacity-20 uppercase">Lex Nova HQ — Legal Architecture</p>
         <p class="font-sans text-[9px] tracking-widest text-marble opacity-20 uppercase">Not a law firm. Review-Ready standard applies.</p>
     </footer>
 
-<!-- ═══════════════════════════════════════════════════════ -->
-<!-- SCRIPT                                                  -->
-<!-- ═══════════════════════════════════════════════════════ -->
 <script>
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
 // FIREBASE INIT
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
 const firebaseConfig = {
     apiKey: "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
     authDomain: "lexnova-hq.firebaseapp.com",
@@ -440,48 +441,45 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// ─────────────────────────────────────────────
+// Global client data store
+let clientData = {};
+
+// ─────────────────────────────────────────
 // SCREEN HELPERS
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
 function showScreen(id) {
     ['screen-loading','screen-login','screen-dashboard'].forEach(s => {
         const el = document.getElementById(s);
         el.classList.add('hidden');
         el.classList.remove('flex','flex-grow');
     });
-    const target = document.getElementById(id);
-    target.classList.remove('hidden');
-    if(id !== 'screen-dashboard') {
-        target.classList.add('flex','flex-grow');
-    }
+    const t = document.getElementById(id);
+    t.classList.remove('hidden');
+    if (id !== 'screen-dashboard') t.classList.add('flex','flex-grow');
 }
 
-// ─────────────────────────────────────────────
-// MAGIC LINK — CHECK ON LOAD
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
+// MAGIC LINK HANDLER
+// ─────────────────────────────────────────
 if (auth.isSignInWithEmailLink(window.location.href)) {
     let email = window.localStorage.getItem('lexnova_signin_email');
-    if (!email) {
-        email = window.prompt('Please confirm your email address to complete sign-in:');
-    }
+    if (!email) email = window.prompt('Please confirm your email to complete sign-in:');
     if (email) {
         auth.signInWithEmailLink(email, window.location.href)
             .then(() => {
                 window.localStorage.removeItem('lexnova_signin_email');
                 window.history.replaceState({}, document.title, window.location.pathname);
             })
-            .catch(err => {
-                console.error('Magic link error:', err);
+            .catch(() => {
                 showScreen('screen-login');
-                document.getElementById('login-error').textContent = 'This link has expired or already been used. Request a new one below.';
-                document.getElementById('login-error').classList.remove('hidden');
+                showLoginError('This link has expired or already been used. Request a new one below.');
             });
     }
 }
 
-// ─────────────────────────────────────────────
-// AUTH STATE — MAIN ENTRY POINT
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
+// AUTH STATE
+// ─────────────────────────────────────────
 auth.onAuthStateChanged(user => {
     if (user) {
         document.getElementById('signout-btn').classList.remove('hidden');
@@ -491,98 +489,94 @@ auth.onAuthStateChanged(user => {
     }
 });
 
-// ─────────────────────────────────────────────
-// SEND MAGIC LINK
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
+// MAGIC LINK SEND
+// ─────────────────────────────────────────
 function sendMagicLink() {
     const email = document.getElementById('login-email').value.trim();
-    const errEl = document.getElementById('login-error');
-    errEl.classList.add('hidden');
-
-    if (!email || !email.includes('@')) {
-        errEl.textContent = 'Please enter a valid email address.';
-        errEl.classList.remove('hidden');
-        return;
-    }
-
-    const actionCodeSettings = {
+    if (!email || !email.includes('@')) { showLoginError('Please enter a valid email address.'); return; }
+    auth.sendSignInLinkToEmail(email, {
         url: 'https://portal.lexnovahq.com/dashboard.html',
         handleCodeInApp: true
-    };
-
-    auth.sendSignInLinkToEmail(email, actionCodeSettings)
-        .then(() => {
-            window.localStorage.setItem('lexnova_signin_email', email);
-            document.getElementById('login-form-wrap').classList.add('hidden');
-            document.getElementById('login-sent-wrap').classList.remove('hidden');
-        })
-        .catch(err => {
-            console.error(err);
-            errEl.textContent = err.code === 'auth/user-not-found'
-                ? 'No engagement found for this email. Contact your Architect.'
-                : 'Failed to send link. Please try again.';
-            errEl.classList.remove('hidden');
-        });
+    }).then(() => {
+        window.localStorage.setItem('lexnova_signin_email', email);
+        document.getElementById('login-form-wrap').classList.add('hidden');
+        document.getElementById('login-sent-wrap').classList.remove('hidden');
+    }).catch(err => {
+        showLoginError(err.message || 'Failed to send link. Please try again.');
+    });
 }
 
-// ─────────────────────────────────────────────
-// SIGN OUT
-// ─────────────────────────────────────────────
+function showLoginError(msg) {
+    const el = document.getElementById('login-error');
+    el.textContent = msg;
+    el.classList.remove('hidden');
+}
+
 function doSignOut() {
     auth.signOut().then(() => showScreen('screen-login'));
 }
 
-// ─────────────────────────────────────────────
-// LOAD CLIENT DATA FROM FIRESTORE
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
+// LOAD CLIENT DATA
+// ─────────────────────────────────────────
 async function loadClientData(email) {
     try {
-        // Query by email field (not doc ID, since doc ID may be UID)
+        let data = null;
         const snap = await db.collection('clients').where('email','==',email).limit(1).get();
-
-        if (snap.empty) {
-            // Fallback: try email as doc ID
-            const docSnap = await db.collection('clients').doc(email).get();
-            if (!docSnap.exists) {
-                showScreen('screen-login');
-                document.getElementById('login-error').textContent = 'No engagement record found. Contact your Architect at hello@lexnovahq.com';
-                document.getElementById('login-error').classList.remove('hidden');
-                return;
-            }
-            renderDashboard(docSnap.data());
+        if (!snap.empty) {
+            data = snap.docs[0].data();
+            snap.docs[0].ref.update({ lastLogin: firebase.firestore.FieldValue.serverTimestamp() });
         } else {
-            renderDashboard(snap.docs[0].data());
+            const docSnap = await db.collection('clients').doc(email).get();
+            if (docSnap.exists) data = docSnap.data();
         }
+        if (!data) {
+            showScreen('screen-login');
+            showLoginError('No engagement found for this email. Contact hello@lexnovahq.com');
+            return;
+        }
+        clientData = data;
+        renderDashboard(data);
     } catch(err) {
-        console.error('Firestore error:', err);
+        console.error(err);
         showScreen('screen-login');
+        showLoginError('Error loading your portal. Please try again.');
     }
 }
 
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
 // RENDER DASHBOARD
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
 function renderDashboard(data) {
     showScreen('screen-dashboard');
+    const status = data.status || 'intake_received';
+    const plan = data.plan || '';
+    const isBundle = ['agentic_shield_bundle','full_stack','workplace_shield'].includes(plan);
+    const intakeSubmitted = !!data.intakeData;
+    const maintenanceActive = !!data.maintenanceActive;
 
     // Welcome bar
-    document.getElementById('welcome-name').textContent = data.name ? `Welcome, ${data.name.split(' ')[0]}.` : 'Welcome back.';
-    document.getElementById('kit-name').textContent = planLabel(data.plan);
+    document.getElementById('welcome-name').textContent = data.name
+        ? `Welcome, ${data.name.split(' ')[0]}.` : 'Welcome back.';
+    document.getElementById('kit-name').textContent = planLabel(plan);
     document.getElementById('engagement-ref').textContent = data.engagementRef || '';
-    document.getElementById('nav-ref').textContent = data.engagementRef || '';
-    if(data.engagementRef) document.getElementById('nav-ref').classList.remove('hidden');
+    if (data.engagementRef) {
+        document.getElementById('nav-ref').textContent = data.engagementRef;
+        document.getElementById('nav-ref').classList.remove('hidden');
+    }
 
-    // Status tracker
-    renderStatus(data.status);
+    // Status
+    renderStatus(status);
 
-    // Tabs — decide which to show based on status
-    const status = data.status || 'intake_received';
-    const intakeSubmitted = !!data.intakeData;
-
+    // Decide default tab
     if (intakeSubmitted) {
-        // Show submitted confirmation, switch to docs tab by default
         document.getElementById('intake-form-wrap').classList.add('hidden');
         document.getElementById('intake-submitted').classList.remove('hidden');
+        // Show bundle upsell if applicable
+        if (!isBundle && intakeSubmitted) {
+            document.getElementById('bundle-upsell').classList.remove('hidden');
+        }
         switchTab('docs');
     } else {
         switchTab('intake');
@@ -591,9 +585,17 @@ function renderDashboard(data) {
     // Documents tab
     renderDocs(data.documents, status);
 
+    // Maintenance CTA — only on delivered + not active + not already on maintenance
+    if (status === 'delivered' && !maintenanceActive) {
+        document.getElementById('maintenance-cta').classList.remove('hidden');
+        renderPayPalButton();
+    }
+
     // Heatmap
-    if (data.intakeData) {
-        renderHeatmap(data.intakeData);
+    if (intakeSubmitted && data.intakeData) {
+        document.getElementById('heatmap-current-wrap').classList.remove('hidden');
+        const rows = buildHeatmapRows(data.intakeData);
+        renderHeatmapGrid(rows, data.intakeData, isBundle, maintenanceActive);
     } else {
         document.getElementById('heatmap-locked-notice').classList.remove('hidden');
     }
@@ -606,57 +608,82 @@ function renderDashboard(data) {
             `<iframe src="${data.walkthroughUrl}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>`;
     }
 
-    // Update lastLogin
-    const email = auth.currentUser?.email;
-    if (email) {
-        db.collection('clients').where('email','==',email).limit(1).get().then(snap => {
-            if(!snap.empty) snap.docs[0].ref.update({ lastLogin: firebase.firestore.FieldValue.serverTimestamp() });
-        });
-    }
+    // Load regulatory radar
+    loadRadar(data.intakeData, maintenanceActive);
 }
 
-// ─────────────────────────────────────────────
-// STATUS TRACKER
-// ─────────────────────────────────────────────
-const STATUS_MAP = {
-    'intake_received': { node: 1, prog: '8%',  msg: 'Your intake form is pending. Complete The Vault to activate the 48-hour build window.' },
-    'under_review':    { node: 2, prog: '40%', msg: 'The Architect is reviewing your technical parameters. Build begins within 24 hours.' },
-    'in_production':   { node: 3, prog: '70%', msg: 'Your architecture is in production. Estimated delivery within your 48-hour SLA window.' },
-    'delivered':       { node: 4, prog: '100%',msg: 'Your documents are ready. Download from the Documents tab. Engage local counsel for review and localisation.' }
-};
+// ─────────────────────────────────────────
+// PAYPAL SUBSCRIPTION BUTTON
+// ─────────────────────────────────────────
+function renderPayPalButton() {
+    if (typeof paypal === 'undefined') return;
+    paypal.Buttons({
+        style: { shape: 'rect', color: 'gold', layout: 'horizontal', label: 'subscribe', height: 40 },
+        createSubscription: function(data, actions) {
+            return actions.subscription.create({ plan_id: 'P-3UN560448N490122YNGTN7PY' });
+        },
+        onApprove: function(data) {
+            // Update Firestore
+            const email = auth.currentUser?.email;
+            if (email) {
+                db.collection('clients').where('email','==',email).limit(1).get().then(snap => {
+                    if (!snap.empty) snap.docs[0].ref.update({
+                        maintenanceActive: true,
+                        maintenanceSubscriptionId: data.subscriptionID,
+                        maintenanceStartedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+            }
+            document.getElementById('maintenance-cta').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="inline-block border border-gold/40 bg-gold/5 px-5 py-2 mb-3">
+                        <span class="font-sans text-[10px] tracking-[0.3em] text-gold uppercase">Maintenance Active</span>
+                    </div>
+                    <p class="font-sans text-xs text-marble opacity-50">Your architecture is now covered. Updates will be pushed to your portal quarterly.</p>
+                </div>`;
+        }
+    }).render('#paypal-maintenance-btn');
+}
 
+// ─────────────────────────────────────────
+// STATUS TRACKER
+// ─────────────────────────────────────────
+const STATUS_MAP = {
+    'intake_received': { node:1, prog:'8%',  msg:'Your intake form is pending. Complete The Vault to activate the 48-hour build window.' },
+    'under_review':    { node:2, prog:'40%', msg:'The Architect is reviewing your technical parameters. Build begins within 24 hours.' },
+    'in_production':   { node:3, prog:'70%', msg:'Your architecture is in production. Estimated delivery within your 48-hour SLA window.' },
+    'delivered':       { node:4, prog:'100%',msg:'Your documents are ready. Download from the Documents tab. Engage local counsel for review and localisation.' }
+};
 function renderStatus(status) {
     const s = STATUS_MAP[status] || STATUS_MAP['intake_received'];
     document.getElementById('prog-line').style.width = s.prog;
     document.getElementById('status-msg').textContent = s.msg;
-    for(let i = 1; i <= 4; i++) {
-        const node = document.getElementById(`node-${i}`);
-        node.className = 'w-6 h-6 rounded-full transition-all duration-500 ';
-        if(i < s.node) node.className += 'node-complete';
-        else if(i === s.node) node.className += 'node-active';
-        else node.className += 'node-pending';
+    for (let i=1; i<=4; i++) {
+        const n = document.getElementById(`node-${i}`);
+        n.className = 'w-6 h-6 rounded-full transition-all duration-500 ';
+        n.className += i < s.node ? 'node-complete' : i === s.node ? 'node-active' : 'node-pending';
     }
 }
 
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
 // DOCUMENTS TAB
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
 function renderDocs(docs, status) {
     const grid = document.getElementById('docs-grid');
     const notice = document.getElementById('docs-locked-notice');
+    const locked = !docs || docs.length === 0 || ['intake_received','under_review'].includes(status);
 
-    if (!docs || docs.length === 0 || status === 'intake_received' || status === 'under_review') {
+    if (locked) {
         notice.classList.remove('hidden');
-        grid.classList.add('locked');
-        // Show placeholder cards
         const placeholders = [
-            { name: 'AI Terms of Service', purpose: 'Governs user access to your AI product. Includes probabilistic output disclaimer and liability caps.' },
-            { name: 'Agentic Addendum', purpose: 'Extends your ToS for autonomous agent deployments. Covers UETA §14 attribution and kill-switch clauses.' },
-            { name: 'Acceptable Use Policy', purpose: 'Defines prohibited uses. Includes prompt injection ban and watermark preservation clause.' },
-            { name: 'AI Service Level Agreement', purpose: 'Governs uptime, retry storm protection, and idempotency requirements.' },
-            { name: 'Engagement Letter', purpose: 'Architect–Client scope definition. Establishes Review-Ready standard and local counsel mandate.' }
+            { name:'AI Terms of Service', purpose:'Governs user access. Includes probabilistic output disclaimer and liability caps.' },
+            { name:'Agentic Addendum', purpose:'Extends ToS for autonomous deployments. Covers UETA §14 and kill-switch clauses.' },
+            { name:'Acceptable Use Policy', purpose:'Defines prohibited uses. Includes prompt injection ban.' },
+            { name:'AI Service Level Agreement', purpose:'Governs uptime, retry storm protection, and idempotency.' },
+            { name:'Engagement Letter', purpose:'Scope definition. Establishes Review-Ready standard and local counsel mandate.' }
         ];
         grid.innerHTML = placeholders.map(p => docCard(p.name, p.purpose, null, null, 'pending')).join('');
+        grid.classList.add('locked');
         return;
     }
 
@@ -667,8 +694,7 @@ function renderDocs(docs, status) {
 
 function docCard(name, purpose, pdfUrl, docxUrl, status) {
     const ready = status === 'ready' && (pdfUrl || docxUrl);
-    return `
-    <div class="bg-[#080808] border border-shadow p-6 flex flex-col md:flex-row justify-between items-start gap-4">
+    return `<div class="bg-[#080808] border border-shadow p-6 flex flex-col md:flex-row justify-between items-start gap-4">
         <div class="flex-1">
             <div class="flex items-center gap-3 mb-2">
                 <div class="w-2 h-2 rounded-full ${ready ? 'bg-gold' : 'bg-shadow border border-shadow'}"></div>
@@ -684,12 +710,24 @@ function docCard(name, purpose, pdfUrl, docxUrl, status) {
     </div>`;
 }
 
-// ─────────────────────────────────────────────
-// RISK HEATMAP
-// ─────────────────────────────────────────────
-function renderHeatmap(intake) {
+// ─────────────────────────────────────────
+// HEATMAP
+// ─────────────────────────────────────────
+function buildHeatmapRows(i) {
+    const actions = i.actions || [], data = i.data || [], geo = i.geo || [];
+    return [
+        { label:'Autonomous Action Risk', note: i.agentType==='fully_autonomous' ? 'Fully autonomous — UETA §14 attribution and kill-switch clauses activated.' : 'Supervised mode — reduced autonomous action exposure.', level: i.agentType==='fully_autonomous'?'HIGH':'LOW', color: i.agentType==='fully_autonomous'?'bg-red-900/60 text-red-300':'bg-green-900/40 text-green-400', covered:true },
+        { label:'Financial Transaction Exposure', note: actions.includes('financial_tx') ? 'Agent executes transactions — Circuit Breaker and spend cap clauses required.' : 'No financial transaction capability declared.', level: actions.includes('financial_tx')?'HIGH':'NONE', color: actions.includes('financial_tx')?'bg-red-900/60 text-red-300':'bg-shadow text-marble opacity-30', covered: actions.includes('financial_tx') },
+        { label:'PII Processing Liability', note: data.includes('pii') ? 'Personal data processed — GDPR/CCPA disclosure injected.' : 'No personal data declared.', level: data.includes('pii')?'MEDIUM':'LOW', color: data.includes('pii')?'bg-yellow-900/40 text-yellow-400':'bg-green-900/40 text-green-400', covered:true },
+        { label:'EU AI Act Compliance', note: geo.includes('eu') ? 'EU users confirmed — high-risk system assessment clause triggered.' : 'No EU users declared.', level: geo.includes('eu')?'HIGH':'NONE', color: geo.includes('eu')?'bg-red-900/60 text-red-300':'bg-shadow text-marble opacity-30', covered: geo.includes('eu') },
+        { label:'Third-Party AI Provider Liability', note:'Pass-through indemnity clause isolates liability from upstream model provider failures.', level:'MEDIUM', color:'bg-yellow-900/40 text-yellow-400', covered:true },
+        { label:'Agent Memory & Data Retention', note: i.memory==='long_term' ? 'Long-term vector memory — right-to-erasure clauses activated.' : i.memory==='persistent' ? 'Persistent memory — user data storage disclosure required.' : 'Session-only — minimal retention exposure.', level: i.memory==='long_term'?'HIGH':i.memory==='persistent'?'MEDIUM':'LOW', color: i.memory==='long_term'?'bg-red-900/60 text-red-300':i.memory==='persistent'?'bg-yellow-900/40 text-yellow-400':'bg-green-900/40 text-green-400', covered:true },
+        { label:'Minor Data Exposure', note: data.includes('minor_data') ? 'Minor data confirmed — COPPA and enhanced consent clauses required.' : 'No minor data declared.', level: data.includes('minor_data')?'CRITICAL':'NONE', color: data.includes('minor_data')?'bg-red-900/80 text-red-200 font-bold':'bg-shadow text-marble opacity-30', covered: data.includes('minor_data') }
+    ];
+}
+
+function renderHeatmapGrid(rows, intake, isBundle, maintenanceActive) {
     const grid = document.getElementById('heatmap-grid');
-    const rows = buildHeatmapRows(intake);
     grid.innerHTML = rows.map(r => `
     <div class="bg-[#080808] border border-shadow p-5 flex items-center justify-between gap-6">
         <div class="flex-1">
@@ -698,118 +736,101 @@ function renderHeatmap(intake) {
         </div>
         <div class="flex-shrink-0 text-right">
             <span class="inline-block font-sans text-[9px] tracking-widest uppercase px-3 py-1 ${r.color}">${r.level}</span>
-            <p class="font-sans text-[9px] text-marble opacity-30 mt-1">${r.covered ? '✓ Covered' : '— Not applicable'}</p>
+            <p class="font-sans text-[9px] text-marble opacity-30 mt-1">${r.covered ? '✓ Covered' : '— N/A'}</p>
         </div>
     </div>`).join('');
+
+    // Flagship CTA — CRITICAL row or 3+ HIGH rows
+    const criticalCount = rows.filter(r => r.level === 'CRITICAL').length;
+    const highCount = rows.filter(r => r.level === 'HIGH').length;
+    if (criticalCount > 0 || highCount >= 3) {
+        document.getElementById('flagship-cta').classList.remove('hidden');
+    }
 }
 
-function buildHeatmapRows(i) {
-    const rows = [];
-    const actions = i.actions || [];
-    const data = i.data || [];
-    const geo = i.geo || [];
+// ─────────────────────────────────────────
+// REGULATORY RADAR — reads from /settings/regulatory_radar
+// ─────────────────────────────────────────
+async function loadRadar(intakeData, maintenanceActive) {
+    try {
+        const doc = await db.collection('settings').doc('regulatory_radar').get();
+        if (!doc.exists) return;
 
-    rows.push({
-        label: 'Autonomous Action Risk',
-        note: i.agentType === 'fully_autonomous'
-            ? 'Fully autonomous agent — UETA §14 attribution and kill-switch clauses activated.'
-            : 'Supervised or conversational mode — reduced autonomous action exposure.',
-        level: i.agentType === 'fully_autonomous' ? 'HIGH' : 'LOW',
-        color: i.agentType === 'fully_autonomous' ? 'bg-red-900/60 text-red-300' : 'bg-green-900/40 text-green-400',
-        covered: true
-    });
+        const radarData = doc.data();
+        const items = radarData.items || [];
+        const geo = intakeData?.geo || [];
 
-    rows.push({
-        label: 'Financial Transaction Exposure',
-        note: actions.includes('financial_tx')
-            ? 'Agent executes financial transactions — Circuit Breaker and spend cap clauses required.'
-            : 'No financial transaction capability declared.',
-        level: actions.includes('financial_tx') ? 'HIGH' : 'NONE',
-        color: actions.includes('financial_tx') ? 'bg-red-900/60 text-red-300' : 'bg-shadow text-marble opacity-40',
-        covered: actions.includes('financial_tx')
-    });
+        // Filter by client jurisdiction
+        const relevant = items.filter(item => {
+            if (!item.jurisdiction || item.jurisdiction.length === 0) return true;
+            return item.jurisdiction.some(j => geo.includes(j) || geo.includes('global'));
+        });
 
-    rows.push({
-        label: 'PII Processing Liability',
-        note: data.includes('pii')
-            ? 'Personal data processed — data handling clauses and GDPR/CCPA disclosure injected.'
-            : 'No personal data declared — minimal privacy exposure.',
-        level: data.includes('pii') ? 'MEDIUM' : 'LOW',
-        color: data.includes('pii') ? 'bg-yellow-900/40 text-yellow-400' : 'bg-green-900/40 text-green-400',
-        covered: true
-    });
+        if (relevant.length === 0) return;
 
-    rows.push({
-        label: 'EU AI Act Compliance',
-        note: geo.includes('eu')
-            ? 'EU users confirmed — EU AI Act high-risk system assessment clause triggered.'
-            : 'No EU users declared — EU AI Act exposure not applicable.',
-        level: geo.includes('eu') ? 'HIGH' : 'NONE',
-        color: geo.includes('eu') ? 'bg-red-900/60 text-red-300' : 'bg-shadow text-marble opacity-40',
-        covered: geo.includes('eu')
-    });
+        document.getElementById('heatmap-radar-wrap').classList.remove('hidden');
 
-    rows.push({
-        label: 'Third-Party AI Provider Liability',
-        note: 'Pass-through indemnity clause isolates your liability from upstream model provider failures.',
-        level: 'MEDIUM',
-        color: 'bg-yellow-900/40 text-yellow-400',
-        covered: true
-    });
+        if (radarData.lastUpdated) {
+            const d = radarData.lastUpdated.toDate ? radarData.lastUpdated.toDate() : new Date(radarData.lastUpdated);
+            document.getElementById('radar-updated').textContent = `Last updated: ${d.toLocaleDateString('en-GB', { month:'short', year:'numeric' })}`;
+        }
 
-    rows.push({
-        label: 'Agent Memory & Data Retention',
-        note: i.memory === 'long_term'
-            ? 'Long-term vector memory — data retention and right-to-erasure clauses activated.'
-            : i.memory === 'persistent'
-            ? 'Persistent session memory — user data storage disclosure required.'
-            : 'Session-only memory — minimal retention exposure.',
-        level: i.memory === 'long_term' ? 'HIGH' : i.memory === 'persistent' ? 'MEDIUM' : 'LOW',
-        color: i.memory === 'long_term' ? 'bg-red-900/60 text-red-300' : i.memory === 'persistent' ? 'bg-yellow-900/40 text-yellow-400' : 'bg-green-900/40 text-green-400',
-        covered: true
-    });
+        const radarGrid = document.getElementById('radar-grid');
+        radarGrid.innerHTML = relevant.map(item => {
+            const isCovered = item.coveredByPlan && clientData.plan && item.coveredByPlan.includes(clientData.plan);
+            const sevColor = item.severity === 'CRITICAL' ? 'bg-red-900/80 text-red-200 font-bold'
+                : item.severity === 'HIGH' ? 'bg-red-900/60 text-red-300'
+                : item.severity === 'MEDIUM' ? 'bg-yellow-900/40 text-yellow-400'
+                : 'bg-green-900/40 text-green-400';
+            return `
+            <div class="bg-[#080808] border ${isCovered ? 'border-shadow' : 'border-gold/20'} p-5 flex items-center justify-between gap-6">
+                <div class="flex-1">
+                    <p class="font-sans text-[10px] tracking-[0.15em] uppercase text-marble mb-1">${item.title}</p>
+                    <p class="font-sans text-[10px] text-marble opacity-40 leading-relaxed">${item.description}</p>
+                    ${item.effectiveDate ? `<p class="font-sans text-[9px] text-gold opacity-60 mt-1 uppercase tracking-widest">Effective: ${item.effectiveDate}</p>` : ''}
+                </div>
+                <div class="flex-shrink-0 text-right">
+                    <span class="inline-block font-sans text-[9px] tracking-widest uppercase px-3 py-1 ${sevColor}">${item.severity}</span>
+                    <p class="font-sans text-[9px] text-marble opacity-30 mt-1">${isCovered ? '✓ Covered' : '⚠ Gap'}</p>
+                </div>
+            </div>`;
+        }).join('');
 
-    rows.push({
-        label: 'Minor Data Exposure',
-        note: data.includes('minor_data')
-            ? 'Minor data confirmed — COPPA and enhanced consent clauses required.'
-            : 'No minor data declared.',
-        level: data.includes('minor_data') ? 'CRITICAL' : 'NONE',
-        color: data.includes('minor_data') ? 'bg-red-900/80 text-red-200 font-bold' : 'bg-shadow text-marble opacity-40',
-        covered: data.includes('minor_data')
-    });
+        // Gap Review CTA — any uncovered radar item + not on maintenance
+        const hasUncovered = relevant.some(item => {
+            const isCovered = item.coveredByPlan && clientData.plan && item.coveredByPlan.includes(clientData.plan);
+            return !isCovered;
+        });
 
-    return rows;
+        if (hasUncovered && !maintenanceActive) {
+            document.getElementById('gap-review-cta').classList.remove('hidden');
+        }
+
+    } catch(err) {
+        console.error('Radar load error:', err);
+    }
 }
 
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
 // SUBMIT INTAKE
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
 async function submitIntake() {
     const errEl = document.getElementById('intake-error');
     errEl.classList.add('hidden');
-
-    // Collect radio answers
     const agentType = document.querySelector('input[name="q_agent_type"]:checked')?.value;
     const memory = document.querySelector('input[name="q_memory"]:checked')?.value;
     const counsel = document.querySelector('input[name="q_counsel"]:checked')?.value;
-
     if (!agentType || !memory || !counsel) {
         errEl.textContent = 'Please answer all required questions (01, 06, 07) before submitting.';
-        errEl.classList.remove('hidden');
-        return;
+        errEl.classList.remove('hidden'); return;
     }
-
-    // Collect checkboxes
-    const actions = [...document.querySelectorAll('input[name="q_actions"]:checked')].map(el => el.value);
-    const data    = [...document.querySelectorAll('input[name="q_data"]:checked')].map(el => el.value);
-    const geo     = [...document.querySelectorAll('input[name="q_geo"]:checked')].map(el => el.value);
-    const providers = [...document.querySelectorAll('input[name="q_provider"]:checked')].map(el => el.value);
+    const actions = [...document.querySelectorAll('input[name="q_actions"]:checked')].map(e => e.value);
+    const data    = [...document.querySelectorAll('input[name="q_data"]:checked')].map(e => e.value);
+    const geo     = [...document.querySelectorAll('input[name="q_geo"]:checked')].map(e => e.value);
+    const providers = [...document.querySelectorAll('input[name="q_provider"]:checked')].map(e => e.value);
     const notes   = document.getElementById('q_notes').value.trim();
-
     const intakeData = { agentType, actions, data, geo, providers, memory, counsel, notes, submittedAt: new Date().toISOString() };
 
-    // Disable button
     const btn = document.querySelector('#tab-intake button[onclick="submitIntake()"]');
     btn.textContent = 'Submitting...';
     btn.disabled = true;
@@ -817,31 +838,27 @@ async function submitIntake() {
     try {
         const email = auth.currentUser?.email;
         if (!email) throw new Error('Not authenticated');
-
-        // Find the client doc
         const snap = await db.collection('clients').where('email','==',email).limit(1).get();
-        let docRef;
-        if (!snap.empty) {
-            docRef = snap.docs[0].ref;
-        } else {
-            docRef = db.collection('clients').doc(email);
-        }
+        const docRef = snap.empty ? db.collection('clients').doc(email) : snap.docs[0].ref;
+        await docRef.set({ intakeData, status:'under_review', intakeSentAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge:true });
 
-        await docRef.set({
-            intakeData,
-            status: 'under_review',
-            intakeSentAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
+        clientData.intakeData = intakeData;
+        clientData.status = 'under_review';
 
-        // Show confirmation
         document.getElementById('intake-form-wrap').classList.add('hidden');
         document.getElementById('intake-submitted').classList.remove('hidden');
-
-        // Update status tracker
         renderStatus('under_review');
 
+        // Show bundle upsell if not bundle plan
+        const isBundle = ['agentic_shield_bundle','full_stack','workplace_shield'].includes(clientData.plan);
+        if (!isBundle) document.getElementById('bundle-upsell').classList.remove('hidden');
+
         // Render heatmap
-        renderHeatmap(intakeData);
+        document.getElementById('heatmap-current-wrap').classList.remove('hidden');
+        document.getElementById('heatmap-locked-notice').classList.add('hidden');
+        const rows = buildHeatmapRows(intakeData);
+        renderHeatmapGrid(rows, intakeData, isBundle, !!clientData.maintenanceActive);
+        loadRadar(intakeData, !!clientData.maintenanceActive);
 
     } catch(err) {
         console.error(err);
@@ -852,33 +869,25 @@ async function submitIntake() {
     }
 }
 
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
 // TAB SWITCHER
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
 function switchTab(tab) {
     ['intake','docs','heatmap','walkthrough'].forEach(t => {
         document.getElementById(`tab-${t}`).classList.add('hidden');
-        const btn = document.getElementById(`tab-btn-${t}`);
-        if(btn) btn.classList.remove('tab-active');
+        document.getElementById(`tab-btn-${t}`)?.classList.remove('tab-active');
     });
     document.getElementById(`tab-${tab}`).classList.remove('hidden');
-    const activeBtn = document.getElementById(`tab-btn-${tab}`);
-    if(activeBtn) activeBtn.classList.add('tab-active');
+    document.getElementById(`tab-btn-${tab}`)?.classList.add('tab-active');
 }
 
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
 // HELPERS
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────
 function planLabel(plan) {
-    const map = {
-        'agentic_shield': 'Agentic Shield',
-        'agentic_shield_bundle': 'Agentic Shield Bundle',
-        'workplace_shield': 'Workplace Shield',
-        'flagship': 'Flagship Engagement'
-    };
+    const map = { 'agentic_shield':'Agentic Shield', 'agentic_shield_bundle':'Complete Stack', 'full_stack':'Complete Stack', 'workplace_shield':'Workplace Shield', 'flagship':'Flagship Engagement' };
     return map[plan] || plan || 'Lex Nova Engagement';
 }
 </script>
-
 </body>
 </html>
