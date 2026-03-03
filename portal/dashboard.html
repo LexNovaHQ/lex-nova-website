@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Portal | Lex Nova HQ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { void:'#050505', gold:'#C5A059', marble:'#EAE8E3', shadow:'#1A1A1A' },
+                    fontFamily: { serif:['"Cormorant Garamond"','serif'], sans:['"Inter"','sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        .locked { filter: blur(5px); pointer-events: none; user-select: none; }
+        .tab-active { border-bottom: 2px solid #C5A059; color: #C5A059; opacity: 1 !important; }
+        .node-complete { background: #C5A059; }
+        .node-active { background: #C5A059; box-shadow: 0 0 14px rgba(197,160,89,0.7); }
+        .node-pending { background: #1A1A1A; border: 1px solid #2a2a2a; }
+        .fade-in { animation: fi 0.4s ease; }
+        @keyframes fi { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+        .opt-wrap input:checked ~ div { border-color: #C5A059; background: rgba(197,160,89,0.05); }
+        .chk-wrap input:checked ~ div { border-color: #C5A059; background: rgba(197,160,89,0.05); }
+    </style>
+</head>
+<body class="bg-void text-marble font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Nav -->
+    <nav class="w-full py-6 px-6 md:px-12 flex justify-between items-center border-b border-shadow">
+        <a href="https://lexnovahq.com" class="font-serif text-lg tracking-widest text-gold uppercase">Lex Nova <span class="text-marble opacity-50 text-xs ml-1">HQ</span></a>
+        <div class="flex items-center gap-6">
+            <span id="nav-kit" class="hidden font-sans text-[10px] tracking-[0.2em] text-marble opacity-40 uppercase"></span>
+            <button onclick="doSignOut()" class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-30 uppercase hover:opacity-70 transition-opacity">Sign Out</button>
+        </div>
+    </nav>
+
+    <!-- Loading -->
+    <div id="loading" class="flex-grow flex items-center justify-center">
+        <div class="text-center">
+            <div class="w-8 h-8 border border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="font-sans text-[10px] tracking-widest text-marble opacity-30 uppercase">Loading your portal</p>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <main id="dashboard" class="hidden flex-grow w-full max-w-5xl mx-auto px-6 py-12 fade-in">
+
+        <!-- Welcome Bar -->
+        <div class="flex flex-col md:flex-row justify-between items-start gap-6 mb-12">
+            <div>
+                <p class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-30 uppercase mb-1">Client Portal</p>
+                <h1 id="welcome-name" class="font-serif text-4xl md:text-5xl text-marble">Welcome back.</h1>
+            </div>
+            <div class="text-right">
+                <p class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-30 uppercase mb-1">Your Engagement</p>
+                <p id="kit-name" class="font-serif text-2xl text-gold"></p>
+                <p id="engagement-ref" class="font-sans text-[10px] text-marble opacity-25 mt-1"></p>
+            </div>
+        </div>
+
+        <!-- Status Tracker -->
+        <div class="bg-[#080808] border border-shadow p-8 mb-8">
+            <p class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-40 uppercase mb-8">Engagement Status</p>
+            <div class="relative flex items-start justify-between">
+                <div class="absolute top-3 left-0 right-0 h-px bg-shadow z-0"></div>
+                <div id="prog-line" class="absolute top-3 left-0 h-px bg-gold z-0 transition-all duration-700" style="width:0%"></div>
+                <div class="relative z-10 flex flex-col items-center gap-3 w-1/4 text-center">
+                    <div id="node-1" class="w-6 h-6 rounded-full node-pending transition-all duration-500"></div>
+                    <span class="font-sans text-[9px] tracking-[0.12em] text-marble opacity-40 uppercase leading-tight">Intake<br>Received</span>
+                </div>
+                <div class="relative z-10 flex flex-col items-center gap-3 w-1/4 text-center">
+                    <div id="node-2" class="w-6 h-6 rounded-full node-pending transition-all duration-500"></div>
+                    <span class="font-sans text-[9px] tracking-[0.12em] text-marble opacity-40 uppercase leading-tight">Under<br>Review</span>
+                </div>
+                <div class="relative z-10 flex flex-col items-center gap-3 w-1/4 text-center">
+                    <div id="node-3" class="w-6 h-6 rounded-full node-pending transition-all duration-500"></div>
+                    <span class="font-sans text-[9px] tracking-[0.12em] text-marble opacity-40 uppercase leading-tight">In<br>Production</span>
+                </div>
+                <div class="relative z-10 flex flex-col items-center gap-3 w-1/4 text-center">
+                    <div id="node-4" class="w-6 h-6 rounded-full node-pending transition-all duration-500"></div>
+                    <span class="font-sans text-[9px] tracking-[0.12em] text-marble opacity-40 uppercase leading-tight">Delivered</span>
+                </div>
+            </div>
+            <div class="border-l-2 border-gold pl-5 mt-8">
+                <p id="status-msg" class="font-sans text-xs text-marble opacity-60 leading-relaxed"></p>
+            </div>
+        </div>
+
+        <!-- ═══════════ PRE-DELIVERY ═══════════ -->
+        <div id="pre-delivery" class="hidden">
+
+            <!-- Intake Submitted Confirmation -->
+            <div id="intake-done" class="hidden bg-[#080808] border border-gold/30 p-10 text-center mb-8 fade-in">
+                <div class="inline-block border border-gold/40 bg-gold/5 px-5 py-2 mb-6">
+                    <span class="font-sans text-[10px] tracking-[0.3em] text-gold uppercase">Vault Submitted</span>
+                </div>
+                <h3 class="font-serif text-3xl text-marble mb-3">The Architect Has Been Briefed.</h3>
+                <p class="font-sans text-xs text-marble opacity-50 leading-relaxed max-w-md mx-auto">Your technical parameters are locked and the build is underway. You will receive an email when your documents are ready.</p>
+            </div>
+
+            <!-- Intake Form -->
+            <div id="intake-form-wrap">
+                <div class="mb-8">
+                    <div class="inline-block border border-gold/40 bg-gold/5 px-5 py-2 mb-5">
+                        <span class="font-sans text-[10px] tracking-[0.3em] text-gold uppercase">The Vault — Technical Intake</span>
+                    </div>
+                    <h2 class="font-serif text-4xl text-marble mb-3">Configure Your Architecture.</h2>
+                    <p class="font-sans text-xs text-marble opacity-50 leading-relaxed max-w-xl">Your responses directly determine which legal clauses are injected into your documents. Answer accurately. The 48-hour build begins the moment you submit.</p>
+                </div>
+
+                <div class="bg-[#080808] border border-shadow p-8 space-y-10">
+
+                    <!-- Q1 -->
+                    <div>
