@@ -3,20 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Architecture | Lex Nova HQ</title>
-    
+    <title>Apply for Architecture | Lex Nova HQ</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        void:   '#050505',
-                        gold:   '#C5A059',
-                        marble: '#EAE8E3',
-                        shadow: '#1A1A1A'
+                        void: '#050505', gold: '#C5A059', marble: '#EAE8E3', shadow: '#1A1A1A'
                     },
                     fontFamily: {
                         serif: ['"Cormorant Garamond"', 'serif'],
@@ -26,207 +21,488 @@
             }
         }
     </script>
-    <style>
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #050505; }
-        ::-webkit-scrollbar-thumb { background: #1A1A1A; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #C5A059; }
-        input[type="radio"]:checked + div {
-            border-color: #C5A059;
-            background-color: rgba(197, 160, 89, 0.05);
-        }
-        input[type="radio"]:checked + div .radio-indicator {
-            background-color: #C5A059;
-            border-color: #C5A059;
-        }
-    </style>
 </head>
 
 <body class="bg-void text-marble font-sans antialiased selection:bg-gold selection:text-void min-h-screen flex flex-col">
 
-    <nav class="w-full py-8 px-6 md:px-12 flex justify-center items-center border-b border-shadow">
+    <nav class="w-full py-8 px-6 md:px-12 flex justify-between items-center z-50 relative border-b border-shadow">
         <a href="index.html" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
-            <span class="font-serif text-lg tracking-widest text-gold uppercase mt-1">Lex Nova <span class="text-marble opacity-50 text-xs ml-1">HQ</span></span>
+            <img src="logo.png" alt="Lex Nova" class="h-6 md:h-8 w-auto">
+            <span class="font-serif text-xl tracking-widest text-gold uppercase mt-1">Lex Nova <span class="text-marble opacity-50 text-sm ml-1">HQ</span></span>
         </a>
+        <div class="hidden md:flex gap-8 items-center text-marble opacity-80">
+            <a href="mandate.html"    class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">Division Mandate</a>
+            <a href="engagement.html" class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">Engagement</a>
+            <a href="architect.html"  class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">The Architect</a>
+        </div>
     </nav>
 
-    <main class="flex-grow flex items-center justify-center p-6 w-full py-20">
-        <div class="max-w-2xl w-full">
-            
-            <div class="text-center mb-12">
-                <h1 class="font-sans text-xs tracking-[0.3em] text-gold uppercase mb-6">Execution Protocol</h1>
-                <h2 class="font-serif text-4xl md:text-5xl leading-tight text-marble mb-4">Secure Your Architecture.</h2>
-                <p class="font-sans text-sm text-marble opacity-60 leading-relaxed">
-                    Complete your details to lock your build slot. The 48-hour delivery SLA triggers immediately after post-payment technical intake.
-                </p>
+    <main class="flex-grow w-full max-w-3xl mx-auto px-6 py-16">
+
+        <div class="text-center mb-16">
+            <div class="inline-block border border-gold/40 bg-gold/5 px-5 py-2 mb-8">
+                <span class="font-sans text-[10px] tracking-[0.3em] text-gold uppercase">Architecture Starts Here</span>
+            </div>
+            <h1 class="font-serif text-4xl md:text-5xl leading-tight text-marble mb-6">
+                Configure Your<br>Engagement.
+            </h1>
+            <p class="font-sans text-xs text-marble opacity-50 leading-relaxed max-w-xl mx-auto">
+                Complete the form below. Select your plan. Accept the Engagement Letter. Payment gateway activates upon acceptance. The 48-hour delivery SLA triggers immediately after post-payment technical intake.
+            </p>
+        </div>
+
+        <form id="checkout-form" class="space-y-8" onsubmit="processCheckout(event)">
+
+            <!-- 01. ENTITY DETAILS -->
+            <div class="bg-[#080808] border border-shadow p-8">
+                <h3 class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase mb-6 border-b border-shadow pb-4">01. Entity Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">First Name</label>
+                        <input type="text" id="apply-fname" name="First_Name" required
+                               class="w-full bg-[#050505] border border-shadow focus:border-gold focus:ring-1 focus:ring-gold outline-none p-3 text-marble font-sans text-sm transition-all">
+                    </div>
+                    <div>
+                        <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Last Name</label>
+                        <input type="text" id="apply-lname" name="Last_Name" required
+                               class="w-full bg-[#050505] border border-shadow focus:border-gold focus:ring-1 focus:ring-gold outline-none p-3 text-marble font-sans text-sm transition-all">
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Work Email</label>
+                    <input type="email" id="apply-email" name="Email" required
+                           class="w-full bg-[#050505] border border-shadow focus:border-gold focus:ring-1 focus:ring-gold outline-none p-3 text-marble font-sans text-sm transition-all">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Legal Company Name</label>
+                        <input type="text" id="apply-company" name="Company" required
+                               class="w-full bg-[#050505] border border-shadow focus:border-gold focus:ring-1 focus:ring-gold outline-none p-3 text-marble font-sans text-sm transition-all">
+                    </div>
+                    <div>
+                        <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Registration Jurisdiction</label>
+                        <select id="apply-jurisdiction" name="Jurisdiction" required
+                                class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-3 text-marble font-sans text-sm transition-all">
+                            <option value="">Select jurisdiction</option>
+                            <option value="us">United States</option>
+                            <option value="uk">United Kingdom</option>
+                            <option value="eu">European Union</option>
+                            <option value="ca">Canada</option>
+                            <option value="au">Australia</option>
+                            <option value="sg">Singapore</option>
+                            <option value="ae">UAE</option>
+                            <option value="global">Other / Global</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
-            <form id="checkout-form" class="space-y-8" onsubmit="processCheckout(event)">
-                
-                <!-- 01. Entity Details -->
-                <div class="bg-[#080808] border border-shadow p-8">
-                    <h3 class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase mb-6 border-b border-shadow pb-4">01. Entity Details</h3>
-                    
-                    <div>
-    <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Legal Company Name</label>
-    <input type="text" id="apply-company" name="Company" required class="w-full bg-[#050505] border border-shadow focus:border-gold focus:ring-1 focus:ring-gold outline-none p-3 text-marble font-sans text-sm transition-all">
-</div>
+            <!-- 02. PLAN SELECTION -->
+            <div class="bg-[#080808] border border-shadow p-8">
+                <h3 class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase mb-6 border-b border-shadow pb-4">02. Select Your Architecture</h3>
+                <div class="space-y-4">
 
-                    <div class="mb-6">
-                        <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Work Email</label>
-                        <input type="email" id="apply-email" name="Email" required class="w-full bg-[#050505] border border-shadow focus:border-gold focus:ring-1 focus:ring-gold outline-none p-3 text-marble font-sans text-sm transition-all">
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <label class="flex items-start gap-5 p-5 border border-shadow hover:border-gold cursor-pointer transition-colors duration-300 has-[:checked]:border-gold has-[:checked]:bg-gold/5 group">
+                        <input type="radio" name="plan_selection" value="agentic_shield" class="mt-1 accent-[#C5A059]" onchange="updateButtonLabel(this.value)" required>
                         <div>
-                            <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Legal Company Name</label>
-                            <input type="text" id="apply-company" name="Company" required class="w-full bg-[#050505] border border-shadow focus:border-gold focus:ring-1 focus:ring-gold outline-none p-3 text-marble font-sans text-sm transition-all">
+                            <div class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-1">Agentic Shield — Kit</div>
+                            <div class="font-serif text-2xl text-marble mb-2">$997 USD</div>
+                            <div class="font-sans text-xs text-marble opacity-50 leading-relaxed">6-document AI governance architecture. ToS, Agentic Addendum, AUP, SLA, DPA, Privacy Policy. 48-hour delivery. 1 revision round.</div>
                         </div>
+                    </label>
+
+                    <label class="flex items-start gap-5 p-5 border border-shadow hover:border-gold cursor-pointer transition-colors duration-300 has-[:checked]:border-gold has-[:checked]:bg-gold/5 group">
+                        <input type="radio" name="plan_selection" value="workplace_shield" class="mt-1 accent-[#C5A059]" onchange="updateButtonLabel(this.value)">
                         <div>
-                            <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Jurisdiction</label>
-                            <select id="apply-jurisdiction" name="Jurisdiction" required class="w-full bg-[#050505] border border-shadow focus:border-gold focus:ring-1 focus:ring-gold outline-none p-3 text-marble font-sans text-sm transition-all appearance-none cursor-pointer">
-                                <option value="" disabled selected>Select Region...</option>
-                                <option value="US">United States</option>
-                                <option value="UK">United Kingdom</option>
-                                <option value="EU">European Union</option>
-                                <option value="CA">Canada</option>
-                                <option value="AU">Australia</option>
-                                <option value="SG">Singapore</option>
-                                <option value="UAE">UAE</option>
-                                <option value="OTHER">Other / Waitlist</option>
-                            </select>
+                            <div class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-1">Workplace Shield — Kit</div>
+                            <div class="font-serif text-2xl text-marble mb-2">$997 USD</div>
+                            <div class="font-sans text-xs text-marble opacity-50 leading-relaxed">5-document internal AI governance architecture. AI Handbook, IP Assignment, Shadow AI Scanner, SOP, DPIA. 48-hour delivery. 1 revision round.</div>
                         </div>
-                    </div>
+                    </label>
+
+                    <label class="flex items-start gap-5 p-5 border border-shadow hover:border-gold cursor-pointer transition-colors duration-300 has-[:checked]:border-gold has-[:checked]:bg-gold/5 group">
+                        <input type="radio" name="plan_selection" value="complete_stack" class="mt-1 accent-[#C5A059]" onchange="updateButtonLabel(this.value)">
+                        <div>
+                            <div class="font-sans text-xs tracking-[0.2em] text-gold uppercase mb-1">Complete Stack — Bundle</div>
+                            <div class="font-serif text-2xl text-marble mb-2">$2,000 USD <span class="text-base opacity-50 line-through ml-2">$2,500</span></div>
+                            <div class="font-sans text-xs text-marble opacity-50 leading-relaxed">Full 11-document architecture. Agentic Shield + Workplace Shield combined. 72-hour delivery. 2 revision rounds.</div>
+                        </div>
+                    </label>
+
                 </div>
+            </div>
 
-                <!-- 02. Scope Selection — 3 paid plans only, no Gap Review -->
-                <div class="bg-[#080808] border border-shadow p-8">
-                    <h3 class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase mb-6 border-b border-shadow pb-4">02. Scope Selection</h3>
-                    
-                    <div class="space-y-4">
-                        <label class="relative block cursor-pointer group">
-                            <input type="radio" name="plan_selection" value="agentic" class="peer sr-only">
-                            <div class="border border-shadow p-5 flex items-start gap-4 transition-colors group-hover:border-gold/50">
-                                <div class="w-4 h-4 rounded-full border border-marble opacity-50 mt-1 flex-shrink-0 radio-indicator transition-all"></div>
-                                <div class="flex-grow">
-                                    <div class="flex justify-between items-center mb-1">
-                                        <h4 class="font-serif text-xl text-marble">The Agentic Shield</h4>
-                                        <span class="font-sans text-sm text-gold tracking-widest">$997</span>
-                                    </div>
-                                    <p class="font-sans text-xs text-marble opacity-60 leading-relaxed">6-document stack protecting your external product liability, agentic risk, and user consent.</p>
-                                </div>
-                            </div>
-                        </label>
-
-                        <label class="relative block cursor-pointer group">
-                            <input type="radio" name="plan_selection" value="workplace" class="peer sr-only">
-                            <div class="border border-shadow p-5 flex items-start gap-4 transition-colors group-hover:border-gold/50">
-                                <div class="w-4 h-4 rounded-full border border-marble opacity-50 mt-1 flex-shrink-0 radio-indicator transition-all"></div>
-                                <div class="flex-grow">
-                                    <div class="flex justify-between items-center mb-1">
-                                        <h4 class="font-serif text-xl text-marble">The Workplace Shield</h4>
-                                        <span class="font-sans text-sm text-gold tracking-widest">$997</span>
-                                    </div>
-                                    <p class="font-sans text-xs text-marble opacity-60 leading-relaxed">5-document stack securing your internal AI operations, IP provenance, and HR policies.</p>
-                                </div>
-                            </div>
-                        </label>
-
-                        <label class="relative block cursor-pointer group">
-                            <input type="radio" name="plan_selection" value="bundle" class="peer sr-only">
-                            <div class="border border-shadow p-5 flex items-start gap-4 transition-colors group-hover:border-gold/50">
-                                <div class="w-4 h-4 rounded-full border border-marble opacity-50 mt-1 flex-shrink-0 radio-indicator transition-all"></div>
-                                <div class="flex-grow">
-                                    <div class="flex justify-between items-center mb-1">
-                                        <h4 class="font-serif text-xl text-marble">The Complete Stack</h4>
-                                        <span class="font-sans text-sm text-gold tracking-widest">$2,000</span>
-                                    </div>
-                                    <p class="font-sans text-xs text-marble opacity-60 leading-relaxed">The full 11-document enterprise infrastructure covering both internal and external surfaces.</p>
-                                </div>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- 03. EL Acceptance -->
+            <!-- 03. ENGAGEMENT LETTER ACCEPTANCE -->
+            <div class="bg-[#080808] border border-shadow p-8">
+                <h3 class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase mb-6 border-b border-shadow pb-4">03. Engagement Letter</h3>
+                <p class="font-sans text-xs text-marble opacity-50 leading-relaxed mb-6">
+                    You must read and accept the full Engagement Letter before proceeding to payment. Click below to open the document. The acceptance button activates only after you have scrolled to the bottom.
+                </p>
                 <div class="bg-[#050505] border border-shadow p-6">
                     <label class="flex items-start gap-4 relative">
                         <input type="checkbox" id="engagement-checkbox" name="Accepted_Terms" class="hidden" value="Accepted">
-                        <div id="visual-checkbox" class="mt-1 w-5 h-5 shrink-0 border border-shadow bg-void flex items-center justify-center cursor-pointer transition-colors hover:border-gold" onclick="preventDirectCheck(event)">
+                        <div id="visual-checkbox" onclick="preventDirectCheck(event)"
+                             class="mt-1 w-5 h-5 shrink-0 border border-shadow bg-void flex items-center justify-center cursor-pointer transition-colors hover:border-gold">
                             <svg id="check-icon" class="w-3 h-3 text-void hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                             </svg>
                         </div>
                         <span class="font-sans text-[11px] text-marble opacity-70 leading-relaxed">
-                            I have read and accept the <button type="button" onclick="openEngagementModal()" class="text-gold border-b border-gold hover:text-white transition-colors">Lex Nova HQ Engagement Letter</button> and understand that all documents are delivered as Review-Ready Drafts requiring independent local counsel review before execution.
+                            I have read and accept the
+                            <button type="button" onclick="openEngagementModal()" class="text-gold border-b border-gold hover:text-white transition-colors">
+                                Lex Nova HQ Engagement Letter
+                            </button>
+                            and understand that all documents are delivered as Review-Ready Drafts requiring independent local counsel review before execution.
                         </span>
                     </label>
                 </div>
+            </div>
 
-                <button type="submit" id="checkout-btn" class="w-full bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 font-bold opacity-50 cursor-not-allowed">
-                    Accept Terms To Continue
-                </button>
+            <button type="submit" id="checkout-btn"
+                    class="w-full bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 font-bold opacity-50 cursor-not-allowed">
+                Accept Terms To Continue
+            </button>
 
-                <p class="text-center font-sans text-[10px] tracking-widest text-marble opacity-40 uppercase">
-                    Payments processed via PayPal. SSL Encrypted.
-                </p>
+            <p class="text-center font-sans text-[10px] tracking-widest text-marble opacity-40 uppercase">
+                Payments processed via PayPal. SSL Encrypted.
+            </p>
 
-            </form>
-        </div>
+        </form>
+
+        <p class="text-center font-sans text-[10px] text-marble opacity-30 mt-12">
+            Not ready to apply? Direct Dispatch: shwetabh.singh@lexnovahq.com
+        </p>
+
     </main>
 
-    <!-- ENGAGEMENT LETTER MODAL -->
+    <!-- ================================================================
+         ENGAGEMENT LETTER MODAL
+         Backdrop click DISABLED. No close button.
+         Only exit: scroll to bottom → I Accept These Terms.
+    ================================================================ -->
     <div id="engagement-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-void/90 backdrop-blur-md" onclick="closeEngagementModal()"></div>
-        <div class="relative bg-[#080808] border border-shadow w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl">
-            
-            <div class="p-8 border-b border-shadow flex justify-between items-center shrink-0">
-                <h2 class="font-serif text-3xl md:text-4xl text-marble">Lex Nova HQ Engagement</h2>
-                <button type="button" onclick="closeEngagementModal()" class="font-sans text-xs tracking-widest text-marble opacity-50 hover:text-gold uppercase">Close ✕</button>
-            </div>
-            
-            <div id="engagement-scroll-container" class="p-8 font-sans text-sm text-marble opacity-80 leading-relaxed space-y-6 overflow-y-auto" onscroll="checkScrollBottom()">
-                
-                <h3 class="text-center font-serif text-2xl text-gold mb-8">LEX NOVA HQ ENGAGEMENT LETTER — LEGAL ARCHITECTURE MANDATE</h3>
-                
-                <div class="space-y-4">
-                    <p><strong>From:</strong><br>Lex Nova HQ<br>Shwetabh Singh, Principal Architect<br>Primary Email: shwetabh.singh@lexnovahq.com</p>
-                    <p>Lex Nova HQ is the trading name of Shwetabh Singh, sole proprietor. Entity registration (LLC/C-Corp) is pending and will be updated upon completion. All obligations under this Letter are personally undertaken by the undersigned Principal Architect until such time as a registered entity assumes this agreement.</p>
-                    <p><strong>Dear Founder,</strong><br>Thank you for choosing Lex Nova HQ. This Engagement Letter ("Letter"), together with Schedule A attached hereto, sets out the complete terms under which Lex Nova HQ ("Lex Nova," "we," "us," or "our") will provide services to the Client ("Client," "you," or "your"). By signing this Letter, replying to the transmitting email with the words "I accept," or checking the acceptance box on the Configuration Intake Form, you agree to be bound by all terms contained herein.</p>
-                    <p>This Letter is effective as of the date of acceptance ("Effective Date").</p>
-                    <p><strong>1. THE LEGAL ARCHITECTURE MANDATE</strong><br>Lex Nova HQ is a business consultancy and commercial structure architecture. We provide legal architecture, commercial structuring, deal architecture, negotiation leverage design, and operational logic.<br>Lex Nova is NOT a law firm. We do not practice law. We do not provide legal advice, tax advice, financial advice, or any form of professional advice that requires licensure in any jurisdiction. Nothing in this Letter, in any communication between the parties, or in any Deliverable produced under this engagement constitutes legal advice or establishes an attorney-client relationship.<br>We are Legal Architects. We design the structure. We do not stamp the compliance.</p>
-                    <p><strong>2. THE REVIEW-READY STANDARD</strong><br>All documents delivered under this engagement ("Deliverables") are delivered as "Review-Ready Drafts" — meaning they are approximately 95% complete structural architectures designed to bridge the gap between business intent and legal execution.<br>Deliverables are NOT final legal instruments. They are not ready for execution, filing, or enforcement without independent review by qualified legal counsel admitted to practice in the Client's operating jurisdiction(s).<br>Client's local counsel bears sole responsibility for: (a) confirming jurisdictional compliance; (b) validating enforceability under applicable local law; (c) making any modifications required by local statutory or regulatory requirements; and (d) approving the Deliverables for execution.</p>
-                    <p><strong>3. CLIENT REPRESENTATIONS</strong><br>By accepting this Letter, Client represents and warrants that: (a) Client has the legal authority to enter into this engagement; (b) Client understands that Lex Nova is not a law firm and does not provide legal advice; (c) Client will seek independent legal counsel to review all Deliverables before execution; (d) Client has not relied on any representation by Lex Nova as legal advice.</p>
-                    <p><strong>4. SCOPE OF SERVICES</strong><br>Lex Nova will deliver the specific documents and architecture set out in Schedule A, populated based on responses to the Configuration Intake Form. Scope is fixed at engagement. Changes to scope require a written Change Order and may affect price and timeline.</p>
-                    <p><strong>5. DELIVERY TIMELINE</strong><br>Kit engagements: 48 hours from submission of the Configuration Intake Form. Bundle engagements: 72 hours from submission. Flagship engagements: as scoped. Timeline is contingent on timely and complete intake form submission by Client.</p>
-                    <p><strong>6. FEES AND PAYMENT</strong><br>Fees are as set out in Schedule A. All Kit and Bundle fees are payable 100% upfront before work commences. Flagship engagements: 60% deposit upfront, 40% on delivery. Maintenance Subscriptions: monthly in advance. All fees are in USD. Fees are non-refundable once work has commenced.</p>
-                    <p><strong>7. REVISIONS</strong><br>Kit engagements include one (1) round of revisions within seven (7) days of delivery. A revision round means a consolidated set of comments addressed in a single pass. Each revision must relate to the original scope — new scope items are handled via Change Order. Bundle engagements include two (2) revision rounds.</p>
-                    <p><strong>8. CONFIDENTIALITY</strong><br>Each party agrees to keep confidential all non-public information received from the other party. Lex Nova will not disclose Client information to third parties except as required to deliver the services (e.g., to engage specialist sub-contractors under NDA). This obligation survives termination for three (3) years.</p>
-                    <p><strong>9. INTELLECTUAL PROPERTY</strong><br>Upon receipt of full payment, Client owns the final Deliverables. Lex Nova retains ownership of all underlying templates, frameworks, clause libraries, and know-how used to produce the Deliverables. Lex Nova retains the right to use anonymized, non-identifying information about the engagement for marketing and training purposes.</p>
-                    <p><strong>10. LIABILITY LIMITATION</strong><br>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, LEX NOVA'S TOTAL LIABILITY TO CLIENT FOR ANY CLAIM ARISING FROM OR RELATED TO THIS ENGAGEMENT SHALL NOT EXCEED THE TOTAL FEES PAID BY CLIENT IN THE THREE (3) MONTHS PRECEDING THE CLAIM. LEX NOVA SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF PROFITS, LOSS OF DATA, OR LOSS OF BUSINESS OPPORTUNITY, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.</p>
-                    <p><strong>11. WARRANTY DISCLAIMER</strong><br>DELIVERABLES ARE PROVIDED "AS IS" AND "AS AVAILABLE." LEX NOVA MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING ANY WARRANTY OF FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT. LEX NOVA DOES NOT WARRANT THAT ANY DELIVERABLE WILL BE LEGALLY ENFORCEABLE IN ANY JURISDICTION WITHOUT LOCAL COUNSEL REVIEW AND APPROVAL.</p>
-                    <p><strong>12. CLIENT INDEMNIFICATION</strong><br>Client agrees to indemnify, defend, and hold harmless Lex Nova and its principals, agents, and representatives from and against any claims, damages, losses, costs, and expenses (including reasonable legal fees) arising from: (a) Client's use or misuse of the Deliverables; (b) Client's failure to obtain local counsel review; (c) Client's breach of this Letter; or (d) any third-party claim related to Client's business.</p>
-                    <p><strong>13. DISPUTE RESOLUTION</strong><br>Any dispute arising from or related to this engagement shall first be subject to good-faith negotiation for thirty (30) days. If unresolved, disputes shall be submitted to binding arbitration under the rules of the London Court of International Arbitration (LCIA), with the seat of arbitration in London, England. The language of arbitration shall be English. This clause does not prevent either party from seeking urgent injunctive relief.</p>
-                    <p><strong>14. GOVERNING LAW</strong><br>This Letter shall be governed by and construed in accordance with the laws of England and Wales, without regard to conflict of law principles.</p>
-                    <p><strong>15. ENTIRE AGREEMENT</strong><br>This Letter, together with Schedule A, constitutes the entire agreement between the parties with respect to its subject matter and supersedes all prior agreements, representations, and understandings.</p>
-                    <p><strong>16. SEVERABILITY</strong><br>If any provision of this Letter is held to be invalid or unenforceable, such provision shall be modified to the minimum extent necessary to make it valid and enforceable, or if modification is not possible, severed from this Letter. The remaining provisions shall continue in full force and effect.</p>
-                    <p><strong>17. NO WAIVER</strong><br>The failure of either party to enforce any right or provision of this Letter shall not constitute a waiver of such right or provision.</p>
-                    <p><strong>18. SURVIVAL</strong><br>Sections 1, 2, 3, 8, 9, 10, 11, 12, 13, 14, and any payment obligations survive termination of this Letter.</p>
-                    <p><strong>19. ELECTRONIC SIGNATURES</strong><br>This Letter may be accepted by: (a) email reply with "I accept"; (b) checking the acceptance checkbox on the Configuration Intake Form; or (c) electronic signature platform. Electronic acceptance constitutes a valid and binding signature under E-SIGN, UETA, eIDAS, and the Information Technology Act, 2000 (India), as applicable.</p>
-                    <p><strong>20. ACCEPTANCE AND SIGNATURE</strong><br>By signing or accepting below, the parties agree to all terms and conditions contained in this Engagement Letter.</p>
+
+        <!-- Backdrop — NO onclick -->
+        <div class="absolute inset-0 bg-void/95 backdrop-blur-md"></div>
+
+        <div class="relative bg-[#080808] border border-shadow w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl">
+
+            <!-- Modal header — NO close button -->
+            <div class="p-6 md:p-8 border-b border-shadow shrink-0 flex items-center justify-between">
+                <div>
+                    <h2 class="font-serif text-2xl md:text-3xl text-marble">Lex Nova HQ — Engagement Letter</h2>
+                    <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mt-1">Scroll to the bottom to unlock acceptance</p>
+                </div>
+                <div class="hidden md:flex items-center gap-2 text-marble opacity-30">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0v2m0-2h2m-2 0H10m8-9a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <span class="font-sans text-[10px] uppercase tracking-widest">Read-only until scrolled</span>
                 </div>
             </div>
 
-            <div class="p-8 border-t border-shadow text-center md:text-left shrink-0 bg-[#080808]">
+            <!-- Scrollable EL content -->
+            <div id="engagement-scroll-container" onscroll="checkScrollBottom()"
+                 class="flex-1 overflow-y-auto p-6 md:p-10 font-sans text-xs text-marble leading-relaxed space-y-1">
+
+                <!-- ── LETTER HEADER ── -->
+                <div class="border border-shadow bg-[#050505] p-6 mb-8 space-y-1">
+                    <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-3">Engagement Letter — Legal Architecture Mandate</p>
+                    <p><strong>Date:</strong> <span id="el-date">[DATE]</span></p>
+                    <p><strong>Engagement Reference:</strong> <span id="el-ref">LN-[YEAR]-[NUMBER] — To be confirmed upon payment</span></p>
+                    <div class="mt-3 pt-3 border-t border-shadow">
+                        <p class="text-marble opacity-50 text-[10px] uppercase tracking-widest mb-2">To:</p>
+                        <p><strong>Client Name:</strong> <span id="el-client-name">[Client Company Name]</span></p>
+                        <p><strong>Attention:</strong> <span id="el-contact">[Contact Name]</span></p>
+                        <p><strong>Primary Email:</strong> <span id="el-client-email">[Client Email]</span></p>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-shadow">
+                        <p class="text-marble opacity-50 text-[10px] uppercase tracking-widest mb-2">From:</p>
+                        <p><strong>Lex Nova HQ</strong> — Shwetabh Singh, Principal Architect</p>
+                        <p>Primary Email: shwetabh.singh@lexnovahq.com</p>
+                    </div>
+                    <p class="mt-3 pt-3 border-t border-shadow text-marble opacity-60">
+                        Lex Nova HQ is the trading name of Shwetabh Singh, sole proprietor. Entity registration (LLC/C-Corp) is pending and will be updated upon completion. All obligations under this Letter are personally undertaken by the undersigned Principal Architect until such time as a registered entity assumes this agreement.
+                    </p>
+                </div>
+
+                <p class="mb-4">Dear <span id="el-dear">[Contact Name]</span>,</p>
+                <p class="mb-6">Thank you for choosing Lex Nova HQ. This Engagement Letter ("Letter"), together with Schedule A attached hereto, sets out the complete terms under which Lex Nova HQ ("Lex Nova," "we," "us," or "our") will provide services to <span id="el-client-body">[Client Name]</span> ("Client," "you," or "your"). By signing this Letter, replying to the transmitting email with the words "I accept," or checking the acceptance box on the Configuration Intake Form, you agree to be bound by all terms contained herein.</p>
+                <p class="mb-8">This Letter is effective as of the date of acceptance ("Effective Date").</p>
+
+                <!-- ── SECTION 1 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 1 — THE LEGAL ARCHITECTURE MANDATE</p>
+                <p class="mb-2"><strong>1.1</strong> Lex Nova HQ is a business consultancy and commercial structure architecture. We provide legal architecture, commercial structuring, deal architecture, negotiation leverage design, and operational logic.</p>
+                <p class="mb-2"><strong>1.2</strong> Lex Nova is NOT a law firm. We do not practice law. We do not provide legal advice, tax advice, financial advice, or any form of professional advice that requires licensure in any jurisdiction. Nothing in this Letter, in any communication between the parties, or in any Deliverable produced under this engagement constitutes legal advice or establishes an attorney-client relationship.</p>
+                <p class="mb-4"><strong>1.3</strong> We are Legal Architects. We design the structure. We do not stamp the compliance. The distinction between Legal Architecture and Legal Practice is not a formality — it defines the nature, scope, and limitations of every service we provide.</p>
+
+                <!-- ── SECTION 2 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 2 — THE REVIEW-READY STANDARD</p>
+                <p class="mb-2"><strong>2.1</strong> All documents delivered under this engagement ("Deliverables") are delivered as "Review-Ready Drafts" — meaning they are approximately 95% complete structural architectures designed to bridge the gap between business intent and legal execution.</p>
+                <p class="mb-2"><strong>2.2</strong> Deliverables are NOT final legal instruments. They are not ready for execution, filing, or enforcement without independent review by qualified legal counsel admitted to practice in the Client's operating jurisdiction(s).</p>
+                <p class="mb-2"><strong>2.3</strong> Client's local counsel bears sole responsibility for: (a) confirming jurisdictional compliance; (b) validating enforceability under applicable local law; (c) making any modifications required by local statutory or regulatory requirements; and (d) approving the Deliverables for execution.</p>
+                <p class="mb-2"><strong>2.4</strong> Each Deliverable is accompanied by Architect Notes addressed to the Client's local counsel or reviewing party, explaining the structural logic, clause rationale, and risk architecture. These notes are for informational purposes only and do not constitute legal guidance.</p>
+                <p class="mb-4"><strong>2.5</strong> Each Kit and Bundle engagement includes a video walkthrough (delivered via Clipchamp or equivalent) explaining the architecture and key clauses in plain language.</p>
+
+                <!-- ── SECTION 3 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 3 — CLIENT REPRESENTATIONS</p>
+                <p class="mb-2"><strong>3.1</strong> By entering into this engagement, Client represents and warrants that:</p>
+                <p class="mb-1 pl-4">(a) Client is a duly organized business entity (corporation, limited liability company, partnership, or sole proprietorship operating in a commercial capacity) and is not engaging Lex Nova as a consumer or for personal, family, or household purposes.</p>
+                <p class="mb-1 pl-4">(b) The individual signing or accepting this Letter has full authority to bind Client to its terms.</p>
+                <p class="mb-1 pl-4">(c) Client will use the Deliverables exclusively for Client's own internal business purposes and not for resale, redistribution, sublicensing, or provision to third parties.</p>
+                <p class="mb-4 pl-4">(d) Client understands and accepts that Lex Nova is not a law firm and that the Deliverables require independent legal review before use.</p>
+
+                <!-- ── SECTION 4 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 4 — SCOPE OF ENGAGEMENT</p>
+                <p class="mb-2"><strong>4.1</strong> The specific scope of this engagement — including the engagement tier, service pillar, lane, product name, deliverables, fee, payment structure, delivery timeline, and included revision rounds — is set out in Schedule A attached to this Letter.</p>
+                <p class="mb-2"><strong>4.2</strong> Schedule A is incorporated into this Letter by reference and forms part of this agreement.</p>
+                <p class="mb-4"><strong>4.3</strong> Lex Nova's obligations under this engagement are strictly limited to what is described in Schedule A. Any services, documents, analyses, calls, negotiations, or other work not explicitly listed in Schedule A are outside the scope of this engagement.</p>
+
+                <!-- ── SECTION 5 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 5 — CHANGE ORDERS</p>
+                <p class="mb-2"><strong>5.1</strong> Any request for work outside the scope defined in Schedule A requires a written Change Order signed by both parties before work begins.</p>
+                <p class="mb-2"><strong>5.2</strong> Change Orders are priced at $250 USD per hour, or scoped as a new Kit, Bundle, or Flagship engagement at the applicable rate.</p>
+                <p class="mb-2"><strong>5.3</strong> Requests made verbally, via email, via Slack, or through any informal channel do not constitute valid Change Orders and will not be acted upon without a signed written Change Order.</p>
+                <p class="mb-4"><strong>5.4</strong> For clarity: "Just one more clause" is not included in the original scope unless Schedule A explicitly says otherwise.</p>
+
+                <!-- ── SECTION 6 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 6 — REVISION ROUNDS</p>
+                <p class="mb-2"><strong>6.1</strong> The number of revision rounds included in this engagement is specified in Schedule A.</p>
+                <p class="mb-2"><strong>6.2</strong> A "revision" is defined as a modification to existing content within the Deliverables that does not alter the fundamental scope, structure, or purpose of the engagement. Examples include: correcting typographical errors, adjusting defined terms, changing specific numerical parameters (e.g., adjusting a spend cap from $50 to $100), or modifying party names and details.</p>
+                <p class="mb-2"><strong>6.3</strong> A request that requires rewriting a clause, adding a new clause not contemplated in the original scope, restructuring a document, or addressing a new legal issue is NOT a revision — it is a scope change and requires a Change Order under Section 5.</p>
+                <p class="mb-2"><strong>6.4</strong> Revision requests must be submitted in writing (email) within 14 calendar days of delivery. Revision requests received after this period will be treated as Change Orders.</p>
+                <p class="mb-4"><strong>6.5</strong> Typographical errors attributable to Lex Nova (e.g., misspelling the Client's name) will be corrected immediately at no charge and do not count toward the included revision rounds.</p>
+
+                <!-- ── SECTION 7 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 7 — DELIVERY</p>
+                <p class="mb-2"><strong>7.1</strong> Lex Nova will use commercially reasonable efforts to deliver the Deliverables within the timeline specified in Schedule A, measured from the date the Client submits a complete Configuration Intake Form ("Tally Form").</p>
+                <p class="mb-2"><strong>7.2</strong> Delivery timelines are targets and not guaranteed commitments. Lex Nova shall not be liable for delays in delivery provided it is exercising commercially reasonable efforts to meet the stated timeline.</p>
+                <p class="mb-4"><strong>7.3</strong> Delivery is made exclusively via the Client's dedicated Notion portal (the "Deal Room"). Client will receive an email notification with the Deal Room access link upon delivery. Deliverables are provided in PDF format (the "Reference Copy") and editable document format (the "Working Copy") for use by Client's local counsel. Deliverables are deemed delivered when made available in the Deal Room.</p>
+
+                <!-- ── SECTION 8 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 8 — CLIENT COOPERATION</p>
+                <p class="mb-2"><strong>8.1</strong> Client is responsible for providing accurate, complete, and timely information via the Configuration Intake Form and any subsequent communications. Lex Nova relies on Client-provided information to architect the Deliverables.</p>
+                <p class="mb-2"><strong>8.2</strong> Delays, errors, omissions, or deficiencies in the Deliverables resulting from incomplete, inaccurate, or untimely Client inputs are not the responsibility of Lex Nova and do not constitute a breach of warranty or grounds for a refund.</p>
+                <p class="mb-4"><strong>8.3</strong> If Lex Nova determines that Client-provided information is materially insufficient to produce Deliverables of acceptable quality, Lex Nova will notify Client and request clarification. The delivery timeline will be extended by the number of days between the clarification request and Client's satisfactory response.</p>
+
+                <!-- ── SECTION 9 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 9 — PAYMENT</p>
+                <p class="mb-2"><strong>9.1</strong> All fees are stated in United States Dollars (USD). All payments must be made in USD.</p>
+                <p class="mb-2"><strong>9.2</strong> Payment terms are as specified in Schedule A and are governed by the following rules:</p>
+                <p class="mb-1 pl-4">(a) Kit and Bundle engagements: 100% of the fee is due and payable before any work begins. Work commences only upon receipt of cleared funds.</p>
+                <p class="mb-1 pl-4">(b) Flagship engagements: 60% of the fee is due before work begins ("Deposit"). The remaining 40% ("Balance") is due upon delivery of the Deliverables. The Deposit is non-refundable once paid.</p>
+                <p class="mb-2 pl-4">(c) Maintenance Subscriptions: Billed monthly in advance. The minimum subscription commitment is three (3) months. After the initial three-month period, the subscription continues on a month-to-month basis and may be cancelled by either party with 30 calendar days' written notice.</p>
+                <p class="mb-2"><strong>9.3</strong> Payment is accepted via wire transfer (Wise), PayPal Business, or such other methods as Lex Nova may specify on the invoice.</p>
+                <p class="mb-2"><strong>9.4</strong> All fees are exclusive of any taxes, duties, or governmental charges. Client is responsible for all such charges applicable in Client's jurisdiction.</p>
+                <p class="mb-4"><strong>9.5</strong> All fees stated in Schedule A are gross amounts. If Client is required by law, regulation, or tax authority to withhold or deduct any taxes, duties, or levies from payments due to Lex Nova, Client shall gross up the payment amount so that Lex Nova receives the full fee as stated in Schedule A after any such withholding or deduction. Client is solely responsible for determining and complying with any tax withholding obligations applicable in Client's jurisdiction. Lex Nova will provide reasonable tax documentation (including IRS Form W-8BEN or equivalent) upon request.</p>
+
+                <!-- ── SECTION 10 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 10 — THE 14-DAY INTAKE DEADLINE</p>
+                <p class="mb-2"><strong>10.1</strong> Client must submit the Configuration Intake Form within fourteen (14) calendar days of payment ("Intake Deadline").</p>
+                <p class="mb-2"><strong>10.2</strong> If the Configuration Intake Form is not submitted by the Intake Deadline, the engagement is deemed cancelled by Client.</p>
+                <p class="mb-2"><strong>10.3</strong> Upon cancellation under this Section, Lex Nova will issue a refund of the fee paid minus a 15% administrative fee, which compensates Lex Nova for the engagement slot held and administrative processing.</p>
+                <p class="mb-4"><strong>10.4</strong> Lex Nova will send a reminder to Client's primary email address at least three (3) calendar days before the Intake Deadline expires.</p>
+
+                <!-- ── SECTION 11 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 11 — REFUND POLICY</p>
+                <p class="mb-2"><strong>11.1</strong> Cancellation before payment: No engagement exists. Nothing is owed by either party.</p>
+                <p class="mb-2"><strong>11.2</strong> Cancellation after payment but before Intake Form submission: Subject to Section 10 (the 14-Day Intake Deadline and 15% administrative fee).</p>
+                <p class="mb-2"><strong>11.3</strong> Cancellation after Intake Form submission: No refunds. The Intake Form submission is the point of no return. Upon submission, Lex Nova begins architectural work, allocates capacity, and reserves delivery resources. No refunds will be issued for any reason after the Intake Form is submitted.</p>
+                <p class="mb-2"><strong>11.4</strong> Cancellation of a Flagship engagement after the Deposit is paid: The Deposit is non-refundable. If Client cancels before the Balance is due, Client owes nothing further. Work in progress will be delivered in its then-current state with no obligation on Lex Nova to complete.</p>
+                <p class="mb-4"><strong>11.5</strong> Maintenance Subscriptions: No refunds for any month in which the subscription was active, including partial months. The minimum three-month commitment is non-refundable once the first monthly payment is made.</p>
+
+                <!-- ── SECTION 12 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 12 — LATE PAYMENT</p>
+                <p class="mb-2"><strong>12.1</strong> Payments not received within 7 calendar days of the due date are considered late.</p>
+                <p class="mb-2"><strong>12.2</strong> Late payments accrue interest at the rate of 1.5% per month (or the maximum rate permitted by applicable law, whichever is lower), calculated from the original due date.</p>
+                <p class="mb-2"><strong>12.3</strong> If any payment remains outstanding for more than 15 calendar days after the due date, Lex Nova may, at its sole discretion: (a) suspend all work under the engagement until payment is received; (b) revoke Client's access to the Notion Deal Room portal; and (c) withhold delivery of any completed or in-progress Deliverables.</p>
+                <p class="mb-4"><strong>12.4</strong> If payment remains outstanding for more than 30 calendar days after the due date, Lex Nova may terminate the engagement immediately upon written notice. All fees owed remain due and payable notwithstanding termination.</p>
+
+                <!-- ── SECTION 13 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 13 — INTELLECTUAL PROPERTY</p>
+                <p class="mb-2"><strong>13.1</strong> Background IP. Lex Nova retains all right, title, and interest in and to its templates, clause libraries, structural frameworks, methodologies, processes, tools, know-how, and any other pre-existing intellectual property ("Background IP"). Nothing in this Letter transfers ownership of Background IP to Client.</p>
+                <p class="mb-2"><strong>13.2</strong> License to Client. Subject to full payment of all fees, Lex Nova grants Client a non-exclusive, non-transferable, non-sublicensable, perpetual license to use the Deliverables solely for Client's own internal business purposes. This license does not extend to the underlying Background IP except to the extent necessary to use the Deliverables as delivered.</p>
+                <p class="mb-2"><strong>13.3</strong> Permitted Deployment. Client may deploy the Deliverables for their intended operational purpose, including but not limited to: publishing terms of service, privacy policies, and acceptable use policies on Client's website or application; distributing employee handbooks, internal policies, and workplace guidelines to Client's personnel; presenting contractual documents to Client's counterparties, investors, and business partners in the ordinary course of business; and filing or submitting Deliverables to regulatory bodies as required.</p>
+                <p class="mb-2"><strong>13.4</strong> Prohibited Redistribution. Client shall not reproduce, distribute, resell, sublicense, or otherwise make the Deliverables or any derivative works available to any third party for the purpose of reuse as a template, framework, or structural model. The Deliverables are licensed for Client's own operational use, not for redistribution as legal architecture to other businesses. Any such unauthorized redistribution constitutes a material breach of this Letter.</p>
+                <p class="mb-2"><strong>13.5</strong> Structural Markers. Client acknowledges that the Deliverables contain proprietary structural markers, metadata, and architectural fingerprints that enable identification of their origin. Client shall not remove, alter, or obscure any such markers, whether embedded in document metadata, formatting conventions, or clause structures.</p>
+                <p class="mb-2"><strong>13.6</strong> Feedback Assignment. Any feedback, suggestions, ideas, enhancement requests, or other input provided by Client regarding the Deliverables, Lex Nova's services, or Lex Nova's templates and methodologies ("Feedback") shall become the sole property of Lex Nova. Client irrevocably assigns to Lex Nova all right, title, and interest in such Feedback without obligation, compensation, or attribution.</p>
+                <p class="mb-4"><strong>13.7</strong> No Implied Rights. Except for the express license granted in Section 13.2, no rights in any intellectual property are transferred or implied under this Letter.</p>
+
+                <!-- ── SECTION 14 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 14 — CONFIDENTIALITY</p>
+                <p class="mb-2"><strong>14.1</strong> "Confidential Information" means any non-public information disclosed by one party ("Disclosing Party") to the other party ("Receiving Party") in connection with this engagement, including but not limited to: business plans, financial data, client lists, technical specifications, product roadmaps, intake form responses, and the terms of this Letter.</p>
+                <p class="mb-2"><strong>14.2</strong> The Receiving Party shall: (a) hold Confidential Information in strict confidence; (b) not disclose it to any third party without the Disclosing Party's prior written consent; and (c) use it only for the purposes of this engagement.</p>
+                <p class="mb-2"><strong>14.3</strong> Confidential Information does not include information that: (a) is or becomes publicly available without breach of this Letter; (b) was known to the Receiving Party prior to disclosure; (c) is independently developed without reference to the Disclosing Party's information; or (d) is required to be disclosed by law, regulation, or court order, provided the Receiving Party gives prompt written notice where legally permitted.</p>
+                <p class="mb-2"><strong>14.4</strong> For clarity: Lex Nova's templates, clause libraries, structural frameworks, and Background IP constitute Lex Nova's Confidential Information. Client's intake form responses, business data, and operational details constitute Client's Confidential Information.</p>
+                <p class="mb-4"><strong>14.5</strong> This Section survives termination or expiration of this Letter for a period of three (3) years.</p>
+
+                <!-- ── SECTION 15 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 15 — LIABILITY</p>
+                <p class="mb-2"><strong>15.1</strong> Liability Cap. Lex Nova's total aggregate liability under this engagement — whether in contract, tort, negligence, strict liability, or otherwise — shall not exceed the total fees actually paid by Client under this specific engagement (as defined in Schedule A). For Maintenance Subscriptions, liability shall not exceed the total fees paid in the twelve (12) months preceding the event giving rise to the claim.</p>
+                <p class="mb-2"><strong>15.2</strong> EXCLUSION OF DAMAGES. IN NO EVENT SHALL LEX NOVA BE LIABLE FOR ANY INDIRECT, INCIDENTAL, CONSEQUENTIAL, SPECIAL, PUNITIVE, OR EXEMPLARY DAMAGES, INCLUDING BUT NOT LIMITED TO: LOSS OF PROFITS, LOSS OF REVENUE, LOSS OF BUSINESS, LOSS OF DATA, WASTED EXPENDITURE, COST OF SUBSTITUTE SERVICES, REGULATORY FINES, OR REPUTATIONAL HARM — HOWEVER CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, EVEN IF LEX NOVA HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.</p>
+                <p class="mb-4"><strong>15.3</strong> The limitations in this Section apply to the fullest extent permitted by applicable law and survive termination or expiration of this Letter.</p>
+
+                <!-- ── SECTION 16 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 16 — WARRANTY</p>
+                <p class="mb-2"><strong>16.1</strong> Lex Nova warrants that:</p>
+                <p class="mb-1 pl-4">(a) The Deliverables will be prepared with reasonable professional skill and care consistent with industry standards for commercial structuring services.</p>
+                <p class="mb-1 pl-4">(b) The Deliverables will substantially conform to the scope described in Schedule A.</p>
+                <p class="mb-2 pl-4">(c) The Deliverables will incorporate the specific clauses and structural elements identified through the Client's Configuration Intake Form responses, as applicable.</p>
+                <p class="mb-2"><strong>16.2</strong> EXCEPT AS EXPRESSLY SET FORTH IN SECTION 16.1, LEX NOVA MAKES NO WARRANTIES OF ANY KIND, WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE. LEX NOVA SPECIFICALLY DISCLAIMS ALL IMPLIED WARRANTIES, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WITHOUT LIMITING THE FOREGOING, LEX NOVA DOES NOT WARRANT THAT: (a) THE DELIVERABLES WILL BE LEGALLY ENFORCEABLE IN ANY JURISDICTION; (b) THE DELIVERABLES WILL COMPLY WITH ANY SPECIFIC LAW, REGULATION, OR LEGAL STANDARD; (c) THE DELIVERABLES WILL PREVENT ANY CLAIM, LAWSUIT, REGULATORY ACTION, FINE, OR LIABILITY; (d) THE DELIVERABLES WILL ACHIEVE ANY SPECIFIC BUSINESS OUTCOME; OR (e) ANY THIRD PARTY, INCLUDING OPPOSING COUNSEL, REGULATORS, COURTS, OR THE CLIENT'S OWN EMPLOYEES, WILL RESPOND TO OR INTERPRET THE DELIVERABLES IN ANY PARTICULAR MANNER.</p>
+                <p class="mb-2"><strong>16.3</strong> Warranty Cure. If the Deliverables fail to conform to the warranties in Section 16.1, Client must notify Lex Nova in writing within fourteen (14) calendar days of delivery, specifying the non-conformity in reasonable detail. Lex Nova will, at its sole discretion, re-deliver a corrected version within a commercially reasonable timeframe. This re-delivery is Client's sole and exclusive remedy for any warranty claim.</p>
+                <p class="mb-4"><strong>16.4</strong> Warranty claims not raised within the 14-day notification period are deemed waived.</p>
+
+                <!-- ── SECTION 17 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 17 — CLIENT INDEMNIFICATION</p>
+                <p class="mb-2"><strong>17.1</strong> Client shall indemnify, defend, and hold harmless Lex Nova, its principal, agents, and affiliates from and against any and all claims, damages, losses, liabilities, costs, and expenses (including reasonable attorneys' fees) arising from or related to:</p>
+                <p class="mb-1 pl-4">(a) Client's modification of the Deliverables after delivery;</p>
+                <p class="mb-1 pl-4">(b) Client's use of the Deliverables without obtaining independent review by qualified local counsel;</p>
+                <p class="mb-1 pl-4">(c) Client's deployment or execution of the Deliverables as final legal instruments without the modifications recommended by local counsel;</p>
+                <p class="mb-1 pl-4">(d) Any inaccurate or incomplete information provided by Client through the Configuration Intake Form or other communications;</p>
+                <p class="mb-2 pl-4">(e) Client's breach of any representation, warranty, or obligation under this Letter.</p>
+                <p class="mb-4"><strong>17.2</strong> This Section survives termination or expiration of this Letter indefinitely.</p>
+
+                <!-- ── SECTION 18 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 18 — TERMINATION</p>
+                <p class="mb-2"><strong>18.1</strong> Kit and Bundle Engagements. These engagements terminate naturally upon delivery of the Deliverables and completion of included revision rounds (or expiration of the 14-day revision request window, whichever occurs first).</p>
+                <p class="mb-2"><strong>18.2</strong> Flagship Engagements. Either party may terminate a Flagship engagement for material breach by the other party, provided the terminating party: (a) delivers written notice specifying the breach in reasonable detail; and (b) the breaching party fails to cure the breach within ten (10) business days of receiving such notice.</p>
+                <p class="mb-2"><strong>18.3</strong> Flagship — Termination by Lex Nova for Cause. If Client fails to cooperate as required by Section 8, fails to make a payment when due, or otherwise materially breaches this Letter, Lex Nova may terminate the Flagship engagement after following the notice and cure procedure in Section 18.2. Upon such termination, all fees paid are retained by Lex Nova and any Balance outstanding becomes immediately due.</p>
+                <p class="mb-2"><strong>18.4</strong> Flagship — Termination by Client for Cause. If Lex Nova materially breaches this Letter and fails to cure within the notice period, Client may terminate. Upon such termination, Lex Nova will issue a pro-rata refund of unearned fees (calculated based on the proportion of Deliverables not yet delivered), less a reasonable amount for work in progress.</p>
+                <p class="mb-2"><strong>18.5</strong> Maintenance Subscriptions. Subject to the three (3) month minimum commitment, either party may terminate a Maintenance Subscription with thirty (30) calendar days' written notice. No refunds are issued for months already paid.</p>
+                <p class="mb-4"><strong>18.6</strong> Maintenance — Updated Terms. Lex Nova may update the terms of this Letter from time to time. Updated terms will be provided to Client via email at least thirty (30) days before taking effect. Continued payment of the Maintenance Subscription after the effective date constitutes acceptance of the updated terms. If Client does not agree to the updated terms, Client may terminate the Maintenance Subscription in accordance with Section 18.5.</p>
+
+                <!-- ── SECTION 19 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 19 — FORCE MAJEURE</p>
+                <p class="mb-2"><strong>19.1</strong> Neither party shall be liable for any delay or failure to perform its obligations under this Letter if such delay or failure results from circumstances beyond the party's reasonable control, including but not limited to: acts of God, natural disasters, pandemics, government actions, internet outages, infrastructure failures, cyberattacks, or changes in law or regulation that materially affect the engagement.</p>
+                <p class="mb-2"><strong>19.2</strong> The affected party shall notify the other party in writing as soon as reasonably practicable and shall use commercially reasonable efforts to mitigate the impact and resume performance.</p>
+                <p class="mb-4"><strong>19.3</strong> If a Force Majeure event continues for more than thirty (30) calendar days, either party may terminate the engagement upon written notice. In such event, Lex Nova will refund any fees paid for Deliverables not yet delivered.</p>
+
+                <!-- ── SECTION 20 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 20 — DISPUTE RESOLUTION</p>
+                <p class="mb-2"><strong>20.1</strong> Informal Resolution. The parties shall first attempt to resolve any dispute arising under or in connection with this Letter through good faith negotiation. The complaining party shall send a written Dispute Notice to the other party's primary email address. The parties shall have thirty (30) calendar days from the date of the Dispute Notice to reach an informal resolution.</p>
+                <p class="mb-2"><strong>20.2</strong> Kit and Bundle Disputes (Total Engagement Fee Under $5,000 USD). If informal resolution fails, disputes shall be submitted to binding arbitration administered by the American Arbitration Association ("AAA") under its Expedited Procedures. The arbitration shall be conducted entirely through written submissions (no oral hearing) unless the arbitrator determines that an oral hearing is necessary. The prevailing party shall be entitled to recover its reasonable arbitration costs and fees from the non-prevailing party.</p>
+                <p class="mb-2"><strong>20.3</strong> Flagship and Maintenance Disputes (Total Engagement Fee $5,000 USD or Above). If informal resolution fails, disputes shall be submitted to binding arbitration administered by the American Arbitration Association ("AAA") under its Commercial Arbitration Rules. The arbitration shall be conducted via video conference. The arbitration shall be conducted by a single arbitrator.</p>
+                <p class="mb-2"><strong>20.4</strong> Small Claims Carve-Out. Notwithstanding the above, either party may bring an action in any small claims court of competent jurisdiction for claims within such court's jurisdictional limits, provided the action is brought on an individual basis and not as part of a class action.</p>
+                <p class="mb-2"><strong>20.5</strong> Equitable Relief Carve-Out. Nothing in this Section prevents either party from seeking injunctive or equitable relief in a court of competent jurisdiction to protect its intellectual property rights or Confidential Information.</p>
+                <p class="mb-4"><strong>20.6</strong> The place of arbitration shall be Wilmington, Delaware, USA. The language of arbitration shall be English.</p>
+
+                <!-- ── SECTION 21 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 21 — GOVERNING LAW</p>
+                <p class="mb-4"><strong>21.1</strong> This Letter and any disputes arising out of or in connection with it shall be governed by and construed in accordance with the laws of the State of Delaware, United States of America, without regard to its conflict of laws principles.</p>
+
+                <!-- ── SECTION 22 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 22 — LOGO AND TESTIMONIAL RIGHTS</p>
+                <p class="mb-2"><strong>22.1</strong> Standard Engagements. Lex Nova may reference Client's company name and the general nature of the engagement (e.g., "AI Governance architecture for a SaaS startup") in its marketing materials, website, case studies, and proposals to prospective clients. Lex Nova will not disclose Confidential Information in such references. Client may opt out of this right by providing written notice at any time.</p>
+                <p class="mb-4"><strong>22.2</strong> First Clients Protocol. Where Schedule A indicates that the engagement is subject to the First Clients Protocol, Client has agreed to provide, in exchange for the discounted fee: (a) a written testimonial within 30 days of delivery; (b) permission to use Client's company logo on Lex Nova's website and marketing materials; and (c) willingness to be referenced as a case study, subject to Client's reasonable approval of the case study content before publication.</p>
+
+                <!-- ── SECTION 23 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 23 — NOTICES</p>
+                <p class="mb-2"><strong>23.1</strong> All formal notices under this Letter (including Dispute Notices, termination notices, breach notices, and Change Order requests) shall be sent via email to the primary email address specified at the top of this Letter.</p>
+                <p class="mb-2"><strong>23.2</strong> Notices are deemed received forty-eight (48) hours after sending, regardless of whether actually read, provided they are sent to the correct email address.</p>
+                <p class="mb-2"><strong>23.3</strong> For Critical Notices — defined as notices of termination, breach, or dispute — if the sending party receives no acknowledgment within five (5) business days, the sending party shall make one additional reasonable attempt to contact the other party via the secondary email address or another available channel (e.g., LinkedIn, phone).</p>
+                <p class="mb-4"><strong>23.4</strong> Each party is responsible for maintaining accurate email addresses and promptly notifying the other party of any changes.</p>
+
+                <!-- ── SECTION 24 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 24 — ASSIGNMENT</p>
+                <p class="mb-2"><strong>24.1</strong> Client may not assign, transfer, or delegate this Letter or any rights or obligations hereunder without the prior written consent of Lex Nova.</p>
+                <p class="mb-4"><strong>24.2</strong> Lex Nova may assign this Letter to any successor entity, affiliate, or acquirer without Client's consent, provided the assignee assumes all obligations under this Letter.</p>
+
+                <!-- ── SECTION 25 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 25 — ENTIRE AGREEMENT</p>
+                <p class="mb-2"><strong>25.1</strong> This Letter, together with Schedule A, constitutes the entire agreement between the parties with respect to the subject matter hereof and supersedes all prior or contemporaneous negotiations, discussions, representations, proposals, and agreements, whether written or oral.</p>
+                <p class="mb-2"><strong>25.2</strong> No amendment or modification to this Letter shall be effective unless made in writing and signed by both parties.</p>
+                <p class="mb-4"><strong>25.3</strong> No verbal or informal commitment made during any sales call, email exchange, or other communication shall be binding unless incorporated into this Letter or a signed Change Order.</p>
+
+                <!-- ── SECTION 26 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 26 — SEVERABILITY</p>
+                <p class="mb-4"><strong>26.1</strong> If any provision of this Letter is held to be invalid, illegal, or unenforceable by a court or arbitrator of competent jurisdiction, such provision shall be modified to the minimum extent necessary to make it valid and enforceable, or if modification is not possible, severed from this Letter. The remaining provisions shall continue in full force and effect.</p>
+
+                <!-- ── SECTION 27 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 27 — NO WAIVER</p>
+                <p class="mb-2"><strong>27.1</strong> The failure of either party to enforce any right or provision of this Letter shall not constitute a waiver of such right or provision. Any waiver must be in writing and signed by the waiving party.</p>
+                <p class="mb-4"><strong>27.2</strong> A waiver of any right on one occasion shall not be deemed a waiver of the same or any other right on any subsequent occasion.</p>
+
+                <!-- ── SECTION 28 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 28 — SURVIVAL</p>
+                <p class="mb-2"><strong>28.1</strong> The following Sections survive termination or expiration of this Letter for the period indicated:</p>
+                <p class="mb-1 pl-4">(a) Section 1 (Legal Architecture Mandate) — Indefinitely.</p>
+                <p class="mb-1 pl-4">(b) Section 2 (Review-Ready Standard) — Indefinitely.</p>
+                <p class="mb-1 pl-4">(c) Section 3 (Client Representations) — Indefinitely.</p>
+                <p class="mb-1 pl-4">(d) Section 13 (Intellectual Property) — Indefinitely.</p>
+                <p class="mb-1 pl-4">(e) Section 14 (Confidentiality) — Three (3) years post-termination.</p>
+                <p class="mb-1 pl-4">(f) Section 15 (Liability) — Indefinitely.</p>
+                <p class="mb-1 pl-4">(g) Section 16 (Warranty, including Disclaimer) — Indefinitely.</p>
+                <p class="mb-1 pl-4">(h) Section 17 (Client Indemnification) — Indefinitely.</p>
+                <p class="mb-1 pl-4">(i) Section 20 (Dispute Resolution) — Indefinitely.</p>
+                <p class="mb-1 pl-4">(j) Section 21 (Governing Law) — Indefinitely.</p>
+                <p class="mb-1 pl-4">(k) Section 24 (Assignment) — Indefinitely.</p>
+                <p class="mb-1 pl-4">(l) Section 26 (Severability) — Indefinitely.</p>
+                <p class="mb-1 pl-4">(m) Section 27 (No Waiver) — Indefinitely.</p>
+                <p class="mb-4 pl-4">(n) Any payment obligations outstanding at termination — Until fulfilled.</p>
+
+                <!-- ── SECTION 29 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 29 — ELECTRONIC SIGNATURES</p>
+                <p class="mb-2"><strong>29.1</strong> This Letter may be accepted and executed by electronic means, including: (a) email reply to the transmitting email containing the words "I accept" or substantially similar language indicating agreement; (b) checking the acceptance checkbox on the Configuration Intake Form (Tally Form) that incorporates this Letter by reference; or (c) electronic signature via a digital signature platform.</p>
+                <p class="mb-4"><strong>29.2</strong> Electronic acceptance constitutes a valid and binding signature for all purposes under applicable law, including the United States Electronic Signatures in Global and National Commerce Act (E-SIGN), the Uniform Electronic Transactions Act (UETA), the EU Electronic Identification and Trust Services Regulation (eIDAS), and the Information Technology Act, 2000 (India), Sections 5 and 10A, as applicable.</p>
+
+                <!-- ── SECTION 30 ── -->
+                <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SECTION 30 — ACCEPTANCE AND SIGNATURE</p>
+                <p class="mb-2"><strong>30.1</strong> By signing or accepting below, the parties agree to all terms and conditions contained in this Engagement Letter and the attached Schedule A.</p>
+                <p class="mb-4"><strong>30.2</strong> This Letter may also be accepted by replying to the transmitting email with "I accept" or by checking the acceptance box on the Configuration Intake Form. See Section 29.</p>
+
+                <!-- ── SCHEDULE A ── -->
+                <div class="border border-gold/30 bg-[#050505] p-6 mt-10 space-y-4">
+                    <p class="font-sans text-[10px] tracking-[0.3em] text-gold uppercase mb-4">Schedule A — Engagement Scope</p>
+                    <p><strong>Engagement Reference:</strong> LN-[YEAR]-[NUMBER] — To be confirmed upon payment</p>
+                    <p><strong>Client Name:</strong> <span id="el-sa-client">[Client Name]</span></p>
+                    <p><strong>Effective Date:</strong> <span id="el-sa-date">[Date]</span></p>
+
+                    <div class="mt-4 pt-4 border-t border-shadow">
+                        <p class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase mb-3">1. Engagement Details</p>
+                        <table class="w-full text-xs">
+                            <tbody class="divide-y divide-shadow">
+                                <tr><td class="py-2 opacity-50 w-40">Engagement Tier</td><td class="py-2" id="el-sa-tier">[To be confirmed]</td></tr>
+                                <tr><td class="py-2 opacity-50">Product</td><td class="py-2" id="el-sa-product">[To be confirmed]</td></tr>
+                                <tr><td class="py-2 opacity-50">Total Fee</td><td class="py-2 text-gold font-bold" id="el-sa-fee">[To be confirmed]</td></tr>
+                                <tr><td class="py-2 opacity-50">Payment Structure</td><td class="py-2" id="el-sa-payment">[To be confirmed]</td></tr>
+                                <tr><td class="py-2 opacity-50">Delivery Timeline</td><td class="py-2" id="el-sa-delivery">[To be confirmed]</td></tr>
+                                <tr><td class="py-2 opacity-50">Revision Rounds</td><td class="py-2" id="el-sa-revisions">[To be confirmed]</td></tr>
+                                <tr><td class="py-2 opacity-50">Vertical</td><td class="py-2">Lex Nova (Legal Architecture)</td></tr>
+                                <tr><td class="py-2 opacity-50">Pillar</td><td class="py-2">AI Governance</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-shadow">
+                        <p class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase mb-3">2. Deliverables</p>
+                        <p class="text-marble opacity-60">Specific deliverables will be confirmed in your engagement scope document, issued within 24 hours of payment confirmation and intake form submission. Deliverables are determined by your selected plan and Configuration Intake Form responses.</p>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-shadow">
+                        <p class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase mb-3">3. Additional Notes</p>
+                        <p class="text-marble opacity-60">This Schedule A is incorporated into and forms part of the Engagement Letter. Acknowledged by Client upon acceptance of this Letter.</p>
+                    </div>
+                </div>
+
+                <!-- Bottom padding so scroll triggers reliably -->
+                <div class="h-8"></div>
+
+            </div><!-- end scroll container -->
+
+            <!-- Modal footer — accept button -->
+            <div class="p-6 md:p-8 border-t border-shadow shrink-0 bg-[#080808]">
                 <p id="scroll-instruction" class="font-sans text-xs tracking-widest text-gold uppercase mb-4 opacity-80 animate-pulse">
-                    ↓ Scroll to the bottom to accept the terms.
+                    ↓ Scroll to the bottom to unlock acceptance
                 </p>
-                <button type="button" id="accept-modal-btn" disabled class="bg-gold/50 text-void/50 opacity-50 cursor-not-allowed font-sans text-xs tracking-[0.2em] uppercase px-10 py-4 font-bold w-full md:w-auto transition-all duration-300">
+                <button type="button" id="accept-modal-btn" disabled
+                        class="bg-gold/20 text-marble/30 cursor-not-allowed font-sans text-xs tracking-[0.2em] uppercase px-10 py-4 font-bold w-full md:w-auto transition-all duration-300">
                     I Accept These Terms
                 </button>
+                <p class="font-sans text-[10px] text-marble opacity-30 mt-3 leading-relaxed">
+                    By accepting, you confirm you have read all 30 sections and Schedule A of this Engagement Letter in full, and agree to be bound by its terms. Electronic acceptance is legally binding under E-SIGN, UETA, eIDAS, and the IT Act 2000.
+                </p>
             </div>
-        </div>
-    </div>
+
+        </div><!-- end modal content -->
+    </div><!-- end modal -->
 
     <footer class="flex flex-col items-center py-12 bg-[#050505] border-t border-shadow">
         <div class="font-serif text-xl tracking-widest text-gold uppercase mb-6">Lex Nova HQ</div>
@@ -238,198 +514,208 @@
     </footer>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+        import { initializeApp }                              from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
-            authDomain: "lexnova-hq.firebaseapp.com",
-            projectId: "lexnova-hq",
-            storageBucket: "lexnova-hq.firebasestorage.app",
+            apiKey:            "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
+            authDomain:        "lexnova-hq.firebaseapp.com",
+            projectId:         "lexnova-hq",
+            storageBucket:     "lexnova-hq.firebasestorage.app",
             messagingSenderId: "539475214055",
-            appId: "1:539475214055:web:c01a99ec94ff073a9b6c42"
+            appId:             "1:539475214055:web:c01a99ec94ff073a9b6c42"
         };
 
         const app = initializeApp(firebaseConfig);
         const db  = getFirestore(app);
 
+        // ── CANONICAL CONSTANTS ────────────────────────────────────────
         const CHECKOUT_WEBHOOK = "https://hook.eu1.make.com/r77qw3emv27csjq2eag7ibqku1juve4t";
 
         const PAYPAL_LINKS = {
-            agentic:   "https://www.paypal.com/ncp/payment/WNH78KQCXDBL6",
-            workplace: "https://www.paypal.com/ncp/payment/7DUHPJJ4XVUVJ",
-            bundle:    "https://www.paypal.com/ncp/payment/X3PJ47FEDUSPW"
+            agentic_shield:   "https://www.paypal.com/ncp/payment/WNH78KQCXDBL6",
+            workplace_shield: "https://www.paypal.com/ncp/payment/7DUHPJJ4XVUVJ",
+            complete_stack:   "https://www.paypal.com/ncp/payment/X3PJ47FEDUSPW"
         };
 
         const PLAN_PRICES = {
-            agentic:   997,
-            workplace: 997,
-            bundle:    2000
+            agentic_shield:   997,
+            workplace_shield: 997,
+            complete_stack:   2000
         };
 
-        // ============================================================
-        // DOM READY
-        // ============================================================
-        document.addEventListener("DOMContentLoaded", () => {
+        const PLAN_DETAILS = {
+            agentic_shield:   { tier:'Kit',     product:'Agentic Shield',    fee:'$997 USD',   payment:'100% Upfront', delivery:'48 hours from Intake Form submission', revisions:'1 Round' },
+            workplace_shield: { tier:'Kit',     product:'Workplace Shield',  fee:'$997 USD',   payment:'100% Upfront', delivery:'48 hours from Intake Form submission', revisions:'1 Round' },
+            complete_stack:   { tier:'Bundle',  product:'Complete Stack',    fee:'$2,000 USD', payment:'100% Upfront', delivery:'72 hours from Intake Form submission', revisions:'2 Rounds' },
+            flagship:         { tier:'Flagship',product:'Flagship',          fee:'To be confirmed per scope', payment:'60% Deposit / 40% on Delivery', delivery:'To be confirmed per scope', revisions:'Throughout project duration' }
+        };
 
-            const storedName    = localStorage.getItem('ln_name');
-            const storedEmail   = localStorage.getItem('ln_email');
-            const storedCompany = localStorage.getItem('ln_company');
-
-            if (storedName) {
-                const parts = storedName.trim().split(' ');
-                document.getElementById('apply-fname').value = parts[0] || '';
-                document.getElementById('apply-lname').value = parts.slice(1).join(' ') || '';
-            }
-            if (storedEmail)   document.getElementById('apply-email').value   = storedEmail;
-            if (storedCompany) document.getElementById('apply-company').value = storedCompany;
-
-            const urlParams    = new URLSearchParams(window.location.search);
-            const selectedPlan = urlParams.get('plan');
-
-            if (selectedPlan) {
-                const radioBtn = document.querySelector(`input[name="plan_selection"][value="${selectedPlan}"]`);
-                if (radioBtn) {
-                    radioBtn.checked = true;
-                    updateButtonLabel(selectedPlan);
-                }
-            } else {
-                const defaultRadio = document.querySelector('input[name="plan_selection"][value="agentic"]');
-                if (defaultRadio) defaultRadio.checked = true;
-            }
-
-            document.querySelectorAll('input[name="plan_selection"]').forEach(radio => {
-                radio.addEventListener('change', e => updateButtonLabel(e.target.value));
-            });
+        // ── PRE-FILL FROM SCANNER localStorage ────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            const fullName = localStorage.getItem('ln_name') || '';
+            const parts    = fullName.trim().split(/\s+/);
+            const fname    = parts[0] || '';
+            const lname    = parts.slice(1).join(' ') || '';
+            if (fname)   document.getElementById('apply-fname').value   = fname;
+            if (lname)   document.getElementById('apply-lname').value   = lname;
+            const email   = localStorage.getItem('ln_email')   || '';
+            const company = localStorage.getItem('ln_company') || '';
+            if (email)   document.getElementById('apply-email').value   = email;
+            if (company) document.getElementById('apply-company').value = company;
         });
 
-        // ============================================================
-        // BUTTON LABEL
-        // ============================================================
+        // ── BUTTON LABEL ───────────────────────────────────────────────
         function updateButtonLabel(planValue) {
             const btn        = document.getElementById('checkout-btn');
             const isAccepted = document.getElementById('engagement-checkbox').checked;
-            if (!isAccepted) { btn.innerText = "Accept Terms To Continue"; return; }
-            btn.innerText = "Initialize Payment Gateway";
+            btn.innerText    = isAccepted ? "Initialize Payment Gateway" : "Accept Terms To Continue";
         }
         window.updateButtonLabel = updateButtonLabel;
 
-        // ============================================================
-        // ENGAGEMENT MODAL
-        // ============================================================
+        // ── MODAL — OPEN WITH DYNAMIC INJECTION ───────────────────────
         window.openEngagementModal = function() {
+            const fname   = document.getElementById('apply-fname').value.trim();
+            const lname   = document.getElementById('apply-lname').value.trim();
+            const email   = document.getElementById('apply-email').value.trim();
+            const company = document.getElementById('apply-company').value.trim();
+            const plan    = document.querySelector('input[name="plan_selection"]:checked')?.value || '';
+            const pd      = PLAN_DETAILS[plan] || {};
+            const today   = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
+            const contact = [fname, lname].filter(Boolean).join(' ') || '[Contact Name]';
+
+            // Header injection
+            document.getElementById('el-date').textContent         = today;
+            document.getElementById('el-client-name').textContent  = company  || '[Client Company Name]';
+            document.getElementById('el-contact').textContent      = contact;
+            document.getElementById('el-client-email').textContent = email    || '[Client Email]';
+            document.getElementById('el-dear').textContent         = fname    || '[Contact Name]';
+            document.getElementById('el-client-body').textContent  = company  || '[Client Name]';
+
+            // Schedule A injection
+            document.getElementById('el-sa-date').textContent      = today;
+            document.getElementById('el-sa-client').textContent    = company  || '[Client Name]';
+            document.getElementById('el-sa-tier').textContent      = pd.tier      ? `☑ ${pd.tier}`      : '[To be confirmed]';
+            document.getElementById('el-sa-product').textContent   = pd.product   || '[To be confirmed]';
+            document.getElementById('el-sa-fee').textContent       = pd.fee       || '[To be confirmed]';
+            document.getElementById('el-sa-payment').textContent   = pd.payment   || '[To be confirmed]';
+            document.getElementById('el-sa-delivery').textContent  = pd.delivery  || '[To be confirmed]';
+            document.getElementById('el-sa-revisions').textContent = pd.revisions || '[To be confirmed]';
+
+            // Reset scroll and button state
+            const container = document.getElementById('engagement-scroll-container');
+            container.scrollTop = 0;
+            const btn = document.getElementById('accept-modal-btn');
+            btn.disabled  = true;
+            btn.className = 'bg-gold/20 text-marble/30 cursor-not-allowed font-sans text-xs tracking-[0.2em] uppercase px-10 py-4 font-bold w-full md:w-auto transition-all duration-300';
+            btn.onclick   = null;
+            document.getElementById('scroll-instruction').classList.remove('hidden');
+
             document.getElementById('engagement-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
+            // Check in case content is short enough to already be at bottom
             window.checkScrollBottom();
         }
 
-        window.closeEngagementModal = function() {
-            document.getElementById('engagement-modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
+        // ── MODAL — SCROLL CHECK ───────────────────────────────────────
         window.checkScrollBottom = function() {
-            const container   = document.getElementById('engagement-scroll-container');
-            const btn         = document.getElementById('accept-modal-btn');
-            const instruction = document.getElementById('scroll-instruction');
-            if (container.scrollHeight - container.scrollTop <= container.clientHeight + 5) {
-                btn.disabled = false;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gold/50', 'text-void/50');
-                btn.classList.add('bg-gold', 'text-void', 'hover:bg-marble');
-                instruction.classList.add('hidden');
-                btn.onclick = acceptEngagement;
+            const container = document.getElementById('engagement-scroll-container');
+            const btn       = document.getElementById('accept-modal-btn');
+            const instr     = document.getElementById('scroll-instruction');
+            if (container.scrollHeight - container.scrollTop <= container.clientHeight + 10) {
+                btn.disabled  = false;
+                btn.className = 'bg-gold text-void hover:bg-marble cursor-pointer font-sans text-xs tracking-[0.2em] uppercase px-10 py-4 font-bold w-full md:w-auto transition-all duration-300';
+                btn.onclick   = acceptEngagement;
+                instr.classList.add('hidden');
             }
         }
 
+        // ── MODAL — ACCEPT ─────────────────────────────────────────────
         function acceptEngagement() {
             document.getElementById('engagement-checkbox').checked = true;
             const vc = document.getElementById('visual-checkbox');
             vc.classList.add('bg-gold', 'border-gold');
             vc.classList.remove('bg-void');
             document.getElementById('check-icon').classList.remove('hidden');
-            const submitBtn = document.getElementById('checkout-btn');
-            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            const selectedPlan = document.querySelector('input[name="plan_selection"]:checked')?.value;
-            if (selectedPlan) updateButtonLabel(selectedPlan);
-            window.closeEngagementModal();
+            const plan = document.querySelector('input[name="plan_selection"]:checked')?.value;
+            if (plan) updateButtonLabel(plan);
+            else {
+                const btn     = document.getElementById('checkout-btn');
+                btn.innerText = "Initialize Payment Gateway";
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+            document.getElementById('checkout-btn').classList.remove('opacity-50', 'cursor-not-allowed');
+            document.getElementById('engagement-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
         }
 
+        // ── PREVENT DIRECT CHECKBOX CLICK ─────────────────────────────
         window.preventDirectCheck = function(e) {
             e.preventDefault();
             if (!document.getElementById('engagement-checkbox').checked) window.openEngagementModal();
         }
 
-        // ============================================================
-        // CHECKOUT
-        // ============================================================
+        // ── CHECKOUT — writes to /leads, canonical keys ────────────────
         window.processCheckout = async function(event) {
             event.preventDefault();
 
             if (!document.getElementById('engagement-checkbox').checked) {
-                alert("You must read and accept the Engagement Letter before proceeding.");
                 window.openEngagementModal();
                 return;
             }
 
-            const btn          = document.getElementById('checkout-btn');
-            const originalText = btn.innerText;
-            btn.innerText      = "Securing Architecture...";
+            const btn = document.getElementById('checkout-btn');
+            btn.innerText = "Securing Architecture...";
             btn.classList.add('opacity-50', 'cursor-not-allowed');
 
-            const firstName    = document.getElementById('apply-fname').value.trim();
-            const lastName     = document.getElementById('apply-lname').value.trim();
-            const email        = document.getElementById('apply-email').value.trim();
-            const company      = document.getElementById('apply-company').value.trim();
-            const plan         = document.querySelector('input[name="plan_selection"]:checked')?.value || 'agentic';
-            const price        = PLAN_PRICES[plan] || 0;
+            const firstName              = document.getElementById('apply-fname').value.trim();
+            const lastName               = document.getElementById('apply-lname').value.trim();
+            const email                  = document.getElementById('apply-email').value.trim().toLowerCase();
+            const company                = document.getElementById('apply-company').value.trim();
+            const registrationJurisdiction = document.getElementById('apply-jurisdiction').value;
+            const plan                   = document.querySelector('input[name="plan_selection"]:checked')?.value || 'agentic_shield';
+            const price                  = PLAN_PRICES[plan] || 0;
 
-            const clientData = {
-                name:         `${firstName} ${lastName}`,
+            const leadData = {
+                email,
+                name:                     `${firstName} ${lastName}`.trim(),
                 firstName,
                 lastName,
-                email,
                 company,
-                plan,
+                registrationJurisdiction,   // canonical field name, string
+                plan,                       // canonical 4 keys only
                 price,
-                elAccepted:   true,
-                elAcceptedAt: new Date().toISOString(),
-                status:       "pending_payment",
-                source:       "apply",
-                adminNotes:   "",
-                intakeData:   {},
-                documents:    {}
+                leadType:                 "hot_lead",
+                status:                   "hot_payment_pending",
+                source:                   "apply",
+                elAccepted:               true,
+                elAcceptedAt:             new Date().toISOString()
             };
 
-            // Write to Firestore /clients
+            // Write to /leads — NOT /clients (Scenario 3 creates the /clients record post-payment)
             try {
-                const docId = `${firstName}_${company}_${Date.now()}`
-                    .replace(/\s+/g, '_')
-                    .replace(/[^a-zA-Z0-9_]/g, '')
-                    .toLowerCase();
-                await setDoc(doc(db, "clients", docId), {
-                    ...clientData,
-                    submittedAt:  serverTimestamp(),
-                    intakeSentAt: null,
-                    deliveredAt:  null,
-                    lastLogin:    null
-                });
-            } catch (err) {
+                const docId = email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
+                await setDoc(doc(db, "leads", docId), {
+                    ...leadData,
+                    lastTouched: serverTimestamp()
+                }, { merge: true });
+            } catch(err) {
                 console.log("Firestore write failed:", err);
             }
 
-            // Notify Make.com Scenario 2
+            // Notify Make.com Scenario 2 (checkout notification)
             try {
                 await fetch(CHECKOUT_WEBHOOK, {
                     method:  "POST",
                     headers: { "Content-Type": "application/json" },
-                    body:    JSON.stringify(clientData)
+                    body:    JSON.stringify({ ...leadData, timestamp: new Date().toISOString() })
                 });
-            } catch (err) {
+            } catch(err) {
                 console.log("Webhook failed:", err);
             }
 
             // Redirect to PayPal
-            window.location.href = PAYPAL_LINKS[plan];
+            window.location.href = PAYPAL_LINKS[plan] || PAYPAL_LINKS['agentic_shield'];
         }
 
     </script>
