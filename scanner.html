@@ -487,55 +487,61 @@
         // ============================================================
         // GATE FORM — warm lead
         // ============================================================
-        window.processGateForm = async function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('gate-submit-btn');
-            btn.innerText = "Analyzing...";
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
+       window.processGateForm = async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('gate-submit-btn');
+    btn.innerText = "Analyzing...";
+    btn.classList.add('opacity-50', 'cursor-not-allowed');
 
-            const leadName    = document.getElementById('lead-name').value.trim();
-            const leadEmail   = document.getElementById('lead-email').value.trim();
-            const leadCompany = document.getElementById('lead-company').value.trim();
+    const leadName    = document.getElementById('lead-name').value.trim();
+    const leadEmail   = document.getElementById('lead-email').value.trim();
+    const leadCompany = document.getElementById('lead-company').value.trim();
 
-            localStorage.setItem('ln_name',    leadName);
-            localStorage.setItem('ln_email',   leadEmail);
-            localStorage.setItem('ln_company', leadCompany);
+    localStorage.setItem('ln_name',    leadName);
+    localStorage.setItem('ln_email',   leadEmail);
+    localStorage.setItem('ln_company', leadCompany);
 
-            const leadData = {
-                name:             leadName,
-                email:            leadEmail,
-                company:          leadCompany,
-                leadType:         "warm_lead",
-                source:           "scanner",
-                productRiskScore: extScore,
-                internalOpsScore: intScore,
-                uncertaintyFlag:  unsureFlag,
-                status:           "new",
-                notes:            ""
-            };
+    const leadData = {
+        name:             leadName,
+        email:            leadEmail,
+        company:          leadCompany,
+        leadType:         "warm_lead",
+        source:           "scanner",
+        productRiskScore: extScore,
+        internalOpsScore: intScore,
+        uncertaintyFlag:  unsureFlag,
+        status:           "prospect",
+        notes:            "",
+        adminNotes:       "",
+        plan:             "",
+        intakeData:       {},
+        documents:        {}
+    };
 
-            try {
-                const docId = `${leadName}_${leadCompany}_${Date.now()}`
-                    .replace(/\s+/g, '_')
-                    .replace(/[^a-zA-Z0-9_]/g, '')
-                    .toLowerCase();
-                await setDoc(doc(db, "leads", docId), {
-                    ...leadData,
-                    createdAt:   serverTimestamp(),
-                    lastTouched: serverTimestamp()
-                });
-            } catch(err) { console.log("Firestore write failed:", err); }
+    try {
+        const docId = leadEmail
+            .replace(/[^a-zA-Z0-9@._-]/g, '')
+            .toLowerCase();
+        await setDoc(doc(db, "clients", docId), {
+            ...leadData,
+            submittedAt:  serverTimestamp(),
+            lastTouched:  serverTimestamp(),
+            intakeSentAt: null,
+            deliveredAt:  null,
+            lastLogin:    null
+        }, { merge: true });
+    } catch(err) { console.log("Firestore write failed:", err); }
 
-            try {
-                await fetch(LEAD_WEBHOOK, {
-                    method:  'POST',
-                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                    body:    JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
-                });
-            } catch(err) { console.log("Webhook failed:", err); }
+    try {
+        await fetch(LEAD_WEBHOOK, {
+            method:  'POST',
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
+        });
+    } catch(err) { console.log("Webhook failed:", err); }
 
-            loadDashboard();
-        }
+    loadDashboard();
+}
 
         // ============================================================
         // START
