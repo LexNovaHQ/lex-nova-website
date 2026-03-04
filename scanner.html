@@ -4,27 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Risk Diagnostic | Lex Nova HQ</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        void: '#050505',
-                        gold: '#C5A059',
-                        marble: '#EAE8E3',
-                        shadow: '#1A1A1A',
-                        danger: '#ef4444',
-                        warning: '#f97316',
-                        moderate: '#eab308',
-                        safe: '#10b981'
+                        void: '#050505', gold: '#C5A059', marble: '#EAE8E3',
+                        shadow: '#1A1A1A', danger: '#ef4444', warning: '#f97316',
+                        moderate: '#eab308', safe: '#10b981'
                     },
                     fontFamily: {
                         serif: ['"Cormorant Garamond"', 'serif'],
-                        sans: ['"Inter"', 'sans-serif']
+                        sans:  ['"Inter"', 'sans-serif']
                     }
                 }
             }
@@ -45,33 +38,35 @@
             <span class="font-serif text-xl tracking-widest text-gold uppercase mt-1">Lex Nova <span class="text-marble opacity-50 text-sm ml-1">HQ</span></span>
         </a>
         <div id="nav-links" class="hidden md:flex gap-8 items-center text-marble opacity-80 transition-opacity duration-500">
-            <a href="mandate.html" class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">Division Mandate</a>
+            <a href="mandate.html"    class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">Division Mandate</a>
             <a href="engagement.html" class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">Engagement</a>
-            <a href="architect.html" class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">The Architect</a>
+            <a href="architect.html"  class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">The Architect</a>
         </div>
     </nav>
 
     <main class="flex-grow flex items-center justify-center p-6 w-full py-16">
         <div class="max-w-3xl w-full">
-            
+
+            <!-- WELCOME STATE -->
             <div id="state-welcome" class="text-center fade-enter fade-enter-active">
                 <h1 class="font-sans text-xs tracking-[0.3em] text-gold uppercase mb-6">Diagnostic Engine</h1>
                 <h2 class="font-serif text-4xl md:text-6xl leading-tight text-marble mb-6">Map Your Exposure.</h2>
                 <p class="font-sans text-sm md:text-base text-marble opacity-60 leading-relaxed mb-12 max-w-xl mx-auto">
-                    This engine identifies your active financial liability based on current UETA §14 and EU AI Act enforcement. Answer accurately. Ignorance of an architectural gap maximizes your legal liability.
+                    This engine identifies your active financial liability based on current UETA §14 and EU AI Act enforcement. Answer accurately. Ignorance of an architectural gap maximises your legal liability.
                 </p>
                 <button onclick="startScanner()" class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 font-bold">
                     Initialize Audit
                 </button>
             </div>
 
+            <!-- QUIZ STATE -->
             <div id="state-quiz" class="hidden-state fade-enter w-full">
                 <div class="mb-8 flex justify-between items-center text-xs font-sans tracking-[0.2em] text-marble opacity-50 uppercase">
                     <span id="progress-text">Question 1 of 10</span>
                     <span class="text-gold">Logic Engine</span>
                 </div>
                 <div class="w-full h-1 bg-shadow mb-12">
-                    <div id="progress-bar" class="h-full bg-gold transition-all duration-500" style="width: 10%;"></div>
+                    <div id="progress-bar" class="h-full bg-gold transition-all duration-500" style="width:10%"></div>
                 </div>
                 <div id="question-container" class="mb-12">
                     <h3 id="question-text" class="font-serif text-3xl md:text-4xl leading-snug text-marble mb-8">Loading...</h3>
@@ -79,6 +74,7 @@
                 </div>
             </div>
 
+            <!-- GATE STATE -->
             <div id="state-gate" class="hidden-state fade-enter text-center max-w-xl mx-auto">
                 <div class="grid grid-cols-2 gap-6 mb-10">
                     <div class="border border-shadow bg-[#080808] p-5">
@@ -115,6 +111,7 @@
                 </form>
             </div>
 
+            <!-- DASHBOARD STATE -->
             <div id="state-dashboard" class="hidden-state fade-enter w-full max-w-4xl mx-auto">
                 <div class="border border-danger/30 bg-danger/5 p-8 md:p-12 mb-8 text-center relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-full h-1 bg-danger"></div>
@@ -180,34 +177,31 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+        import { initializeApp }                                        from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, serverTimestamp }           from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
-            authDomain: "lexnova-hq.firebaseapp.com",
-            projectId: "lexnova-hq",
-            storageBucket: "lexnova-hq.firebasestorage.app",
+            apiKey:            "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
+            authDomain:        "lexnova-hq.firebaseapp.com",
+            projectId:         "lexnova-hq",
+            storageBucket:     "lexnova-hq.firebasestorage.app",
             messagingSenderId: "539475214055",
-            appId: "1:539475214055:web:c01a99ec94ff073a9b6c42"
+            appId:             "1:539475214055:web:c01a99ec94ff073a9b6c42"
         };
 
         const app = initializeApp(firebaseConfig);
         const db  = getFirestore(app);
+
         const LEAD_WEBHOOK = "https://hook.eu1.make.com/q7nnd3klwdmlmtesq5no4yfsmk3v8ua7";
 
-        // ============================================================
-        // SCORING STATE
-        // ============================================================
+        // ─── SCORING STATE ────────────────────────────────────────────
         let currentRoute = [];
         let currentIndex = 0;
         let extScore     = 0;
         let intScore     = 0;
         let unsureFlag   = false;
 
-        // ============================================================
-        // QUESTION DATABASE
-        // ============================================================
+        // ─── QUESTION DATABASE ────────────────────────────────────────
         const questions = [
             {
                 id: 1, lane: 'master',
@@ -222,18 +216,18 @@
                 id: 2, lane: 'external',
                 text: "If your AI agent can take real-world actions, do your contracts contain a defined liability cap specifically for autonomous agent actions?",
                 options: [
-                    { text: "Yes, explicitly defined.",                        extPts: 0  },
+                    { text: "Yes, explicitly defined.",                            extPts: 0  },
                     { text: "We have a general liability cap, not agent-specific.", extPts: 20 },
-                    { text: "No cap / I'm not sure.",                          extPts: 40, unsure: true }
+                    { text: "No cap / I'm not sure.",                              extPts: 40, unsure: true }
                 ]
             },
             {
                 id: 3, lane: 'external',
                 text: "Do your Terms of Service address AI hallucinations — outputs that are false, misleading, or fabricated?",
                 options: [
-                    { text: "Yes, with a specific disclaimer and waiver.",     extPts: 0  },
-                    { text: "We have a general disclaimer, not AI-specific.",  extPts: 25 },
-                    { text: "No / I'm not sure.",                              extPts: 50, unsure: true }
+                    { text: "Yes, with a specific disclaimer and waiver.",    extPts: 0  },
+                    { text: "We have a general disclaimer, not AI-specific.", extPts: 25 },
+                    { text: "No / I'm not sure.",                             extPts: 50, unsure: true }
                 ]
             },
             {
@@ -249,9 +243,9 @@
                 id: 5, lane: 'external',
                 text: "Does your AI product make or assist with consequential decisions — credit, hiring, healthcare, or legal?",
                 options: [
-                    { text: "No.",                                             extPts: 0  },
-                    { text: "Yes — with human review documented.",             extPts: 10 },
-                    { text: "Yes — fully automated / I'm not sure.",           extPts: 60, unsure: true }
+                    { text: "No.",                                            extPts: 0  },
+                    { text: "Yes — with human review documented.",            extPts: 10 },
+                    { text: "Yes — fully automated / I'm not sure.",          extPts: 60, unsure: true }
                 ]
             },
             {
@@ -285,39 +279,35 @@
                 id: 9, lane: 'internal',
                 text: "Do you have a documented Human-in-the-Loop (HITL) protocol for AI-assisted decisions?",
                 options: [
-                    { text: "Yes, formally documented protocol.",      intPts: 0  },
+                    { text: "Yes, formally documented protocol.",       intPts: 0  },
                     { text: "Humans are in the loop, but undocumented.", intPts: 30 },
-                    { text: "No protocol / I'm not sure.",              intPts: 40, unsure: true },
-                    { text: "We don't use AI for these decisions.",     intPts: 0  }
+                    { text: "No protocol / I'm not sure.",               intPts: 40, unsure: true },
+                    { text: "We don't use AI for these decisions.",      intPts: 0  }
                 ]
             }
         ];
 
-        // ============================================================
-        // CORE FUNCTIONS
-        // ============================================================
+        // ─── CORE FUNCTIONS ───────────────────────────────────────────
         function switchState(hideId, showId) {
             document.getElementById(hideId).classList.remove('fade-enter-active');
             setTimeout(() => {
                 document.getElementById(hideId).classList.add('hidden-state');
                 document.getElementById(showId).classList.remove('hidden-state');
-                setTimeout(() => {
-                    document.getElementById(showId).classList.add('fade-enter-active');
-                }, 50);
+                setTimeout(() => document.getElementById(showId).classList.add('fade-enter-active'), 50);
             }, 400);
         }
 
         function getTierData(score, isExt) {
             if (isExt) {
-                if (score > 75) return { color: 'bg-danger',   text: 'Critical', low: 1500000, high: 10000000 };
-                if (score > 50) return { color: 'bg-warning',  text: 'High',     low: 400000,  high: 1500000  };
-                if (score > 25) return { color: 'bg-moderate', text: 'Moderate', low: 75000,   high: 400000   };
-                return             { color: 'bg-safe',     text: 'Low',      low: 0,       high: 75000    };
+                if (score > 75) return { color:'bg-danger',   text:'Critical', low:1500000, high:10000000 };
+                if (score > 50) return { color:'bg-warning',  text:'High',     low:400000,  high:1500000  };
+                if (score > 25) return { color:'bg-moderate', text:'Moderate', low:75000,   high:400000   };
+                return             { color:'bg-safe',     text:'Low',      low:0,       high:75000    };
             } else {
-                if (score > 75) return { color: 'bg-danger',   text: 'Critical', low: 600000,  high: 2000000  };
-                if (score > 50) return { color: 'bg-warning',  text: 'High',     low: 200000,  high: 600000   };
-                if (score > 25) return { color: 'bg-moderate', text: 'Moderate', low: 30000,   high: 200000   };
-                return             { color: 'bg-safe',     text: 'Low',      low: 0,       high: 30000    };
+                if (score > 75) return { color:'bg-danger',   text:'Critical', low:600000,  high:2000000  };
+                if (score > 50) return { color:'bg-warning',  text:'High',     low:200000,  high:600000   };
+                if (score > 25) return { color:'bg-moderate', text:'Moderate', low:30000,   high:200000   };
+                return             { color:'bg-safe',     text:'Low',      low:0,       high:30000    };
             }
         }
 
@@ -335,18 +325,18 @@
                 const btn = document.createElement('button');
                 btn.className = "w-full text-left bg-[#080808] border border-shadow p-5 text-marble font-sans text-sm hover:border-gold hover:text-gold transition-colors duration-300";
                 btn.innerText = opt.text;
-                btn.onclick = () => handleAnswer(q, opt);
+                btn.onclick   = () => handleAnswer(q, opt);
                 container.appendChild(btn);
             });
             if (currentRoute.length > 0) {
-                document.getElementById('progress-bar').style.width = `${((currentIndex + 1) / currentRoute.length) * 100}%`;
-                document.getElementById('progress-text').innerText  = `Question ${currentIndex + 1} of ${currentRoute.length}`;
+                document.getElementById('progress-bar').style.width   = `${((currentIndex + 1) / currentRoute.length) * 100}%`;
+                document.getElementById('progress-text').innerText    = `Question ${currentIndex + 1} of ${currentRoute.length}`;
             }
         }
 
         function handleAnswer(question, option) {
             if (question.lane === 'master') {
-                if (option.logic === 'A')      currentRoute = questions.filter(q => q.lane === 'external');
+                if      (option.logic === 'A') currentRoute = questions.filter(q => q.lane === 'external');
                 else if (option.logic === 'B') currentRoute = questions.filter(q => q.lane === 'internal');
                 else if (option.logic === 'C') currentRoute = questions.filter(q => q.lane !== 'master');
                 currentIndex = 0;
@@ -368,11 +358,9 @@
             const extData = getTierData(extScore, true);
             const intData = getTierData(intScore, false);
             document.getElementById('gate-ext-color').className = `w-full h-2 mb-3 ${extData.color}`;
-            document.getElementById('gate-ext-label').innerText  = extData.text;
-            document.getElementById('gate-ext-label').className  = `font-sans text-xs tracking-widest uppercase text-${extData.color.split('-')[1]}`;
-            document.getElementById('gate-int-color').className  = `w-full h-2 mb-3 ${intData.color}`;
-            document.getElementById('gate-int-label').innerText  = intData.text;
-            document.getElementById('gate-int-label').className  = `font-sans text-xs tracking-widest uppercase text-${intData.color.split('-')[1]}`;
+            document.getElementById('gate-ext-label').innerText = extData.text;
+            document.getElementById('gate-int-color').className = `w-full h-2 mb-3 ${intData.color}`;
+            document.getElementById('gate-int-label').innerText = intData.text;
             switchState('state-quiz', 'state-gate');
         }
 
@@ -380,11 +368,10 @@
             const extData = getTierData(extScore, true);
             const intData = getTierData(intScore, false);
 
-            document.getElementById('ext-tier').className = `font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void ${extData.color}`;
+            document.getElementById('ext-tier').className  = `font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void ${extData.color}`;
             document.getElementById('ext-tier').innerText  = extData.text;
             document.getElementById('int-tier').className  = `font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void ${intData.color}`;
             document.getElementById('int-tier').innerText  = intData.text;
-
             document.getElementById('ext-score').innerText = extScore;
             document.getElementById('int-score').innerText = intScore;
 
@@ -407,7 +394,7 @@
                 ctaBtn.href      = "offer-agentic.html";
             } else if (intScore > 40) {
                 document.getElementById('cta-heading').innerText = "Your primary exposure is operational.";
-                document.getElementById('cta-body').innerText    = "Your team's AI outputs are falling into the public domain, and you lack documented behavioral oversight. The Workplace Shield addresses this.";
+                document.getElementById('cta-body').innerText    = "Your team's AI outputs are falling into the public domain, and you lack documented behavioural oversight. The Workplace Shield addresses this.";
                 ctaBtn.innerText = "Apply for The Workplace Shield";
                 ctaBtn.href      = "offer-workplace.html";
             } else {
@@ -416,13 +403,10 @@
                 ctaBtn.innerText = "Apply for a Gap Review";
                 ctaBtn.href      = "offer-gap.html";
             }
-
             switchState('state-gate', 'state-dashboard');
         }
 
-        // ============================================================
-        // EXIT INTENT
-        // ============================================================
+        // ─── EXIT INTENT ──────────────────────────────────────────────
         let exitIntentFired = false;
 
         document.addEventListener('mouseleave', function(e) {
@@ -441,6 +425,7 @@
             setTimeout(() => { exitIntentFired = false; }, 1000);
         }
 
+        // ─── EXIT FORM ── email key, /leads, merge:true ───────────────
         window.processExitForm = async function(e) {
             e.preventDefault();
             const btn = document.getElementById('exit-submit-btn');
@@ -454,23 +439,21 @@
                 company:          "",
                 leadType:         "ghost_lead",
                 source:           "scanner_exit",
+                status:           "new",
                 productRiskScore: 0,
                 internalOpsScore: 0,
                 uncertaintyFlag:  false,
-                status:           "new",
                 notes:            "Captured via Exit Intent on Scanner"
             };
 
             try {
-                const docId = `ghost_${email}_${Date.now()}`
-                    .replace(/\s+/g, '_')
-                    .replace(/[^a-zA-Z0-9_]/g, '')
-                    .toLowerCase();
+                // FIX: email as document key, /leads collection, merge:true
+                const docId = email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
                 await setDoc(doc(db, "leads", docId), {
                     ...leadData,
                     createdAt:   serverTimestamp(),
                     lastTouched: serverTimestamp()
-                });
+                }, { merge: true });
             } catch(err) { console.log("Firestore write failed:", err); }
 
             try {
@@ -484,68 +467,59 @@
             setTimeout(() => { window.closeExitModal(); }, 1500);
         }
 
-        // ============================================================
-        // GATE FORM — warm lead
-        // ============================================================
-       window.processGateForm = async function(e) {
-    e.preventDefault();
-    const btn = document.getElementById('gate-submit-btn');
-    btn.innerText = "Analyzing...";
-    btn.classList.add('opacity-50', 'cursor-not-allowed');
+        // ─── GATE FORM ── email key, /leads, status:warm ──────────────
+        window.processGateForm = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('gate-submit-btn');
+            btn.innerText = "Analyzing...";
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
 
-    const leadName    = document.getElementById('lead-name').value.trim();
-    const leadEmail   = document.getElementById('lead-email').value.trim();
-    const leadCompany = document.getElementById('lead-company').value.trim();
+            const leadName    = document.getElementById('lead-name').value.trim();
+            const leadEmail   = document.getElementById('lead-email').value.trim();
+            const leadCompany = document.getElementById('lead-company').value.trim();
 
-    localStorage.setItem('ln_name',    leadName);
-    localStorage.setItem('ln_email',   leadEmail);
-    localStorage.setItem('ln_company', leadCompany);
+            // Store for apply.html pre-fill
+            localStorage.setItem('ln_name',    leadName);
+            localStorage.setItem('ln_email',   leadEmail);
+            localStorage.setItem('ln_company', leadCompany);
 
-    const leadData = {
-        name:             leadName,
-        email:            leadEmail,
-        company:          leadCompany,
-        leadType:         "warm_lead",
-        source:           "scanner",
-        productRiskScore: extScore,
-        internalOpsScore: intScore,
-        uncertaintyFlag:  unsureFlag,
-        status:           "prospect",
-        notes:            "",
-        adminNotes:       "",
-        plan:             "",
-        intakeData:       {},
-        documents:        {}
-    };
+            const leadData = {
+                email:            leadEmail,
+                name:             leadName,
+                company:          leadCompany,
+                leadType:         "warm_lead",
+                source:           "scanner",
+                status:           "warm",          // canonical lead status
+                productRiskScore: extScore,
+                internalOpsScore: intScore,
+                uncertaintyFlag:  unsureFlag,
+                notes:            ""
+                // NOTE: plan, documents, intakeData, adminNotes — NOT set here.
+                // Those fields belong to /clients, populated post-payment by Scenario 3.
+            };
 
-    try {
-        const docId = leadEmail
-            .replace(/[^a-zA-Z0-9@._-]/g, '')
-            .toLowerCase();
-        await setDoc(doc(db, "clients", docId), {
-            ...leadData,
-            submittedAt:  serverTimestamp(),
-            lastTouched:  serverTimestamp(),
-            intakeSentAt: null,
-            deliveredAt:  null,
-            lastLogin:    null
-        }, { merge: true });
-    } catch(err) { console.log("Firestore write failed:", err); }
+            try {
+                // FIX: email as document key, /leads collection, merge:true
+                const docId = leadEmail.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
+                await setDoc(doc(db, "leads", docId), {
+                    ...leadData,
+                    createdAt:   serverTimestamp(),
+                    lastTouched: serverTimestamp()
+                }, { merge: true });
+            } catch(err) { console.log("Firestore write failed:", err); }
 
-    try {
-        await fetch(LEAD_WEBHOOK, {
-            method:  'POST',
-            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
-        });
-    } catch(err) { console.log("Webhook failed:", err); }
+            try {
+                await fetch(LEAD_WEBHOOK, {
+                    method:  'POST',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
+                });
+            } catch(err) { console.log("Webhook failed:", err); }
 
-    loadDashboard();
-}
+            loadDashboard();
+        }
 
-        // ============================================================
-        // START
-        // ============================================================
+        // ─── START ────────────────────────────────────────────────────
         window.startScanner = function() {
             const navLinks = document.getElementById('nav-links');
             if (navLinks) {
@@ -560,6 +534,6 @@
 
     </script>
 
-    <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v67327c56f0bb4ef8b305cae61679db8f1769101564043" integrity="sha512-rdcWY47ByXd76cbCFzznIcEaCN71jqkWBBqlwhF1SY7KubdLKZiEGeP7AyieKZlGP9hbY/MhGrwXzJC/HulNyg==" data-cf-beacon='{"version":"2024.11.0","token":"dfc3f5e5add24a01a5276f49e5abec40","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v67327c56f0bb4ef8b305cae61679db8f1769101564043" integrity="sha512-rdcWY47ByXd76cbCFzznIcEaCN71jqkWBBqlwhF1SY7KubdLKZiEGeP7AyieKZlGP9hbY/MhGrwXzJC/HulNyg==" data-cf-beacon='{"version":"2024.11.0","token":"dfc3f5e5add24a01a5276f49e5abec40","r":1}' crossorigin="anonymous"></script>
 </body>
 </html>
