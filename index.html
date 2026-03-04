@@ -485,16 +485,16 @@
                         </p>
                     </div>
                     
-                    <form action="https://formspree.io/f/mbdapvew" method="POST" class="flex flex-col gap-4">
-                        <input type="hidden" name="Form_Source" value="LEAD MAGNET REQUEST: AI Risk Overview">
-                        <input type="text" name="Name" required placeholder="Full Name" class="bg-void border border-shadow p-3 text-sm text-marble focus:border-gold outline-none transition-colors">
-                        <input type="email" name="Email" required placeholder="Work Email" class="bg-void border border-shadow p-3 text-sm text-marble focus:border-gold outline-none transition-colors">
-                        <input type="text" name="Company" required placeholder="Company URL" class="bg-void border border-shadow p-3 text-sm text-marble focus:border-gold outline-none transition-colors">
-                        
-                        <button type="submit" class="w-full border border-shadow bg-void text-marble text-[10px] font-bold uppercase tracking-widest py-4 hover:border-gold hover:text-gold transition-colors mt-2">
-                            The Architect Will Email You Shortly
-                        </button>
-                    </form>
+                   <form id="lead-magnet-form" onsubmit="submitLeadMagnet(event)" class="flex flex-col gap-4">
+    <input type="text" id="lm-name" required placeholder="Full Name" class="bg-void border border-shadow p-3 text-sm text-marble focus:border-gold outline-none transition-colors">
+    <input type="email" id="lm-email" required placeholder="Work Email" class="bg-void border border-shadow p-3 text-sm text-marble focus:border-gold outline-none transition-colors">
+    <input type="text" id="lm-company" required placeholder="Company URL" class="bg-void border border-shadow p-3 text-sm text-marble focus:border-gold outline-none transition-colors">
+    
+    <button type="submit" id="lm-btn" class="w-full border border-shadow bg-void text-marble text-[10px] font-bold uppercase tracking-widest py-4 hover:border-gold hover:text-gold transition-colors mt-2">
+        The Architect Will Email You Shortly
+    </button>
+    <p id="lm-success" class="hidden text-center font-sans text-xs text-gold tracking-widest uppercase">Received. Expect an email shortly.</p>
+</form>
                 </div>
             </div>
 
@@ -546,5 +546,66 @@
     </script>
 
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v67327c56f0bb4ef8b305cae61679db8f1769101564043" integrity="sha512-rdcWY47ByXd76cbCFzznIcEaCN71jqkWBBqlwhF1SY7KubdLKZiEGeP7AyieKZlGP9hbY/MhGrwXzJC/HulNyg==" data-cf-beacon='{"version":"2024.11.0","token":"dfc3f5e5add24a01a5276f49e5abec40","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
+        authDomain: "lexnova-hq.firebaseapp.com",
+        projectId: "lexnova-hq",
+        storageBucket: "lexnova-hq.firebasestorage.app",
+        messagingSenderId: "539475214055",
+        appId: "1:539475214055:web:c01a99ec94ff073a9b6c42"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    const LEAD_WEBHOOK = "https://hook.eu1.make.com/q7nnd3klwdmlmtesq5no4yfsmk3v8ua7";
+
+    window.submitLeadMagnet = async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('lm-btn');
+        btn.textContent = "Sending...";
+        btn.disabled = true;
+
+        const name    = document.getElementById('lm-name').value.trim();
+        const email   = document.getElementById('lm-email').value.trim();
+        const company = document.getElementById('lm-company').value.trim();
+
+        const leadData = {
+            name,
+            email,
+            company,
+            leadType: "cold_lead",
+            source:   "homepage_lead_magnet",
+            status:   "new",
+            notes:    ""
+        };
+
+        try {
+            const docId = `cold_${email}_${Date.now()}`
+                .replace(/[^a-zA-Z0-9_@.-]/g, '_')
+                .toLowerCase();
+            await setDoc(doc(db, "leads", docId), {
+                ...leadData,
+                createdAt:   serverTimestamp(),
+                lastTouched: serverTimestamp()
+            });
+        } catch(err) { console.log("Firestore write failed:", err); }
+
+        try {
+            await fetch(LEAD_WEBHOOK, {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
+            });
+        } catch(err) { console.log("Webhook failed:", err); }
+
+        btn.classList.add('hidden');
+        document.getElementById('lm-success').classList.remove('hidden');
+    }
+</script>
 </body>
 </html>
