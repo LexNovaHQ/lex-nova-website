@@ -67,16 +67,10 @@
                 <div class="bg-[#080808] border border-shadow p-8">
                     <h3 class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase mb-6 border-b border-shadow pb-4">01. Entity Details</h3>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">First Name</label>
-                            <input type="text" id="apply-fname" name="First_Name" required class="w-full bg-[#050505] border border-shadow focus:border-gold focus:ring-1 focus:ring-gold outline-none p-3 text-marble font-sans text-sm transition-all">
-                        </div>
-                        <div>
-                            <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Last Name</label>
-                            <input type="text" id="apply-lname" name="Last_Name" required class="w-full bg-[#050505] border border-shadow focus:border-gold focus:ring-1 focus:ring-gold outline-none p-3 text-marble font-sans text-sm transition-all">
-                        </div>
-                    </div>
+                    <div>
+    <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Legal Company Name</label>
+    <input type="text" id="apply-company" name="Company" required class="w-full bg-[#050505] border border-shadow focus:border-gold focus:ring-1 focus:ring-gold outline-none p-3 text-marble font-sans text-sm transition-all">
+</div>
 
                     <div class="mb-6">
                         <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Work Email</label>
@@ -386,7 +380,6 @@
             const lastName     = document.getElementById('apply-lname').value.trim();
             const email        = document.getElementById('apply-email').value.trim();
             const company      = document.getElementById('apply-company').value.trim();
-            const jurisdiction = document.getElementById('apply-jurisdiction').value;
             const plan         = document.querySelector('input[name="plan_selection"]:checked')?.value || 'agentic';
             const price        = PLAN_PRICES[plan] || 0;
 
@@ -396,7 +389,6 @@
                 lastName,
                 email,
                 company,
-                jurisdiction,
                 plan,
                 price,
                 elAccepted:   true,
