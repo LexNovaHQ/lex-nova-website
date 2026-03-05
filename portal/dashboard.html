@@ -739,19 +739,16 @@ async function loadRadar(intakeData, maintenanceActive) {
         const items = radarData.entries || radarData.items || [];
         const geo = intakeData?.geo || [];
 
-        // FIX: Ensure 'global' regulations show up for everyone, and handle arrays safely
+        // Safe parse for client delivery date
+        const delAt = clientData.deliveredAt ? (clientData.deliveredAt.toDate ? clientData.deliveredAt.toDate() : new Date(clientData.deliveredAt)) : null;
+
         const relevant = items.filter(item => {
             if (!item.jurisdiction || item.jurisdiction.length === 0) return true;
-            
             let itemJurs = [];
             if (Array.isArray(item.jurisdiction)) itemJurs = item.jurisdiction;
             else if (typeof item.jurisdiction === 'string') itemJurs = item.jurisdiction.split(',').map(s=>s.trim().toLowerCase());
 
-            return itemJurs.some(j => 
-                j === 'global' || 
-                geo.includes(j) || 
-                geo.includes('global')
-            );
+            return itemJurs.some(j => j === 'global' || geo.includes(j) || geo.includes('global'));
         });
 
         if (relevant.length === 0) return;
@@ -764,14 +761,43 @@ async function loadRadar(intakeData, maintenanceActive) {
         }
 
         const radarGrid = document.getElementById('radar-grid');
+        let hasUncovered = false;
+
         radarGrid.innerHTML = relevant.map(item => {
-            const isCovered = item.coveredByPlan && clientData.plan && item.coveredByPlan.includes(clientData.plan);
+            // 1. Check if their plan theoretically covers this
+            let isCovered = item.coveredByPlan && clientData.plan && item.coveredByPlan.includes(clientData.plan);
+            const eff = item.effectiveDate ? new Date(item.effectiveDate) : null;
+            
+            // 2. THE CHRONOLOGICAL RULE: If they are covered, but the law's effective date is AFTER their docs were delivered, it becomes a GAP.
+            if (isCovered && delAt && eff && eff > delAt) {
+                isCovered = false; 
+            }
+
+            if (!isCovered) hasUncovered = true;
+
+            // 3. UI STATE ROUTING (Red vs Yellow vs Green)
+            let statusHtml = '';
+            let borderClass = 'border-shadow';
+
+            if (!isCovered) {
+                if (maintenanceActive) {
+                    statusHtml = '<p class="font-sans text-[9px] text-[#c4a840] mt-1 uppercase tracking-widest">🟡 Under Review</p>';
+                    borderClass = 'border-[#c4a840]/30'; // Subtle yellow border for VIPs
+                } else {
+                    statusHtml = '<p class="font-sans text-[9px] text-[#d47a7a] mt-1 uppercase tracking-widest font-bold">🔴 Gap Detected</p>';
+                    borderClass = 'border-[#d47a7a]/40'; // Red alert border
+                }
+            } else {
+                statusHtml = '<p class="font-sans text-[9px] text-marble opacity-30 mt-1 uppercase tracking-widest">✓ Covered</p>';
+            }
+
             const sevColor = item.severity === 'CRITICAL' ? 'bg-red-900/80 text-red-200 font-bold'
                 : item.severity === 'HIGH' ? 'bg-red-900/60 text-red-300'
                 : item.severity === 'MEDIUM' ? 'bg-yellow-900/40 text-yellow-400'
                 : 'bg-green-900/40 text-green-400';
+
             return `
-            <div class="bg-[#080808] border ${isCovered ? 'border-shadow' : 'border-gold/20'} p-5 flex items-center justify-between gap-6">
+            <div class="bg-[#080808] border ${borderClass} p-5 flex items-center justify-between gap-6 transition-colors">
                 <div class="flex-1">
                     <p class="font-sans text-[10px] tracking-[0.15em] uppercase text-marble mb-1">${item.title}</p>
                     <p class="font-sans text-[10px] text-marble opacity-40 leading-relaxed">${item.description}</p>
@@ -779,17 +805,12 @@ async function loadRadar(intakeData, maintenanceActive) {
                 </div>
                 <div class="flex-shrink-0 text-right">
                     <span class="inline-block font-sans text-[9px] tracking-widest uppercase px-3 py-1 ${sevColor}">${item.severity}</span>
-                    <p class="font-sans text-[9px] text-marble opacity-30 mt-1">${isCovered ? '✓ Covered' : '⚠ Gap'}</p>
+                    ${statusHtml}
                 </div>
             </div>`;
         }).join('');
 
-        // Gap Review CTA — any uncovered radar item + not on maintenance
-        const hasUncovered = relevant.some(item => {
-            const isCovered = item.coveredByPlan && clientData.plan && item.coveredByPlan.includes(clientData.plan);
-            return !isCovered;
-        });
-
+        // Gap Review CTA triggers if ANY law is uncovered/stale AND they don't have maintenance
         if (hasUncovered && !maintenanceActive) {
             document.getElementById('gap-review-cta').classList.remove('hidden');
         } else {
