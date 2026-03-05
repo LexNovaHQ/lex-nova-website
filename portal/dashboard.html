@@ -736,14 +736,22 @@ async function loadRadar(intakeData, maintenanceActive) {
         if (!doc.exists) return;
 
         const radarData = doc.data();
-        // FIX: The core data disconnect. The Admin Panel saves it as 'entries'.
         const items = radarData.entries || radarData.items || [];
         const geo = intakeData?.geo || [];
 
-        // Filter by client jurisdiction
+        // FIX: Ensure 'global' regulations show up for everyone, and handle arrays safely
         const relevant = items.filter(item => {
             if (!item.jurisdiction || item.jurisdiction.length === 0) return true;
-            return item.jurisdiction.some(j => geo.includes(j) || geo.includes('global'));
+            
+            let itemJurs = [];
+            if (Array.isArray(item.jurisdiction)) itemJurs = item.jurisdiction;
+            else if (typeof item.jurisdiction === 'string') itemJurs = item.jurisdiction.split(',').map(s=>s.trim().toLowerCase());
+
+            return itemJurs.some(j => 
+                j === 'global' || 
+                geo.includes(j) || 
+                geo.includes('global')
+            );
         });
 
         if (relevant.length === 0) return;
