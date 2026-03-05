@@ -176,7 +176,7 @@
         </div>
     </div>
 
-    <script type="module">
+   <script type="module">
         import { initializeApp }                                        from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
         import { getFirestore, doc, setDoc, serverTimestamp }           from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
@@ -193,6 +193,18 @@
         const db  = getFirestore(app);
 
         const LEAD_WEBHOOK = "https://hook.eu1.make.com/q7nnd3klwdmlmtesq5no4yfsmk3v8ua7";
+
+        // ─── THE APOLLO TRACKER (FIRE 1: CLICKED) ─────────────────────
+        const urlParams = new URLSearchParams(window.location.search);
+        const prospectUid = urlParams.get('uid')?.toLowerCase().trim();
+
+        if (prospectUid) {
+            // Silently update the CRM the millisecond the page loads
+            setDoc(doc(db, "prospects", prospectUid), {
+                scannerClicked: true,
+                updatedAt: new Date().toISOString()
+            }, { merge: true }).catch(e => console.log("Tracker blocked:", e));
+        }
 
         // ─── SCORING STATE ────────────────────────────────────────────
         let currentRoute = [];
@@ -253,8 +265,8 @@
                 text: "Do your employees use AI tools (ChatGPT, Claude, Gemini, Copilot) for work tasks?",
                 options: [
                     { text: "Yes — with a formal AI usage policy.", intPts: 0  },
-                    { text: "Yes — informally, no policy.",          intPts: 35, unsure: true },
-                    { text: "No.",                                   intPts: 0  }
+                    { text: "Yes — informally, no policy.",         intPts: 35, unsure: true },
+                    { text: "No.",                                  intPts: 0  }
                 ]
             },
             {
@@ -263,7 +275,7 @@
                 options: [
                     { text: "Clearly defined in our IP or employment agreements.", intPts: 0  },
                     { text: "We assume we own it, but it's not documented.",       intPts: 40, unsure: true },
-                    { text: "We haven't thought about this.",                       intPts: 55, unsure: true }
+                    { text: "We haven't thought about this.",                      intPts: 55, unsure: true }
                 ]
             },
             {
@@ -281,7 +293,7 @@
                 options: [
                     { text: "Yes, formally documented protocol.",       intPts: 0  },
                     { text: "Humans are in the loop, but undocumented.", intPts: 30 },
-                    { text: "No protocol / I'm not sure.",               intPts: 40, unsure: true },
+                    { text: "No protocol / I'm not sure.",              intPts: 40, unsure: true },
                     { text: "We don't use AI for these decisions.",      intPts: 0  }
                 ]
             }
@@ -364,7 +376,7 @@
             switchState('state-quiz', 'state-gate');
         }
 
-        function loadDashboard() {
+        window.loadDashboard = function() { // Expose to window so processGateForm can call it
             const extData = getTierData(extScore, true);
             const intData = getTierData(intScore, false);
 
@@ -386,22 +398,22 @@
                 document.getElementById('cta-heading').innerText = "You have active exposure on both surfaces.";
                 document.getElementById('cta-body').innerText    = "Your diagnostic shows critical gaps in your external product architecture and your internal AI operations. The Complete Stack covers both.";
                 ctaBtn.innerText = "Apply for The Complete Stack";
-                ctaBtn.href      = "offer-bundle.html";
+                ctaBtn.href      = "apply.html?plan=complete_stack"; // Standardized links
             } else if (extScore > 50) {
                 document.getElementById('cta-heading').innerText = "Your primary exposure is in your product architecture.";
                 document.getElementById('cta-body').innerText    = "Your commercial agreements and user consent architecture are void under active case law. The Agentic Shield closes each gap directly.";
                 ctaBtn.innerText = "Apply for The Agentic Shield";
-                ctaBtn.href      = "offer-agentic.html";
+                ctaBtn.href      = "apply.html?plan=agentic_shield";
             } else if (intScore > 40) {
                 document.getElementById('cta-heading').innerText = "Your primary exposure is operational.";
                 document.getElementById('cta-body').innerText    = "Your team's AI outputs are falling into the public domain, and you lack documented behavioural oversight. The Workplace Shield addresses this.";
                 ctaBtn.innerText = "Apply for The Workplace Shield";
-                ctaBtn.href      = "offer-workplace.html";
+                ctaBtn.href      = "apply.html?plan=workplace_shield";
             } else {
                 document.getElementById('cta-heading').innerText = "Your baseline architecture is stronger than most.";
                 document.getElementById('cta-body').innerText    = "Your diagnostic shows low active exposure, but quiet gaps remain. A targeted Gap Review will surface them before they become enforcement events.";
                 ctaBtn.innerText = "Apply for a Gap Review";
-                ctaBtn.href      = "offer-gap.html";
+                ctaBtn.href      = "apply.html?plan=gap_review";
             }
             switchState('state-gate', 'state-dashboard');
         }
@@ -425,7 +437,7 @@
             setTimeout(() => { exitIntentFired = false; }, 1000);
         }
 
-        // ─── EXIT FORM ── email key, /leads, merge:true ───────────────
+        // ─── EXIT FORM ────────────────────────────────────────────────
         window.processExitForm = async function(e) {
             e.preventDefault();
             const btn = document.getElementById('exit-submit-btn');
@@ -433,41 +445,32 @@
             btn.classList.add('opacity-50', 'cursor-not-allowed');
 
             const email    = document.getElementById('exit-email').value.trim();
+            const docId    = email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
             const leadData = {
-                email,
-                name:             "",
-                company:          "",
-                leadType:         "ghost_lead",
-                source:           "scanner_exit",
-                status:           "new",
-                productRiskScore: 0,
-                internalOpsScore: 0,
-                uncertaintyFlag:  false,
-                notes:            "Captured via Exit Intent on Scanner"
+                email, name: "", company: "", leadType: "ghost_lead",
+                source: "scanner_exit", status: "new",
+                productRiskScore: 0, internalOpsScore: 0,
+                uncertaintyFlag: false, notes: "Captured via Exit Intent on Scanner"
             };
 
             try {
-                // FIX: email as document key, /leads collection, merge:true
-                const docId = email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
                 await setDoc(doc(db, "leads", docId), {
-                    ...leadData,
-                    createdAt:   serverTimestamp(),
-                    lastTouched: serverTimestamp()
+                    ...leadData, createdAt: serverTimestamp(), lastTouched: serverTimestamp()
                 }, { merge: true });
             } catch(err) { console.log("Firestore write failed:", err); }
 
             try {
                 await fetch(LEAD_WEBHOOK, {
-                    method:  'POST',
+                    method: 'POST',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                    body:    JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
+                    body: JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
                 });
-            } catch(err) { console.log("Webhook failed:", err); }
+            } catch(err) {}
 
             setTimeout(() => { window.closeExitModal(); }, 1500);
         }
 
-        // ─── GATE FORM ── email key, /leads, status:warm ──────────────
+        // ─── GATE FORM (FIRE 2: COMPLETED) ────────────────────────────
         window.processGateForm = async function(e) {
             e.preventDefault();
             const btn = document.getElementById('gate-submit-btn');
@@ -478,45 +481,46 @@
             const leadEmail   = document.getElementById('lead-email').value.trim();
             const leadCompany = document.getElementById('lead-company').value.trim();
 
-            // Store for apply.html pre-fill
             localStorage.setItem('ln_name',    leadName);
             localStorage.setItem('ln_email',   leadEmail);
             localStorage.setItem('ln_company', leadCompany);
 
+            const docId = leadEmail.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
             const leadData = {
-                email:            leadEmail,
-                name:             leadName,
-                company:          leadCompany,
-                leadType:         "warm_lead",
-                source:           "scanner",
-                status:           "warm",          // canonical lead status
-                productRiskScore: extScore,
-                internalOpsScore: intScore,
-                uncertaintyFlag:  unsureFlag,
-                notes:            ""
-                // NOTE: plan, documents, intakeData, adminNotes — NOT set here.
-                // Those fields belong to /clients, populated post-payment by Scenario 3.
+                email: leadEmail, name: leadName, company: leadCompany,
+                leadType: "warm_lead", source: "scanner", status: "warm",
+                productRiskScore: extScore, internalOpsScore: intScore,
+                uncertaintyFlag: unsureFlag, notes: ""
             };
 
+            // 1. Update Leads Collection
             try {
-                // FIX: email as document key, /leads collection, merge:true
-                const docId = leadEmail.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
                 await setDoc(doc(db, "leads", docId), {
-                    ...leadData,
-                    createdAt:   serverTimestamp(),
-                    lastTouched: serverTimestamp()
+                    ...leadData, createdAt: serverTimestamp(), lastTouched: serverTimestamp()
                 }, { merge: true });
             } catch(err) { console.log("Firestore write failed:", err); }
 
+            // 2. Update Prospects Collection (The Double Fire 🔥🔥)
+            try {
+                await setDoc(doc(db, "prospects", docId), {
+                    scannerCompleted: true,
+                    scannerExternalScore: extScore,
+                    scannerInternalScore: intScore,
+                    status: "Warm", // Automatically bump them down the pipeline funnel!
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
+            } catch(err) { console.log("Prospect CRM update failed:", err); }
+
+            // 3. Webhook Backup
             try {
                 await fetch(LEAD_WEBHOOK, {
-                    method:  'POST',
+                    method: 'POST',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                    body:    JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
+                    body: JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
                 });
-            } catch(err) { console.log("Webhook failed:", err); }
+            } catch(err) {}
 
-            loadDashboard();
+            window.loadDashboard();
         }
 
         // ─── START ────────────────────────────────────────────────────
@@ -531,9 +535,9 @@
             renderQuestion(questions[0]);
             switchState('state-welcome', 'state-quiz');
         }
-
     </script>
 
     <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v67327c56f0bb4ef8b305cae61679db8f1769101564043" integrity="sha512-rdcWY47ByXd76cbCFzznIcEaCN71jqkWBBqlwhF1SY7KubdLKZiEGeP7AyieKZlGP9hbY/MhGrwXzJC/HulNyg==" data-cf-beacon='{"version":"2024.11.0","token":"dfc3f5e5add24a01a5276f49e5abec40","r":1}' crossorigin="anonymous"></script>
 </body>
 </html>
+
