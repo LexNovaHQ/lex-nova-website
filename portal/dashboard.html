@@ -775,20 +775,22 @@ async function loadRadar(intakeData, maintenanceActive) {
 
             if (!isCovered) hasUncovered = true;
 
-            // 3. UI STATE ROUTING (Red vs Yellow vs Green)
+            // 3. UI STATE ROUTING (Red vs Yellow vs GREEN)
             let statusHtml = '';
-            let borderClass = 'border-shadow';
+            let borderClass = '';
 
             if (!isCovered) {
                 if (maintenanceActive) {
-                    statusHtml = '<p class="font-sans text-[9px] text-[#c4a840] mt-1 uppercase tracking-widest">🟡 Under Review</p>';
-                    borderClass = 'border-[#c4a840]/30'; // Subtle yellow border for VIPs
+                    statusHtml = '<p class="font-sans text-[9px] text-[#c4a840] mt-1 uppercase tracking-widest font-bold">🟡 Under Review</p>';
+                    borderClass = 'border-[#c4a840]/30 bg-[#c4a840]/5'; // Subtle yellow border/bg for VIPs
                 } else {
                     statusHtml = '<p class="font-sans text-[9px] text-[#d47a7a] mt-1 uppercase tracking-widest font-bold">🔴 Gap Detected</p>';
-                    borderClass = 'border-[#d47a7a]/40'; // Red alert border
+                    borderClass = 'border-[#d47a7a]/40 bg-[#d47a7a]/5'; // Red alert border/bg
                 }
             } else {
-                statusHtml = '<p class="font-sans text-[9px] text-marble opacity-30 mt-1 uppercase tracking-widest">✓ Covered</p>';
+                // THE FIX: Explicitly Green UI when the law is safely covered by their build
+                statusHtml = '<p class="font-sans text-[9px] text-[#7ab88a] mt-1 uppercase tracking-widest font-bold">✓ Covered</p>';
+                borderClass = 'border-[#7ab88a]/30 bg-[#7ab88a]/5'; // Reassuring green border/bg
             }
 
             const sevColor = item.severity === 'CRITICAL' ? 'bg-red-900/80 text-red-200 font-bold'
@@ -797,7 +799,7 @@ async function loadRadar(intakeData, maintenanceActive) {
                 : 'bg-green-900/40 text-green-400';
 
             return `
-            <div class="bg-[#080808] border ${borderClass} p-5 flex items-center justify-between gap-6 transition-colors">
+            <div class="border ${borderClass} p-5 flex items-center justify-between gap-6 transition-colors">
                 <div class="flex-1">
                     <p class="font-sans text-[10px] tracking-[0.15em] uppercase text-marble mb-1">${item.title}</p>
                     <p class="font-sans text-[10px] text-marble opacity-40 leading-relaxed">${item.description}</p>
@@ -821,7 +823,6 @@ async function loadRadar(intakeData, maintenanceActive) {
         console.error('Radar load error:', err);
     }
 }
-
 // ─────────────────────────────────────────
 // SUBMIT INTAKE (THE CRM PUSH)
 // ─────────────────────────────────────────
