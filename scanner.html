@@ -194,16 +194,26 @@
 
         const LEAD_WEBHOOK = "https://hook.eu1.make.com/q7nnd3klwdmlmtesq5no4yfsmk3v8ua7";
 
-        // ─── THE APOLLO TRACKER (FIRE 1: CLICKED) ─────────────────────
+      // ─── THE APOLLO TRACKER (FIRE 1: CLICKED) ─────────────────────
         const urlParams = new URLSearchParams(window.location.search);
         const prospectUid = urlParams.get('uid')?.toLowerCase().trim();
 
         if (prospectUid) {
-            // Silently update the CRM the millisecond the page loads
-            setDoc(doc(db, "prospects", prospectUid), {
+            console.log("Tracking click for:", prospectUid);
+            const prospectRef = doc(db, "prospects", prospectUid);
+            
+            // FIRE 1: The Click Signal
+            setDoc(prospectRef, {
                 scannerClicked: true,
-                updatedAt: new Date().toISOString()
-            }, { merge: true }).catch(e => console.log("Tracker blocked:", e));
+                lastActive: serverTimestamp(), // Corrected to use Firebase server clock
+                updatedAt: serverTimestamp()
+            }, { merge: true })
+            .then(() => console.log("🔥 Tracker Success: Signal sent to Admin Panel."))
+            .catch((err) => {
+                console.error("🔥 Tracker Failed:", err);
+                // If this alert pops up, your Firebase Permissions are blocking the write
+                alert("Admin Sync Failed. Check Console (F12) for Permission Error."); 
+            });
         }
 
         // ─── SCORING STATE ────────────────────────────────────────────
@@ -540,4 +550,5 @@
     <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v67327c56f0bb4ef8b305cae61679db8f1769101564043" integrity="sha512-rdcWY47ByXd76cbCFzznIcEaCN71jqkWBBqlwhF1SY7KubdLKZiEGeP7AyieKZlGP9hbY/MhGrwXzJC/HulNyg==" data-cf-beacon='{"version":"2024.11.0","token":"dfc3f5e5add24a01a5276f49e5abec40","r":1}' crossorigin="anonymous"></script>
 </body>
 </html>
+
 
