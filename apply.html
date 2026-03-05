@@ -551,16 +551,35 @@
             flagship:         { tier:'Flagship',product:'Flagship',          fee:'To be confirmed per scope', payment:'60% Deposit / 40% on Delivery', delivery:'To be confirmed per scope', revisions:'Throughout project duration' }
         };
 
-        // ── PRE-FILL FROM SCANNER localStorage ────────────────────────
+       // ── PRE-FILL & THE CATCHER (URL + LocalStorage) ────────────────
         document.addEventListener('DOMContentLoaded', () => {
+            // 1. Catch the URL Parameter and auto-select the Plan
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetPlan = urlParams.get('plan');
+
+            if (targetPlan && PLAN_PRICES[targetPlan]) {
+                const radio = document.querySelector(`input[name="plan_selection"][value="${targetPlan}"]`);
+                if (radio) {
+                    radio.checked = true;
+                }
+            } else {
+                // Fallback: Default to Agentic Shield if they land here directly
+                const defaultRadio = document.querySelector('input[name="plan_selection"][value="agentic_shield"]');
+                if (defaultRadio) defaultRadio.checked = true;
+            }
+
+            // 2. Catch the Memory Data and Auto-Fill the Form
             const fullName = localStorage.getItem('ln_name') || '';
             const parts    = fullName.trim().split(/\s+/);
             const fname    = parts[0] || '';
             const lname    = parts.slice(1).join(' ') || '';
+
             if (fname)   document.getElementById('apply-fname').value   = fname;
             if (lname)   document.getElementById('apply-lname').value   = lname;
+
             const email   = localStorage.getItem('ln_email')   || '';
             const company = localStorage.getItem('ln_company') || '';
+
             if (email)   document.getElementById('apply-email').value   = email;
             if (company) document.getElementById('apply-company').value = company;
         });
@@ -721,3 +740,4 @@
     </script>
 </body>
 </html>
+
