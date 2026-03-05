@@ -558,8 +558,8 @@ function renderDashboard(data) {
     // Documents tab
     renderDocs(data.documents, status);
 
-    // Maintenance CTA — only on delivered + not active + not already on maintenance
-    if (status === 'delivered' && !maintenanceActive) {
+    // FIX: Maintenance CTA — Shows up as soon as intake is submitted if they don't have it active yet
+    if (intakeSubmitted && !maintenanceActive) {
         document.getElementById('maintenance-cta').classList.remove('hidden');
         renderPayPalButton();
     }
@@ -573,12 +573,13 @@ function renderDashboard(data) {
         document.getElementById('heatmap-locked-notice').classList.remove('hidden');
     }
 
-    // Walkthrough
-    if (status === 'delivered' && data.walkthroughUrl) {
+    // FIX: Walkthrough - looks for either deliveryVideoUrl OR walkthroughUrl
+    const videoUrl = data.deliveryVideoUrl || data.walkthroughUrl;
+    if (status === 'delivered' && videoUrl) {
         document.getElementById('walkthrough-locked').classList.add('hidden');
         document.getElementById('walkthrough-video').classList.remove('hidden');
         document.getElementById('video-embed').innerHTML =
-            `<iframe src="${data.walkthroughUrl}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>`;
+            `<iframe src="${videoUrl}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>`;
     }
 
     // Load regulatory radar
@@ -670,7 +671,8 @@ function renderDocs(docs, status) {
 }
 
 function docCard(name, purpose, pdfUrl, docxUrl, status) {
-    const ready = status === 'ready' && (pdfUrl || docxUrl);
+    // Treat 'delivered' and 'ready' as the same for displaying the PDF buttons
+    const ready = (status === 'ready' || status === 'delivered') && (pdfUrl || docxUrl);
     return `<div class="bg-[#080808] border border-shadow p-6 flex flex-col md:flex-row justify-between items-start gap-4">
         <div class="flex-1">
             <div class="flex items-center gap-3 mb-2">
@@ -734,7 +736,8 @@ async function loadRadar(intakeData, maintenanceActive) {
         if (!doc.exists) return;
 
         const radarData = doc.data();
-        const items = radarData.items || [];
+        // FIX: The core data disconnect. The Admin Panel saves it as 'entries'.
+        const items = radarData.entries || radarData.items || [];
         const geo = intakeData?.geo || [];
 
         // Filter by client jurisdiction
@@ -847,6 +850,12 @@ async function submitIntake() {
         const rows = buildHeatmapRows(intakeData);
         renderHeatmapGrid(rows, intakeData, isBundle, !!clientData.maintenanceActive);
         loadRadar(intakeData, !!clientData.maintenanceActive);
+
+        // FIX: Ensure Maintenance CTA shows up right after submission if not active
+        if (!clientData.maintenanceActive) {
+            document.getElementById('maintenance-cta').classList.remove('hidden');
+            renderPayPalButton();
+        }
 
     } catch(err) {
         console.error(err);
