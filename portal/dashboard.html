@@ -30,17 +30,14 @@
         ::-webkit-scrollbar-track { background: #050505; }
         ::-webkit-scrollbar-thumb { background: #1A1A1A; }
     </style>
-    <!-- Firebase Compat SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-    <!-- PayPal SDK -->
     <script src="https://www.paypal.com/sdk/js?client-id=AchGCRgEtFO_TvYIOAI9xRjtw0cC1wWMr0zEwHItOYcrjnmSYNycP2foYe6tXod0W1ica20zrk0qdeK1&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
 </head>
 
 <body class="bg-void text-marble font-sans antialiased min-h-screen flex flex-col">
 
-    <!-- NAV -->
     <nav class="w-full py-6 px-6 md:px-12 flex justify-between items-center border-b border-shadow">
         <a href="https://lexnovahq.com" class="font-serif text-lg tracking-widest text-gold uppercase">
             Lex Nova <span class="text-marble opacity-40 text-xs ml-1">HQ</span>
@@ -51,7 +48,6 @@
         </div>
     </nav>
 
-    <!-- LOADING -->
     <div id="screen-loading" class="flex-grow flex items-center justify-center">
         <div class="text-center">
             <div class="w-8 h-8 border border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -59,7 +55,6 @@
         </div>
     </div>
 
-    <!-- LOGIN -->
     <div id="screen-login" class="hidden flex-grow flex items-center justify-center px-6">
         <div class="w-full max-w-md fade-in">
             <div class="text-center mb-12">
@@ -88,10 +83,8 @@
         </div>
     </div>
 
-    <!-- DASHBOARD -->
     <main id="screen-dashboard" class="hidden flex-grow w-full max-w-5xl mx-auto px-6 py-12 fade-in">
 
-        <!-- Welcome Bar -->
         <div class="flex flex-col md:flex-row justify-between items-start gap-6 mb-12">
             <div>
                 <p class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-30 uppercase mb-1">Client Portal</p>
@@ -104,7 +97,6 @@
             </div>
         </div>
 
-        <!-- Status Tracker -->
         <div class="bg-[#080808] border border-shadow p-8 mb-8">
             <p class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-40 uppercase mb-8">Engagement Status</p>
             <div class="relative flex items-start justify-between">
@@ -132,7 +124,6 @@
             </div>
         </div>
 
-        <!-- Tab Nav -->
         <div class="flex gap-8 border-b border-shadow mb-8 overflow-x-auto">
             <button id="tab-btn-intake" onclick="switchTab('intake')" class="font-sans text-xs tracking-[0.15em] uppercase pb-4 opacity-50 hover:opacity-100 transition-opacity whitespace-nowrap">The Vault</button>
             <button id="tab-btn-docs" onclick="switchTab('docs')" class="font-sans text-xs tracking-[0.15em] uppercase pb-4 opacity-50 hover:opacity-100 transition-opacity whitespace-nowrap">Documents</button>
@@ -140,7 +131,6 @@
             <button id="tab-btn-walkthrough" onclick="switchTab('walkthrough')" class="font-sans text-xs tracking-[0.15em] uppercase pb-4 opacity-50 hover:opacity-100 transition-opacity whitespace-nowrap">Walkthrough</button>
         </div>
 
-        <!-- ═══ TAB: VAULT ═══ -->
         <div id="tab-intake" class="hidden fade-in">
             <div id="intake-submitted" class="hidden bg-[#080808] border border-gold/30 p-12 text-center fade-in mb-8">
                 <div class="inline-block border border-gold/40 bg-gold/5 px-5 py-2 mb-6">
@@ -150,7 +140,6 @@
                 <p class="font-sans text-xs text-marble opacity-50 leading-relaxed max-w-md mx-auto">Your technical parameters are locked. The 48-hour build window is now active. You will receive an email when your documents are ready.</p>
             </div>
 
-            <!-- Bundle Upsell Banner — shown post-intake if plan = agentic_shield only -->
             <div id="bundle-upsell" class="hidden bg-[#080808] border border-gold/20 p-8 mb-8 fade-in">
                 <div class="flex flex-col md:flex-row justify-between items-start gap-6">
                     <div class="flex-1">
@@ -164,7 +153,7 @@
                     <div class="flex-shrink-0 text-center">
                         <p class="font-serif text-3xl text-gold mb-1">$1,000</p>
                         <p class="font-sans text-[10px] text-marble opacity-40 mb-4">upgrade from your current kit</p>
-                        <a href="https://lexnovahq.com/offer-bundle.html" class="inline-block bg-gold text-void font-sans text-[10px] tracking-[0.2em] uppercase px-6 py-3 hover:bg-marble transition-colors font-bold">Add Workplace Shield</a>
+                        <a href="https://www.paypal.com/ncp/payment/7DUHPJJ4XVUVJ" target="_blank" class="inline-block bg-gold text-void font-sans text-[10px] tracking-[0.2em] uppercase px-6 py-3 hover:bg-marble transition-colors font-bold">Add Workplace Shield</a>
                     </div>
                 </div>
             </div>
@@ -179,7 +168,6 @@
                 </div>
                 <div class="bg-[#080808] border border-shadow p-8 space-y-10">
 
-                    <!-- Q1 -->
                     <div>
                         <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-1">01 — Agent Classification</p>
                         <p class="font-serif text-xl text-marble mb-5">What best describes your AI system?</p>
@@ -195,7 +183,6 @@
                         </div>
                     </div>
 
-                    <!-- Q2 -->
                     <div>
                         <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-1">02 — Action Scope</p>
                         <p class="font-serif text-xl text-marble mb-2">What actions can your agent take? <span class="text-marble opacity-30 text-sm">(select all)</span></p>
@@ -209,7 +196,6 @@
                         </div>
                     </div>
 
-                    <!-- Q3 -->
                     <div>
                         <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-1">03 — Data Classification</p>
                         <p class="font-serif text-xl text-marble mb-2">What data does your agent process? <span class="text-marble opacity-30 text-sm">(select all)</span></p>
@@ -223,7 +209,6 @@
                         </div>
                     </div>
 
-                    <!-- Q4 -->
                     <div>
                         <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-1">04 — Jurisdiction Exposure</p>
                         <p class="font-serif text-xl text-marble mb-2">Where are your end users located? <span class="text-marble opacity-30 text-sm">(select all)</span></p>
@@ -237,7 +222,6 @@
                         </div>
                     </div>
 
-                    <!-- Q5 -->
                     <div>
                         <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-1">05 — AI Infrastructure</p>
                         <p class="font-serif text-xl text-marble mb-2">Which AI providers power your system? <span class="text-marble opacity-30 text-sm">(select all)</span></p>
@@ -251,7 +235,6 @@
                         </div>
                     </div>
 
-                    <!-- Q6 -->
                     <div>
                         <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-1">06 — Agent Memory</p>
                         <p class="font-serif text-xl text-marble mb-5">Does your agent retain memory between sessions?</p>
@@ -262,7 +245,6 @@
                         </div>
                     </div>
 
-                    <!-- Q7 -->
                     <div>
                         <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-1">07 — Local Counsel</p>
                         <p class="font-serif text-xl text-marble mb-5">Do you have existing legal counsel who will review and localise these documents?</p>
@@ -273,7 +255,6 @@
                         </div>
                     </div>
 
-                    <!-- Q8 -->
                     <div>
                         <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-1">08 — Architect's Brief</p>
                         <p class="font-serif text-xl text-marble mb-2">Anything the Architect should know?</p>
@@ -292,7 +273,6 @@
             </div>
         </div>
 
-        <!-- ═══ TAB: DOCUMENTS ═══ -->
         <div id="tab-docs" class="hidden fade-in">
             <div class="mb-8">
                 <div class="inline-block border border-gold/40 bg-gold/5 px-5 py-2 mb-5">
@@ -302,7 +282,6 @@
                 <p class="font-sans text-xs text-marble opacity-40">Review-Ready drafts. Each document requires local counsel review before execution.</p>
             </div>
 
-            <!-- Maintenance CTA — shows on delivered, hidden if maintenanceActive -->
             <div id="maintenance-cta" class="hidden bg-[#080808] border border-gold/30 p-8 mb-8 fade-in">
                 <div class="flex flex-col md:flex-row justify-between items-start gap-6">
                     <div class="flex-1">
@@ -332,7 +311,6 @@
             <div id="docs-grid" class="space-y-4"></div>
         </div>
 
-        <!-- ═══ TAB: RISK HEATMAP ═══ -->
         <div id="tab-heatmap" class="hidden fade-in">
             <div class="mb-8">
                 <div class="inline-block border border-gold/40 bg-gold/5 px-5 py-2 mb-5">
@@ -346,13 +324,11 @@
                 <p class="font-sans text-xs text-marble opacity-40">The heatmap populates after intake submission.</p>
             </div>
 
-            <!-- Current Exposure -->
             <div id="heatmap-current-wrap" class="hidden">
                 <p class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-30 uppercase mb-4">Current Exposure</p>
                 <div id="heatmap-grid" class="space-y-3 mb-12"></div>
             </div>
 
-            <!-- Regulatory Radar -->
             <div id="heatmap-radar-wrap" class="hidden">
                 <div class="flex items-center justify-between mb-4">
                     <p class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-30 uppercase">Regulatory Radar — Upcoming Risks</p>
@@ -361,7 +337,6 @@
                 <div id="radar-grid" class="space-y-3 mb-8"></div>
             </div>
 
-            <!-- Flagship CTA -->
             <div id="flagship-cta" class="hidden bg-[#080808] border border-red-900/40 p-8 mb-6 fade-in">
                 <div class="flex flex-col md:flex-row justify-between items-start gap-6">
                     <div>
@@ -372,12 +347,11 @@
                         <p class="font-sans text-xs text-marble opacity-50 leading-relaxed max-w-xl">Multiple critical and high-severity gaps identified. A Flagship engagement provides bespoke architecture, stakeholder sessions, and direct Architect access — built for your specific operating reality.</p>
                     </div>
                     <div class="flex-shrink-0">
-                        <a href="https://lexnovahq.com/apply.html?plan=flagship" class="inline-block border border-gold text-gold font-sans text-[10px] tracking-[0.2em] uppercase px-6 py-3 hover:bg-gold hover:text-void transition-all">Speak to The Architect</a>
+                        <a href="https://lexnovahq.com/apply.html?plan=flagship" target="_blank" class="inline-block border border-gold text-gold font-sans text-[10px] tracking-[0.2em] uppercase px-6 py-3 hover:bg-gold hover:text-void transition-all">Speak to The Architect</a>
                     </div>
                 </div>
             </div>
 
-            <!-- Gap Review CTA -->
             <div id="gap-review-cta" class="hidden bg-[#080808] border border-shadow p-8 fade-in">
                 <div class="flex flex-col md:flex-row justify-between items-start gap-6">
                     <div>
@@ -389,14 +363,13 @@
                         <p class="font-sans text-[10px] text-gold mt-3">Maintenance subscribers receive these updates automatically.</p>
                     </div>
                     <div class="flex-shrink-0 text-center">
-                        <a href="https://lexnovahq.com/offer-gap.html" class="inline-block border border-gold text-gold font-sans text-[10px] tracking-[0.2em] uppercase px-6 py-3 hover:bg-gold hover:text-void transition-all mb-3 block">Request Gap Review</a>
-                        <p class="font-sans text-[9px] text-marble opacity-30">Scoped & priced post-intake</p>
+                        <a href="https://www.paypal.com/ncp/payment/MRRW9MRXD4GRG" target="_blank" class="inline-block border border-gold text-gold font-sans text-[10px] tracking-[0.2em] uppercase px-6 py-3 hover:bg-gold hover:text-void transition-all mb-3 block">Request Gap Review</a>
+                        <p class="font-sans text-[9px] text-marble opacity-30">$497 Standalone Audit</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ═══ TAB: WALKTHROUGH ═══ -->
         <div id="tab-walkthrough" class="hidden fade-in">
             <div class="mb-8">
                 <div class="inline-block border border-gold/40 bg-gold/5 px-5 py-2 mb-5">
@@ -552,7 +525,7 @@ function renderDashboard(data) {
     showScreen('screen-dashboard');
     const status = data.status || 'intake_received';
     const plan = data.plan || '';
-    const isBundle = ['agentic_shield_bundle','full_stack','workplace_shield'].includes(plan);
+    const isBundle = ['agentic_shield_bundle','full_stack','workplace_shield', 'complete_stack'].includes(plan);
     const intakeSubmitted = !!data.intakeData;
     const maintenanceActive = !!data.maintenanceActive;
 
@@ -641,6 +614,9 @@ function renderPayPalButton() {
                     </div>
                     <p class="font-sans text-xs text-marble opacity-50">Your architecture is now covered. Updates will be pushed to your portal quarterly.</p>
                 </div>`;
+            
+            // Re-render radar to hide gap review CTA
+            if(clientData.intakeData) loadRadar(clientData.intakeData, true);
         }
     }).render('#paypal-maintenance-btn');
 }
@@ -649,13 +625,14 @@ function renderPayPalButton() {
 // STATUS TRACKER
 // ─────────────────────────────────────────
 const STATUS_MAP = {
-    'intake_received': { node:1, prog:'8%',  msg:'Your intake form is pending. Complete The Vault to activate the 48-hour build window.' },
-    'under_review':    { node:2, prog:'40%', msg:'The Architect is reviewing your technical parameters. Build begins within 24 hours.' },
-    'in_production':   { node:3, prog:'70%', msg:'Your architecture is in production. Estimated delivery within your 48-hour SLA window.' },
-    'delivered':       { node:4, prog:'100%',msg:'Your documents are ready. Download from the Documents tab. Engage local counsel for review and localisation.' }
+    'payment_received': { node:1, prog:'0%',  msg:'Payment confirmed. Complete The Vault below to activate the 48-hour build window.' }, 
+    'intake_received':  { node:1, prog:'8%',  msg:'Your intake form is received. The 48-hour build window is now active.' },
+    'under_review':     { node:2, prog:'40%', msg:'The Architect is reviewing your technical parameters. Build is underway.' },
+    'in_production':    { node:3, prog:'70%', msg:'Your architecture is in production. Estimated delivery within your 48-hour SLA window.' },
+    'delivered':        { node:4, prog:'100%',msg:'Your documents are ready. Download from the Documents tab. Engage local counsel for review.' }
 };
 function renderStatus(status) {
-    const s = STATUS_MAP[status] || STATUS_MAP['intake_received'];
+    const s = STATUS_MAP[status] || STATUS_MAP['payment_received'];
     document.getElementById('prog-line').style.width = s.prog;
     document.getElementById('status-msg').textContent = s.msg;
     for (let i=1; i<=4; i++) {
@@ -671,7 +648,7 @@ function renderStatus(status) {
 function renderDocs(docs, status) {
     const grid = document.getElementById('docs-grid');
     const notice = document.getElementById('docs-locked-notice');
-    const locked = !docs || docs.length === 0 || ['intake_received','under_review'].includes(status);
+    const locked = !docs || docs.length === 0 || ['payment_received', 'intake_received','under_review'].includes(status);
 
     if (locked) {
         notice.classList.remove('hidden');
@@ -804,6 +781,8 @@ async function loadRadar(intakeData, maintenanceActive) {
 
         if (hasUncovered && !maintenanceActive) {
             document.getElementById('gap-review-cta').classList.remove('hidden');
+        } else {
+            document.getElementById('gap-review-cta').classList.add('hidden');
         }
 
     } catch(err) {
@@ -812,23 +791,27 @@ async function loadRadar(intakeData, maintenanceActive) {
 }
 
 // ─────────────────────────────────────────
-// SUBMIT INTAKE
+// SUBMIT INTAKE (THE CRM PUSH)
 // ─────────────────────────────────────────
 async function submitIntake() {
     const errEl = document.getElementById('intake-error');
     errEl.classList.add('hidden');
+    
     const agentType = document.querySelector('input[name="q_agent_type"]:checked')?.value;
-    const memory = document.querySelector('input[name="q_memory"]:checked')?.value;
-    const counsel = document.querySelector('input[name="q_counsel"]:checked')?.value;
+    const memory    = document.querySelector('input[name="q_memory"]:checked')?.value;
+    const counsel   = document.querySelector('input[name="q_counsel"]:checked')?.value;
+    
     if (!agentType || !memory || !counsel) {
         errEl.textContent = 'Please answer all required questions (01, 06, 07) before submitting.';
         errEl.classList.remove('hidden'); return;
     }
-    const actions = [...document.querySelectorAll('input[name="q_actions"]:checked')].map(e => e.value);
-    const data    = [...document.querySelectorAll('input[name="q_data"]:checked')].map(e => e.value);
-    const geo     = [...document.querySelectorAll('input[name="q_geo"]:checked')].map(e => e.value);
+    
+    const actions   = [...document.querySelectorAll('input[name="q_actions"]:checked')].map(e => e.value);
+    const data      = [...document.querySelectorAll('input[name="q_data"]:checked')].map(e => e.value);
+    const geo       = [...document.querySelectorAll('input[name="q_geo"]:checked')].map(e => e.value);
     const providers = [...document.querySelectorAll('input[name="q_provider"]:checked')].map(e => e.value);
-    const notes   = document.getElementById('q_notes').value.trim();
+    const notes     = document.getElementById('q_notes').value.trim();
+    
     const intakeData = { agentType, actions, data, geo, providers, memory, counsel, notes, submittedAt: new Date().toISOString() };
 
     const btn = document.querySelector('#tab-intake button[onclick="submitIntake()"]');
@@ -838,22 +821,27 @@ async function submitIntake() {
     try {
         const email = auth.currentUser?.email;
         if (!email) throw new Error('Not authenticated');
+        
         const snap = await db.collection('clients').where('email','==',email).limit(1).get();
         const docRef = snap.empty ? db.collection('clients').doc(email) : snap.docs[0].ref;
-        await docRef.set({ intakeData, status:'under_review', intakeSentAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge:true });
+        
+        // Push status to 'intake_received' so Admin Panel recognizes it
+        await docRef.set({ 
+            intakeData, 
+            status: 'intake_received', 
+            intakeReceivedAt: firebase.firestore.FieldValue.serverTimestamp() 
+        }, { merge:true });
 
         clientData.intakeData = intakeData;
-        clientData.status = 'under_review';
+        clientData.status = 'intake_received';
 
         document.getElementById('intake-form-wrap').classList.add('hidden');
         document.getElementById('intake-submitted').classList.remove('hidden');
-        renderStatus('under_review');
+        renderStatus('intake_received');
 
-        // Show bundle upsell if not bundle plan
-        const isBundle = ['agentic_shield_bundle','full_stack','workplace_shield'].includes(clientData.plan);
+        const isBundle = ['agentic_shield_bundle','full_stack','workplace_shield','complete_stack'].includes(clientData.plan);
         if (!isBundle) document.getElementById('bundle-upsell').classList.remove('hidden');
 
-        // Render heatmap
         document.getElementById('heatmap-current-wrap').classList.remove('hidden');
         document.getElementById('heatmap-locked-notice').classList.add('hidden');
         const rows = buildHeatmapRows(intakeData);
@@ -885,7 +873,7 @@ function switchTab(tab) {
 // HELPERS
 // ─────────────────────────────────────────
 function planLabel(plan) {
-    const map = { 'agentic_shield':'Agentic Shield', 'agentic_shield_bundle':'Complete Stack', 'full_stack':'Complete Stack', 'workplace_shield':'Workplace Shield', 'flagship':'Flagship Engagement' };
+    const map = { 'agentic_shield':'Agentic Shield', 'agentic_shield_bundle':'Complete Stack', 'complete_stack':'Complete Stack', 'full_stack':'Complete Stack', 'workplace_shield':'Workplace Shield', 'flagship':'Flagship Engagement' };
     return map[plan] || plan || 'Lex Nova Engagement';
 }
 </script>
