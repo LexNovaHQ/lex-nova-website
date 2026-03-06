@@ -194,24 +194,35 @@
 
         const LEAD_WEBHOOK = "https://hook.eu1.make.com/q7nnd3klwdmlmtesq5no4yfsmk3v8ua7";
 
-      // ─── THE CRM TRACKER (FIRE 1: CLICKED) ─────────────────────
-        const urlParams = new URLSearchParams(window.location.search);
-        const prospectEmail = urlParams.get('email')?.toLowerCase().trim(); // Changed to look for ?email=
+    // ─── THE CRM TRACKER (FIRE 1: CLICKED) ─────────────────────
+        // Wrapping in a slight timeout ensures Firebase is 100% awake before firing
+        setTimeout(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const prospectEmail = urlParams.get('email'); // Looking specifically for ?email=
 
-        if (prospectEmail) {
-            console.log("Tracking click for:", prospectEmail);
-            const prospectRef = doc(db, "prospects", prospectEmail);
-            
-            // FIRE 1: The Click Signal
-            setDoc(prospectRef, {
-                scannerClicked: true,
-                status: 'Warm', // Auto-upgrade to Warm
-                lastActive: serverTimestamp(),
-                updatedAt: serverTimestamp()
-            }, { merge: true })
-            .then(() => console.log("🔥 Tracker Success: Signal sent to Admin Panel."))
-            .catch((err) => console.error("🔥 Tracker Failed:", err));
-        }
+            if (prospectEmail) {
+                // Clean the email exactly how the completion form does it
+                const cleanEmail = prospectEmail.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase().trim();
+                console.log("🔥 [DEBUG 1] URL Email found:", cleanEmail);
+                
+                const prospectRef = doc(db, "prospects", cleanEmail);
+                
+                setDoc(prospectRef, {
+                    scannerClicked: true,
+                    status: 'Warm', // Instantly bump them in the pipeline
+                    lastActive: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                }, { merge: true })
+                .then(() => {
+                    console.log("✅ [DEBUG 2] Firebase updated: Click tracked perfectly.");
+                })
+                .catch((err) => {
+                    console.error("❌ [DEBUG 2] Firebase failed to update:", err);
+                });
+            } else {
+                console.log("ℹ️ [DEBUG] No ?email= found in the URL. Organic visitor.");
+            }
+        }, 500);
         // ─── SCORING STATE ────────────────────────────────────────────
         let currentRoute = [];
         let currentIndex = 0;
@@ -546,6 +557,7 @@
     <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v67327c56f0bb4ef8b305cae61679db8f1769101564043" integrity="sha512-rdcWY47ByXd76cbCFzznIcEaCN71jqkWBBqlwhF1SY7KubdLKZiEGeP7AyieKZlGP9hbY/MhGrwXzJC/HulNyg==" data-cf-beacon='{"version":"2024.11.0","token":"dfc3f5e5add24a01a5276f49e5abec40","r":1}' crossorigin="anonymous"></script>
 </body>
 </html>
+
 
 
 
