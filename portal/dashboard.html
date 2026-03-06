@@ -283,7 +283,7 @@
                 <p class="font-sans text-xs text-marble opacity-40">Review-Ready drafts. Each document requires local counsel review before execution.</p>
             </div>
 
-<div id="debrief-block" class="hidden bg-[#080808] border border-gold p-8 mb-8 fade-in">
+            <div id="debrief-block" class="hidden bg-[#080808] border border-gold p-8 mb-8 fade-in">
                 <div class="inline-block border border-gold/40 bg-gold/5 px-4 py-1 mb-4">
                     <span class="font-sans text-[9px] tracking-[0.3em] text-gold uppercase">Action Required</span>
                 </div>
@@ -310,7 +310,7 @@
                     <button onclick="submitDebrief()" class="mt-4 bg-gold text-void font-sans text-[10px] tracking-[0.2em] uppercase px-6 py-3 hover:bg-marble transition-colors font-bold">Submit Debrief</button>
                 </div>
             </div>
-            
+
             <div id="maintenance-cta" class="hidden bg-[#080808] border border-gold/30 p-8 mb-8 fade-in">
                 <div class="flex flex-col md:flex-row justify-between items-start gap-6">
                     <div class="flex-1">
@@ -419,7 +419,8 @@
                 <div id="video-embed" class="aspect-video w-full bg-shadow"></div>
             </div>
         </div>
-<div id="tab-network" class="hidden fade-in">
+
+        <div id="tab-network" class="hidden fade-in">
             <div class="mb-8">
                 <div class="inline-block border border-gold/40 bg-gold/5 px-5 py-2 mb-5">
                     <span class="font-sans text-[10px] tracking-[0.3em] text-gold uppercase">Partner Protocol</span>
@@ -450,6 +451,7 @@
                 </div>
             </div>
         </div>
+
     </main>
 
     <footer class="border-t border-shadow py-6 px-6 md:px-12 flex justify-between items-center">
@@ -473,11 +475,10 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Global client data store
 let clientData = {};
 
 // ─────────────────────────────────────────
-// SCREEN HELPERS
+// SCREEN HELPERS & AUTH
 // ─────────────────────────────────────────
 function showScreen(id) {
     ['screen-loading','screen-login','screen-dashboard'].forEach(s => {
@@ -490,9 +491,6 @@ function showScreen(id) {
     if (id !== 'screen-dashboard') t.classList.add('flex','flex-grow');
 }
 
-// ─────────────────────────────────────────
-// MAGIC LINK HANDLER
-// ─────────────────────────────────────────
 if (auth.isSignInWithEmailLink(window.location.href)) {
     let email = window.localStorage.getItem('lexnova_signin_email');
     if (!email) email = window.prompt('Please confirm your email to complete sign-in:');
@@ -509,9 +507,6 @@ if (auth.isSignInWithEmailLink(window.location.href)) {
     }
 }
 
-// ─────────────────────────────────────────
-// AUTH STATE
-// ─────────────────────────────────────────
 auth.onAuthStateChanged(user => {
     if (user) {
         document.getElementById('signout-btn').classList.remove('hidden');
@@ -521,9 +516,6 @@ auth.onAuthStateChanged(user => {
     }
 });
 
-// ─────────────────────────────────────────
-// MAGIC LINK SEND
-// ─────────────────────────────────────────
 function sendMagicLink() {
     const email = document.getElementById('login-email').value.trim();
     if (!email || !email.includes('@')) { showLoginError('Please enter a valid email address.'); return; }
@@ -549,9 +541,6 @@ function doSignOut() {
     auth.signOut().then(() => showScreen('screen-login'));
 }
 
-// ─────────────────────────────────────────
-// LOAD CLIENT DATA
-// ─────────────────────────────────────────
 async function loadClientData(email) {
     try {
         let data = null;
@@ -578,7 +567,7 @@ async function loadClientData(email) {
 }
 
 // ─────────────────────────────────────────
-// RENDER DASHBOARD
+// MAIN RENDER ENGINE
 // ─────────────────────────────────────────
 function renderDashboard(data) {
     showScreen('screen-dashboard');
@@ -588,9 +577,7 @@ function renderDashboard(data) {
     const intakeSubmitted = !!data.intakeData;
     const maintenanceActive = !!data.maintenanceActive;
 
-    // Welcome bar
-    document.getElementById('welcome-name').textContent = data.name
-        ? `Welcome, ${data.name.split(' ')[0]}.` : 'Welcome back.';
+    document.getElementById('welcome-name').textContent = data.name ? `Welcome, ${data.name.split(' ')[0]}.` : 'Welcome back.';
     document.getElementById('kit-name').textContent = planLabel(plan);
     document.getElementById('engagement-ref').textContent = data.engagementRef || '';
     if (data.engagementRef) {
@@ -598,32 +585,24 @@ function renderDashboard(data) {
         document.getElementById('nav-ref').classList.remove('hidden');
     }
 
-    // Status
     renderStatus(status);
 
-    // Decide default tab
     if (intakeSubmitted) {
         document.getElementById('intake-form-wrap').classList.add('hidden');
         document.getElementById('intake-submitted').classList.remove('hidden');
-        // Show bundle upsell if applicable
-        if (!isBundle && intakeSubmitted) {
-            document.getElementById('bundle-upsell').classList.remove('hidden');
-        }
+        if (!isBundle && intakeSubmitted) document.getElementById('bundle-upsell').classList.remove('hidden');
         switchTab('docs');
     } else {
         switchTab('intake');
     }
 
-    // Documents tab
     renderDocs(data.documents, status);
 
-    // FIX: Maintenance CTA — Shows up as soon as intake is submitted if they don't have it active yet
     if (intakeSubmitted && !maintenanceActive) {
         document.getElementById('maintenance-cta').classList.remove('hidden');
         renderPayPalButton();
     }
 
-    // Heatmap
     if (intakeSubmitted && data.intakeData) {
         document.getElementById('heatmap-current-wrap').classList.remove('hidden');
         const rows = buildHeatmapRows(data.intakeData);
@@ -632,30 +611,26 @@ function renderDashboard(data) {
         document.getElementById('heatmap-locked-notice').classList.remove('hidden');
     }
 
-    // FIX: Walkthrough - looks for either deliveryVideoUrl OR walkthroughUrl
     const videoUrl = data.deliveryVideoUrl || data.walkthroughUrl;
     if (status === 'delivered' && videoUrl) {
         document.getElementById('walkthrough-locked').classList.add('hidden');
         document.getElementById('walkthrough-video').classList.remove('hidden');
-        document.getElementById('video-embed').innerHTML =
-            `<iframe src="${videoUrl}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>`;
+        document.getElementById('video-embed').innerHTML = `<iframe src="${videoUrl}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>`;
     }
-    // ── INJECT: Debrief & Referral Logic ──
-    // Show Debrief if delivered and not yet submitted
+
+    // ── DEBRIEF & REFERRAL LOGIC ──
     if (status === 'delivered' && !data.debrief) {
         document.getElementById('debrief-block').classList.remove('hidden');
     } else {
         document.getElementById('debrief-block').classList.add('hidden');
     }
 
-    // Set dynamic referral reward text
     if (maintenanceActive) {
         document.getElementById('ref-reward-text').textContent = 'Free Workplace Shield or Architect Strategy Session';
     } else {
         document.getElementById('ref-reward-text').textContent = '3 Months Free Liability Maintenance';
     }
 
-    // Render existing referrals
     const refList = document.getElementById('ref-list');
     if (data.referrals && data.referrals.length > 0) {
         refList.innerHTML = data.referrals.map(r => `
@@ -668,48 +643,11 @@ function renderDashboard(data) {
         refList.innerHTML = '<p class="font-sans text-[10px] text-marble opacity-30">No targets registered yet.</p>';
     }
 
-    // Load regulatory radar
     loadRadar(data.intakeData, maintenanceActive);
 }
 
 // ─────────────────────────────────────────
-// PAYPAL SUBSCRIPTION BUTTON
-// ─────────────────────────────────────────
-function renderPayPalButton() {
-    if (typeof paypal === 'undefined') return;
-    paypal.Buttons({
-        style: { shape: 'rect', color: 'gold', layout: 'horizontal', label: 'subscribe', height: 40 },
-        createSubscription: function(data, actions) {
-            return actions.subscription.create({ plan_id: 'P-3UN560448N490122YNGTN7PY' });
-        },
-        onApprove: function(data) {
-            // Update Firestore
-            const email = auth.currentUser?.email;
-            if (email) {
-                db.collection('clients').where('email','==',email).limit(1).get().then(snap => {
-                    if (!snap.empty) snap.docs[0].ref.update({
-                        maintenanceActive: true,
-                        maintenanceSubscriptionId: data.subscriptionID,
-                        maintenanceStartedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                });
-            }
-            document.getElementById('maintenance-cta').innerHTML = `
-                <div class="text-center py-4">
-                    <div class="inline-block border border-gold/40 bg-gold/5 px-5 py-2 mb-3">
-                        <span class="font-sans text-[10px] tracking-[0.3em] text-gold uppercase">Maintenance Active</span>
-                    </div>
-                    <p class="font-sans text-xs text-marble opacity-50">Your architecture is now covered. Updates will be pushed to your portal quarterly.</p>
-                </div>`;
-            
-            // Re-render radar to hide gap review CTA
-            if(clientData.intakeData) loadRadar(clientData.intakeData, true);
-        }
-    }).render('#paypal-maintenance-btn');
-}
-
-// ─────────────────────────────────────────
-// STATUS TRACKER
+// UI HELPERS & COMPONENT RENDERING
 // ─────────────────────────────────────────
 const STATUS_MAP = {
     'payment_received': { node:1, prog:'0%',  msg:'Payment confirmed. Complete The Vault below to activate the 48-hour build window.' }, 
@@ -718,6 +656,7 @@ const STATUS_MAP = {
     'in_production':    { node:3, prog:'70%', msg:'Your architecture is in production. Estimated delivery within your 48-hour SLA window.' },
     'delivered':        { node:4, prog:'100%',msg:'Your documents are ready. Download from the Documents tab. Engage local counsel for review.' }
 };
+
 function renderStatus(status) {
     const s = STATUS_MAP[status] || STATUS_MAP['payment_received'];
     document.getElementById('prog-line').style.width = s.prog;
@@ -729,9 +668,6 @@ function renderStatus(status) {
     }
 }
 
-// ─────────────────────────────────────────
-// DOCUMENTS TAB
-// ─────────────────────────────────────────
 function renderDocs(docs, status) {
     const grid = document.getElementById('docs-grid');
     const notice = document.getElementById('docs-locked-notice');
@@ -757,7 +693,6 @@ function renderDocs(docs, status) {
 }
 
 function docCard(name, purpose, pdfUrl, docxUrl, status) {
-    // Treat 'delivered' and 'ready' as the same for displaying the PDF buttons
     const ready = (status === 'ready' || status === 'delivered') && (pdfUrl || docxUrl);
     return `<div class="bg-[#080808] border border-shadow p-6 flex flex-col md:flex-row justify-between items-start gap-4">
         <div class="flex-1">
@@ -776,7 +711,7 @@ function docCard(name, purpose, pdfUrl, docxUrl, status) {
 }
 
 // ─────────────────────────────────────────
-// HEATMAP
+// RADAR & HEATMAP ENGINE
 // ─────────────────────────────────────────
 function buildHeatmapRows(i) {
     const actions = i.actions || [], data = i.data || [], geo = i.geo || [];
@@ -805,7 +740,6 @@ function renderHeatmapGrid(rows, intake, isBundle, maintenanceActive) {
         </div>
     </div>`).join('');
 
-    // Flagship CTA — CRITICAL row or 3+ HIGH rows
     const criticalCount = rows.filter(r => r.level === 'CRITICAL').length;
     const highCount = rows.filter(r => r.level === 'HIGH').length;
     if (criticalCount > 0 || highCount >= 3) {
@@ -813,9 +747,6 @@ function renderHeatmapGrid(rows, intake, isBundle, maintenanceActive) {
     }
 }
 
-// ─────────────────────────────────────────
-// REGULATORY RADAR — reads from /settings/regulatory_radar
-// ─────────────────────────────────────────
 async function loadRadar(intakeData, maintenanceActive) {
     try {
         const doc = await db.collection('settings').doc('regulatory_radar').get();
@@ -825,7 +756,6 @@ async function loadRadar(intakeData, maintenanceActive) {
         const items = radarData.entries || radarData.items || [];
         const geo = intakeData?.geo || [];
 
-        // Safe parse for client delivery date
         const delAt = clientData.deliveredAt ? (clientData.deliveredAt.toDate ? clientData.deliveredAt.toDate() : new Date(clientData.deliveredAt)) : null;
 
         const relevant = items.filter(item => {
@@ -833,12 +763,10 @@ async function loadRadar(intakeData, maintenanceActive) {
             let itemJurs = [];
             if (Array.isArray(item.jurisdiction)) itemJurs = item.jurisdiction;
             else if (typeof item.jurisdiction === 'string') itemJurs = item.jurisdiction.split(',').map(s=>s.trim().toLowerCase());
-
             return itemJurs.some(j => j === 'global' || geo.includes(j) || geo.includes('global'));
         });
 
         if (relevant.length === 0) return;
-
         document.getElementById('heatmap-radar-wrap').classList.remove('hidden');
 
         if (radarData.lastUpdated) {
@@ -850,33 +778,24 @@ async function loadRadar(intakeData, maintenanceActive) {
         let hasUncovered = false;
 
         radarGrid.innerHTML = relevant.map(item => {
-            // 1. Check if their plan theoretically covers this
             let isCovered = item.coveredByPlan && clientData.plan && item.coveredByPlan.includes(clientData.plan);
             const eff = item.effectiveDate ? new Date(item.effectiveDate) : null;
             
-            // 2. THE CHRONOLOGICAL RULE: If they are covered, but the law's effective date is AFTER their docs were delivered, it becomes a GAP.
-            if (isCovered && delAt && eff && eff > delAt) {
-                isCovered = false; 
-            }
-
+            if (isCovered && delAt && eff && eff > delAt) isCovered = false; 
             if (!isCovered) hasUncovered = true;
 
-            // 3. UI STATE ROUTING (Red vs Yellow vs GREEN)
-            let statusHtml = '';
-            let borderClass = '';
-
+            let statusHtml = ''; let borderClass = '';
             if (!isCovered) {
                 if (maintenanceActive) {
                     statusHtml = '<p class="font-sans text-[9px] text-[#c4a840] mt-1 uppercase tracking-widest font-bold">🟡 Under Review</p>';
-                    borderClass = 'border-[#c4a840]/30 bg-[#c4a840]/5'; // Subtle yellow border/bg for VIPs
+                    borderClass = 'border-[#c4a840]/30 bg-[#c4a840]/5'; 
                 } else {
                     statusHtml = '<p class="font-sans text-[9px] text-[#d47a7a] mt-1 uppercase tracking-widest font-bold">🔴 Gap Detected</p>';
-                    borderClass = 'border-[#d47a7a]/40 bg-[#d47a7a]/5'; // Red alert border/bg
+                    borderClass = 'border-[#d47a7a]/40 bg-[#d47a7a]/5'; 
                 }
             } else {
-                // THE FIX: Explicitly Green UI when the law is safely covered by their build
                 statusHtml = '<p class="font-sans text-[9px] text-[#7ab88a] mt-1 uppercase tracking-widest font-bold">✓ Covered</p>';
-                borderClass = 'border-[#7ab88a]/30 bg-[#7ab88a]/5'; // Reassuring green border/bg
+                borderClass = 'border-[#7ab88a]/30 bg-[#7ab88a]/5'; 
             }
 
             const sevColor = item.severity === 'CRITICAL' ? 'bg-red-900/80 text-red-200 font-bold'
@@ -898,19 +817,16 @@ async function loadRadar(intakeData, maintenanceActive) {
             </div>`;
         }).join('');
 
-        // Gap Review CTA triggers if ANY law is uncovered/stale AND they don't have maintenance
         if (hasUncovered && !maintenanceActive) {
             document.getElementById('gap-review-cta').classList.remove('hidden');
         } else {
             document.getElementById('gap-review-cta').classList.add('hidden');
         }
-
-    } catch(err) {
-        console.error('Radar load error:', err);
-    }
+    } catch(err) { console.error('Radar load error:', err); }
 }
+
 // ─────────────────────────────────────────
-// SUBMIT INTAKE (THE CRM PUSH)
+// ACTIONS (INTAKE, PAYPAL, DEBRIEF, REFERRAL)
 // ─────────────────────────────────────────
 async function submitIntake() {
     const errEl = document.getElementById('intake-error');
@@ -932,27 +848,17 @@ async function submitIntake() {
     const notes     = document.getElementById('q_notes').value.trim();
     
     const intakeData = { agentType, actions, data, geo, providers, memory, counsel, notes, submittedAt: new Date().toISOString() };
-
     const btn = document.querySelector('#tab-intake button[onclick="submitIntake()"]');
-    btn.textContent = 'Submitting...';
-    btn.disabled = true;
+    btn.textContent = 'Submitting...'; btn.disabled = true;
 
     try {
         const email = auth.currentUser?.email;
         if (!email) throw new Error('Not authenticated');
-        
         const snap = await db.collection('clients').where('email','==',email).limit(1).get();
         const docRef = snap.empty ? db.collection('clients').doc(email) : snap.docs[0].ref;
         
-        // Push status to 'intake_received' so Admin Panel recognizes it
-        await docRef.set({ 
-            intakeData, 
-            status: 'intake_received', 
-            intakeReceivedAt: firebase.firestore.FieldValue.serverTimestamp() 
-        }, { merge:true });
-
-        clientData.intakeData = intakeData;
-        clientData.status = 'intake_received';
+        await docRef.set({ intakeData, status: 'intake_received', intakeReceivedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge:true });
+        clientData.intakeData = intakeData; clientData.status = 'intake_received';
 
         document.getElementById('intake-form-wrap').classList.add('hidden');
         document.getElementById('intake-submitted').classList.remove('hidden');
@@ -967,39 +873,46 @@ async function submitIntake() {
         renderHeatmapGrid(rows, intakeData, isBundle, !!clientData.maintenanceActive);
         loadRadar(intakeData, !!clientData.maintenanceActive);
 
-        // FIX: Ensure Maintenance CTA shows up right after submission if not active
         if (!clientData.maintenanceActive) {
             document.getElementById('maintenance-cta').classList.remove('hidden');
             renderPayPalButton();
         }
-
     } catch(err) {
         console.error(err);
         errEl.textContent = 'Submission failed. Please try again or contact hello@lexnovahq.com';
         errEl.classList.remove('hidden');
-        btn.textContent = 'Submit to The Architect — Lock the Build';
-        btn.disabled = false;
+        btn.textContent = 'Submit to The Architect — Lock the Build'; btn.disabled = false;
     }
 }
 
-// ─────────────────────────────────────────
-// TAB SWITCHER
-// ─────────────────────────────────────────
-function switchTab(tab) {
-    ['intake','docs','heatmap','walkthrough'].forEach(t => {
-        document.getElementById(`tab-${t}`).classList.add('hidden');
-        document.getElementById(`tab-btn-${t}`)?.classList.remove('tab-active');
-    });
-    document.getElementById(`tab-${tab}`).classList.remove('hidden');
-    document.getElementById(`tab-btn-${tab}`)?.classList.add('tab-active');
+function renderPayPalButton() {
+    if (typeof paypal === 'undefined') return;
+    paypal.Buttons({
+        style: { shape: 'rect', color: 'gold', layout: 'horizontal', label: 'subscribe', height: 40 },
+        createSubscription: function(data, actions) {
+            return actions.subscription.create({ plan_id: 'P-3UN560448N490122YNGTN7PY' });
+        },
+        onApprove: function(data) {
+            const email = auth.currentUser?.email;
+            if (email) {
+                db.collection('clients').where('email','==',email).limit(1).get().then(snap => {
+                    if (!snap.empty) snap.docs[0].ref.update({
+                        maintenanceActive: true, maintenanceSubscriptionId: data.subscriptionID, maintenanceStartedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+            }
+            document.getElementById('maintenance-cta').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="inline-block border border-gold/40 bg-gold/5 px-5 py-2 mb-3">
+                        <span class="font-sans text-[10px] tracking-[0.3em] text-gold uppercase">Maintenance Active</span>
+                    </div>
+                    <p class="font-sans text-xs text-marble opacity-50">Your architecture is now covered. Updates will be pushed to your portal quarterly.</p>
+                </div>`;
+            if(clientData.intakeData) loadRadar(clientData.intakeData, true);
+        }
+    }).render('#paypal-maintenance-btn');
 }
 
-// ─────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────
-// ─────────────────────────────────────────
-// DEBRIEF & REFERRAL FUNCTIONS
-// ─────────────────────────────────────────
 async function submitDebrief() {
     const btn = document.querySelector('#debrief-block button');
     btn.textContent = 'Submitting...'; btn.disabled = true;
@@ -1045,14 +958,11 @@ async function submitReferral() {
             referrals: firebase.firestore.FieldValue.arrayUnion(referral)
         });
         
-        document.getElementById('ref-name').value = '';
-        document.getElementById('ref-company').value = '';
-        document.getElementById('ref-email').value = '';
+        document.getElementById('ref-name').value = ''; document.getElementById('ref-company').value = ''; document.getElementById('ref-email').value = '';
         
         msgEl.textContent = 'Target successfully registered.';
         msgEl.classList.remove('hidden', 'text-red-400'); msgEl.classList.add('text-green-400');
         
-        // Quick visual update to list
         const refList = document.getElementById('ref-list');
         if (refList.innerHTML.includes('No targets')) refList.innerHTML = '';
         refList.innerHTML += `
@@ -1061,12 +971,9 @@ async function submitReferral() {
                 <span class="font-sans text-[9px] tracking-widest uppercase text-marble opacity-30">Pending</span>
             </div>
         `;
-    } catch(err) {
-        console.error(err);
-    }
+    } catch(err) { console.error(err); }
 }
 
-// Update the tab switcher to include network
 function switchTab(tab) {
     ['intake','docs','heatmap','walkthrough','network'].forEach(t => {
         const el = document.getElementById(`tab-${t}`);
@@ -1079,8 +986,8 @@ function switchTab(tab) {
     const activeBtn = document.getElementById(`tab-btn-${tab}`);
     if(activeBtn) activeBtn.classList.add('tab-active');
 }
-    
-    function planLabel(plan) {
+
+function planLabel(plan) {
     const map = { 'agentic_shield':'Agentic Shield', 'agentic_shield_bundle':'Complete Stack', 'complete_stack':'Complete Stack', 'full_stack':'Complete Stack', 'workplace_shield':'Workplace Shield', 'flagship':'Flagship Engagement' };
     return map[plan] || plan || 'Lex Nova Engagement';
 }
