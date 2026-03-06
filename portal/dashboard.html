@@ -640,6 +640,33 @@ function renderDashboard(data) {
         document.getElementById('video-embed').innerHTML =
             `<iframe src="${videoUrl}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>`;
     }
+    // ── INJECT: Debrief & Referral Logic ──
+    // Show Debrief if delivered and not yet submitted
+    if (status === 'delivered' && !data.debrief) {
+        document.getElementById('debrief-block').classList.remove('hidden');
+    } else {
+        document.getElementById('debrief-block').classList.add('hidden');
+    }
+
+    // Set dynamic referral reward text
+    if (maintenanceActive) {
+        document.getElementById('ref-reward-text').textContent = 'Free Workplace Shield or Architect Strategy Session';
+    } else {
+        document.getElementById('ref-reward-text').textContent = '3 Months Free Liability Maintenance';
+    }
+
+    // Render existing referrals
+    const refList = document.getElementById('ref-list');
+    if (data.referrals && data.referrals.length > 0) {
+        refList.innerHTML = data.referrals.map(r => `
+            <div class="flex justify-between items-center border-b border-shadow pb-2">
+                <span class="font-sans text-xs text-marble">${r.company || r.email}</span>
+                <span class="font-sans text-[9px] tracking-widest uppercase ${r.credited ? 'text-green-400' : 'text-marble opacity-30'}">${r.credited ? 'Credited' : 'Pending'}</span>
+            </div>
+        `).join('');
+    } else {
+        refList.innerHTML = '<p class="font-sans text-[10px] text-marble opacity-30">No targets registered yet.</p>';
+    }
 
     // Load regulatory radar
     loadRadar(data.intakeData, maintenanceActive);
@@ -970,7 +997,90 @@ function switchTab(tab) {
 // ─────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────
-function planLabel(plan) {
+// ─────────────────────────────────────────
+// DEBRIEF & REFERRAL FUNCTIONS
+// ─────────────────────────────────────────
+async function submitDebrief() {
+    const btn = document.querySelector('#debrief-block button');
+    btn.textContent = 'Submitting...'; btn.disabled = true;
+
+    const debrief = {
+        before: document.getElementById('db-before').value.trim(),
+        during: document.getElementById('db-during').value.trim(),
+        after: document.getElementById('db-after').value.trim(),
+        consent: document.getElementById('db-consent').checked,
+        submittedAt: new Date().toISOString()
+    };
+
+    try {
+        await db.collection('clients').doc(clientData.id).update({ debrief });
+        document.getElementById('debrief-block').innerHTML = `
+            <div class="text-center py-6">
+                <p class="font-serif text-2xl text-gold mb-2">Debrief Received.</p>
+                <p class="font-sans text-xs text-marble opacity-50">Thank you. The Architect appreciates your insight.</p>
+            </div>
+        `;
+    } catch(err) {
+        console.error(err);
+        btn.textContent = 'Error. Try Again.'; btn.disabled = false;
+    }
+}
+
+async function submitReferral() {
+    const name = document.getElementById('ref-name').value.trim();
+    const company = document.getElementById('ref-company').value.trim();
+    const email = document.getElementById('ref-email').value.trim();
+    const msgEl = document.getElementById('ref-msg');
+
+    if (!company || !email) {
+        msgEl.textContent = 'Company and Email are required.';
+        msgEl.classList.remove('hidden', 'text-green-400'); msgEl.classList.add('text-red-400');
+        return;
+    }
+
+    const referral = { name, company, email, date: new Date().toISOString().split('T')[0], credited: false };
+
+    try {
+        await db.collection('clients').doc(clientData.id).update({
+            referrals: firebase.firestore.FieldValue.arrayUnion(referral)
+        });
+        
+        document.getElementById('ref-name').value = '';
+        document.getElementById('ref-company').value = '';
+        document.getElementById('ref-email').value = '';
+        
+        msgEl.textContent = 'Target successfully registered.';
+        msgEl.classList.remove('hidden', 'text-red-400'); msgEl.classList.add('text-green-400');
+        
+        // Quick visual update to list
+        const refList = document.getElementById('ref-list');
+        if (refList.innerHTML.includes('No targets')) refList.innerHTML = '';
+        refList.innerHTML += `
+            <div class="flex justify-between items-center border-b border-shadow pb-2">
+                <span class="font-sans text-xs text-marble">${company}</span>
+                <span class="font-sans text-[9px] tracking-widest uppercase text-marble opacity-30">Pending</span>
+            </div>
+        `;
+    } catch(err) {
+        console.error(err);
+    }
+}
+
+// Update the tab switcher to include network
+function switchTab(tab) {
+    ['intake','docs','heatmap','walkthrough','network'].forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        if(el) el.classList.add('hidden');
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if(btn) btn.classList.remove('tab-active');
+    });
+    const activeEl = document.getElementById(`tab-${tab}`);
+    if(activeEl) activeEl.classList.remove('hidden');
+    const activeBtn = document.getElementById(`tab-btn-${tab}`);
+    if(activeBtn) activeBtn.classList.add('tab-active');
+}
+    
+    function planLabel(plan) {
     const map = { 'agentic_shield':'Agentic Shield', 'agentic_shield_bundle':'Complete Stack', 'complete_stack':'Complete Stack', 'full_stack':'Complete Stack', 'workplace_shield':'Workplace Shield', 'flagship':'Flagship Engagement' };
     return map[plan] || plan || 'Lex Nova Engagement';
 }
