@@ -917,6 +917,9 @@ function renderPayPalButton() {
     }).render('#paypal-maintenance-btn');
 }
 
+// ─────────────────────────────────────────
+// BULLETPROOF DEBRIEF AND REFERRAL LOGIC
+// ─────────────────────────────────────────
 async function submitDebrief() {
     const btn = document.querySelector('#debrief-block button');
     btn.textContent = 'Submitting...'; btn.disabled = true;
@@ -930,7 +933,13 @@ async function submitDebrief() {
     };
 
     try {
-        await db.collection('clients').doc(clientData.id).update({ debrief });
+        const userEmail = auth.currentUser?.email;
+        if (!userEmail) throw new Error('Not authenticated');
+        const snap = await db.collection('clients').where('email','==',userEmail).limit(1).get();
+        const docRef = snap.empty ? db.collection('clients').doc(userEmail) : snap.docs[0].ref;
+
+        await docRef.set({ debrief }, { merge: true });
+        
         document.getElementById('debrief-block').innerHTML = `
             <div class="text-center py-6">
                 <p class="font-serif text-2xl text-gold mb-2">Debrief Received.</p>
@@ -946,23 +955,30 @@ async function submitDebrief() {
 async function submitReferral() {
     const name = document.getElementById('ref-name').value.trim();
     const company = document.getElementById('ref-company').value.trim();
-    const email = document.getElementById('ref-email').value.trim();
+    const targetEmail = document.getElementById('ref-email').value.trim();
     const msgEl = document.getElementById('ref-msg');
 
-    if (!company || !email) {
+    if (!company || !targetEmail) {
         msgEl.textContent = 'Company and Email are required.';
         msgEl.classList.remove('hidden', 'text-green-400'); msgEl.classList.add('text-red-400');
         return;
     }
 
-    const referral = { name, company, email, date: new Date().toISOString().split('T')[0], credited: false };
+    const referral = { name, company, email: targetEmail, date: new Date().toISOString().split('T')[0], credited: false };
 
     try {
-        await db.collection('clients').doc(clientData.id).update({
+        const userEmail = auth.currentUser?.email;
+        if (!userEmail) throw new Error('Not authenticated');
+        const snap = await db.collection('clients').where('email','==',userEmail).limit(1).get();
+        const docRef = snap.empty ? db.collection('clients').doc(userEmail) : snap.docs[0].ref;
+
+        await docRef.set({
             referrals: firebase.firestore.FieldValue.arrayUnion(referral)
-        });
+        }, { merge: true });
         
-        document.getElementById('ref-name').value = ''; document.getElementById('ref-company').value = ''; document.getElementById('ref-email').value = '';
+        document.getElementById('ref-name').value = ''; 
+        document.getElementById('ref-company').value = ''; 
+        document.getElementById('ref-email').value = '';
         
         msgEl.textContent = 'Target successfully registered.';
         msgEl.classList.remove('hidden', 'text-red-400'); msgEl.classList.add('text-green-400');
@@ -975,7 +991,11 @@ async function submitReferral() {
                 <span class="font-sans text-[9px] tracking-widest uppercase text-marble opacity-30">Pending</span>
             </div>
         `;
-    } catch(err) { console.error(err); }
+    } catch(err) { 
+        console.error(err); 
+        msgEl.textContent = 'System error. Try again.';
+        msgEl.classList.remove('hidden', 'text-green-400'); msgEl.classList.add('text-red-400');
+    }
 }
 
 function switchTab(tab) {
