@@ -433,6 +433,52 @@ window.loadDashboard = function() {
     ctaT="Surface the Hidden Gaps — Apply Now";
   }
 
+  // ── KIT DOCUMENT MANIFESTS ────────────────────────────────────────
+  const KITS = {
+    agentic: [
+      {doc:'DOC_TOS', name:'AI-Native Terms of Service',    purpose:'AS-IS warranty · hallucination disclaimer · clickwrap consent · IP ownership · high-risk AI provisions'},
+      {doc:'DOC_AGT', name:'Agentic Systems Addendum',      purpose:'Financial Kill Switch · autonomous action authorization boundaries · agent failure protocols'},
+      {doc:'DOC_AUP', name:'Acceptable Use Policy',          purpose:'Content liability shield · right of publicity · prohibited input categories · input warranty'},
+      {doc:'DOC_DPA', name:'Data Processing Agreement',      purpose:'RAG-only mandate · disgorgement shield · model deletion limitation · GDPR Art.28 compliance'},
+      {doc:'DOC_PP',  name:'Privacy Policy',                 purpose:'Data collection disclosure · retention schedules · user rights (GDPR/CCPA) · third-party processor list'},
+      {doc:'DOC_ENG', name:'Engagement Letter',              purpose:'Scope definition · Review-Ready disclaimer · liability cap · local counsel mandate · payment terms'},
+    ],
+    workplace: [
+      {doc:'DOC_HND',  name:'AI Employee Handbook',          purpose:'Traffic Light Policy (banned/restricted/permitted) · acceptable use rules · disciplinary framework'},
+      {doc:'DOC_IP',   name:'IP Assignment Deed',            purpose:'Explicit assignment of all AI-generated outputs, prompts, and selection logic decisions to the company'},
+      {doc:'DOC_SCAN', name:'Shadow AI Scanner',             purpose:'Anonymous discovery survey that surfaces unauthorized tool usage before it becomes a breach event'},
+      {doc:'DOC_SOP',  name:'HITL Authorship Protocol',      purpose:'Documented human review workflow · evidentiary record for regulators and courts'},
+      {doc:'DOC_DPIA', name:'Data Protection Impact Assessment', purpose:'Structured risk assessment for AI processing activities · GDPR Art.35 compliance framework'},
+    ]
+  };
+
+  let kitDocs = [];
+  if (extScore>50 && intScore>40) kitDocs = [...KITS.agentic, ...KITS.workplace];
+  else if (extScore>50)           kitDocs = KITS.agentic;
+  else if (intScore>40)           kitDocs = KITS.workplace;
+  // gap_review route: no kit docs — just gaps
+
+  const kitHtml = kitDocs.length > 0 ? `
+    <div class="border border-shadow bg-[#080808] p-6 mt-2">
+      <div class="border-b border-shadow pb-4 mb-5">
+        <div class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase font-bold mb-1">What you receive</div>
+        <div class="font-serif text-xl text-marble">${kitDocs.length}-document kit. Every gap above closed.</div>
+      </div>
+      <div class="flex flex-col divide-y divide-shadow">
+        ${kitDocs.map(d=>`
+          <div class="py-4 grid grid-cols-[90px_1fr] gap-3 items-start">
+            <div class="font-sans text-[9px] tracking-[0.15em] text-gold uppercase font-bold pt-0.5 leading-relaxed">${d.doc}</div>
+            <div>
+              <div class="font-sans text-sm text-marble font-semibold mb-1">${d.name}</div>
+              <div class="font-sans text-xs text-marble opacity-50 leading-relaxed">${d.purpose}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div class="mt-5 pt-4 border-t border-shadow">
+        <p class="font-sans text-[10px] text-marble opacity-40 leading-relaxed">72-hour delivery · Review-Ready Drafts · Local counsel validation required · Not a law firm</p>
+      </div>
+    </div>` : '';
+
   // ── LEFT COLUMN: GAPS ─────────────────────────────────────────────
   const visibleCount = routeType === 'C' ? 3 : 2;
   let gapsHtml = '';
@@ -547,7 +593,7 @@ window.loadDashboard = function() {
       <p class="font-sans text-xs text-marble opacity-40 mt-2 uppercase tracking-widest">Each gap is an independent litigation trigger. All are active right now.</p>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 items-start">
-      <div class="flex flex-col gap-4">${gapsHtml}</div>
+      <div class="flex flex-col gap-4">${gapsHtml}${kitHtml}</div>
       <div>${rightHtml}</div>
     </div>`;
 
