@@ -628,6 +628,10 @@ window.processGateForm = async function(e) {
     },{merge:true});
     fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,company,extScore,intScore,activeGaps:gapTraps,source:'scanner'})}).catch(()=>{});
   } catch(err){ console.error("Gate write failed:",err); }
+  // Write to localStorage so apply.html can autofill the form
+  localStorage.setItem('ln_name',    name);
+  localStorage.setItem('ln_email',   email);
+  localStorage.setItem('ln_company', company);
   loadDashboard();
 };
 
