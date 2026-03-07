@@ -224,9 +224,9 @@ const Q = [
       docPurpose:"Financial Kill Switch + autonomous action authorization boundaries + agent failure protocols"
     },
     options:[
-      {text:"Yes — agent-specific cap, explicitly defined in our agreements",         extPts:0},
-      {text:"We have a general liability cap, but nothing agent-specific",            extPts:20},
-      {text:"No defined cap / we don't think this applies to us / not sure",         extPts:45, unsure:true}
+      {text:"Yes — our contracts specifically limit what we're liable for when the AI acts autonomously",  extPts:0},
+      {text:"We have some liability language but it wasn't written with AI agents in mind",               extPts:20},
+      {text:"No — our contracts don't address this / we're not sure if they need to",                    extPts:45, unsure:true}
     ]
   },
   {
@@ -240,9 +240,9 @@ const Q = [
       docPurpose:"AS-IS warranty + hallucination disclaimer + user reliance waiver"
     },
     options:[
-      {text:"We have an AI-specific disclaimer and AS-IS waiver",      extPts:0},
-      {text:"We have a general disclaimer — not AI-specific",          extPts:25},
-      {text:"No disclaimer / I'm not sure what our ToS says",          extPts:55, unsure:true}
+      {text:"We're covered — our ToS specifically says AI outputs aren't guaranteed and users rely on them at their own risk",  extPts:0},
+      {text:"We have a general disclaimer somewhere but it wasn't written specifically for AI",                                 extPts:25},
+      {text:"Honestly, our ToS doesn't really address this / I'm not sure what it says",                                      extPts:55, unsure:true}
     ]
   },
   {
@@ -256,9 +256,9 @@ const Q = [
       docPurpose:"Clickwrap consent architecture + recorded acceptance mechanism before first AI interaction"
     },
     options:[
-      {text:"Explicit checkbox or modal — recorded before first interaction",              extPts:0},
-      {text:"ToS is linked in the footer or onboarding flow — no active click required",  extPts:40},
-      {text:"No consent mechanism / I'm not sure how ours works",                         extPts:55, unsure:true}
+      {text:"They click a checkbox or hit an 'I agree' button — it's recorded before they can do anything",   extPts:0},
+      {text:"Our ToS is in the footer or somewhere in the flow — they don't actively click to accept it",     extPts:40},
+      {text:"I don't think we have a formal acceptance step / I'm not sure how ours works",                   extPts:55, unsure:true}
     ]
   },
   {
@@ -272,9 +272,9 @@ const Q = [
       docPurpose:"Output ownership clauses + HITL authorship requirement + IP assignment framework"
     },
     options:[
-      {text:"Ownership is explicitly defined in our ToS with a HITL requirement",           extPts:0},
-      {text:"We assume the user owns it — but it's not formally addressed",                extPts:40, unsure:true},
-      {text:"We haven't addressed this / outputs go directly to users without a clause",   extPts:55, unsure:true}
+      {text:"It's clearly defined in our terms — ownership is assigned and we require a human review step",      extPts:0},
+      {text:"We assume the user owns it but we've never actually put that in writing",                           extPts:40, unsure:true},
+      {text:"We haven't thought about this — outputs just go to users",                                         extPts:55, unsure:true}
     ]
   },
   {
@@ -288,9 +288,9 @@ const Q = [
       docPurpose:"RAG-only mandate + disgorgement shield + model deletion limitation clause"
     },
     options:[
-      {text:"No — we use RAG only. User data never touches our model weights",              extPts:0},
-      {text:"User data improves the product but stays isolated and deletable",             extPts:20},
-      {text:"Yes we fine-tune on user inputs / I'm not certain what our architecture does",extPts:50, unsure:true}
+      {text:"No — user data is only used for retrieval, never to train or update our models",          extPts:0},
+      {text:"User data improves the product over time but we keep it separate and deletable",          extPts:20},
+      {text:"Our models learn from user inputs / I'm honestly not sure how our architecture works",    extPts:50, unsure:true}
     ]
   },
   {
@@ -304,9 +304,9 @@ const Q = [
       docPurpose:"High-risk AI provisions + HITL mandate + no-bias warranty + NIST RMF compliance hooks"
     },
     options:[
-      {text:"No — our product doesn't operate in these verticals",                              extPts:0},
-      {text:"Yes — but every decision has a documented human review step",                     extPts:15},
-      {text:"Yes — it's partially or fully automated / I'm not sure if it qualifies",         extPts:60, unsure:true}
+      {text:"No — we don't touch any of those areas",                                                           extPts:0},
+      {text:"Yes — but a human always reviews the AI's output before anything actually happens",                extPts:15},
+      {text:"Yes — the AI's output feeds directly into those decisions / I'm not sure if ours qualifies",      extPts:60, unsure:true}
     ]
   },
   {
@@ -320,9 +320,9 @@ const Q = [
       docPurpose:"Content liability disclaimers + right of publicity shield + emotional reliance safeguards + input warranty"
     },
     options:[
-      {text:"No — none of these apply to our product",                                          extPts:0},
-      {text:"Yes — and we have specific disclaimers, content policies, and user warranties",    extPts:20},
-      {text:"Yes — one or more applies but we haven't specifically addressed the legal exposure",extPts:55, unsure:true}
+      {text:"None of that applies to what we build",                                                              extPts:0},
+      {text:"Yes — and we have usage policies, disclaimers, and user warranties that specifically cover this",    extPts:20},
+      {text:"Yes — one or more of those describes our product but we haven't addressed the legal side of it",     extPts:55, unsure:true}
     ]
   },
   {
@@ -336,9 +336,9 @@ const Q = [
       docPurpose:"Traffic Light Policy (banned/restricted/permitted tools) + anonymous discovery survey to surface hidden usage"
     },
     options:[
-      {text:"No — we use only enterprise-licensed, data-isolated AI tools",                   intPts:0},
-      {text:"Possibly — we have informal guidelines but nothing enforceable",                  intPts:35, unsure:true},
-      {text:"Yes freely / we haven't addressed this / I don't know what tools they're using", intPts:55, unsure:true}
+      {text:"No — we only use enterprise AI tools where data stays private and isolated",            intPts:0},
+      {text:"Probably — we've told people to be careful but there's nothing actually enforceable",   intPts:35, unsure:true},
+      {text:"Yes, freely / we haven't addressed it / I genuinely don't know what they're using",    intPts:55, unsure:true}
     ]
   },
   {
@@ -352,9 +352,9 @@ const Q = [
       docPurpose:"Explicit assignment of all AI-generated outputs, prompts, and selection logic decisions to the company"
     },
     options:[
-      {text:"No — our employment agreements explicitly cover AI-generated outputs",        intPts:0},
-      {text:"Probably not — but it has never been legally tested or documented",           intPts:40, unsure:true},
-      {text:"Our contracts predate AI and haven't been updated / I'm not sure",           intPts:55, unsure:true}
+      {text:"No — our contracts explicitly say the company owns everything AI-generated on company time",    intPts:0},
+      {text:"We assume we own it but our contracts were written before AI was a thing",                     intPts:40, unsure:true},
+      {text:"Honestly we've never thought about this — our employment contracts don't mention AI at all",   intPts:55, unsure:true}
     ]
   },
   {
@@ -368,9 +368,9 @@ const Q = [
       docPurpose:"Anonymous survey framework that surfaces unauthorized AI tool usage before it becomes a breach event"
     },
     options:[
-      {text:"Yes — formal audit completed, unauthorized tools identified and addressed",   intPts:0},
-      {text:"We think we know — but it's not formally documented",                        intPts:25},
-      {text:"No full visibility / no audit conducted",                                    intPts:50, unsure:true}
+      {text:"Yes — we've done a proper audit, we know every tool and we've dealt with the unauthorized ones",   intPts:0},
+      {text:"We have a rough idea but nothing has been formally checked or documented",                         intPts:25},
+      {text:"Honestly no — people use what works for them and we don't have full visibility",                  intPts:50, unsure:true}
     ]
   },
   {
@@ -384,9 +384,9 @@ const Q = [
       docPurpose:"Documented human review workflow that creates the evidentiary record regulators and courts look for"
     },
     options:[
-      {text:"Yes — formal documented review protocol exists",                intPts:0},
-      {text:"Humans review informally — but nothing is documented",          intPts:30},
-      {text:"No protocol / outputs go out directly / I'm not sure",         intPts:45, unsure:true}
+      {text:"Yes — there's a defined review step and we keep records of it",                              intPts:0},
+      {text:"Someone always looks at it before it goes out but we've never written the process down",     intPts:30},
+      {text:"Not really — AI outputs go pretty much directly into the work / we haven't set this up",    intPts:45, unsure:true}
     ]
   }
 ];
