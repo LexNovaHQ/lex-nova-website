@@ -22,8 +22,11 @@ tailwind.config = {
   @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
   .bg-danger\/5  { background-color:rgba(192,57,43,0.05); }
   .border-danger\/30 { border-color:rgba(192,57,43,0.3); }
+  .border-danger\/40 { border-color:rgba(192,57,43,0.4); }
   .bg-gold\/5    { background-color:rgba(197,160,89,0.05); }
   .border-gold\/30   { border-color:rgba(197,160,89,0.3); }
+  .border-gold\/20   { border-color:rgba(197,160,89,0.2); }
+  .border-shadow\/50 { border-color:rgba(26,26,26,0.5); }
 </style>
 </head>
 <body class="bg-void text-marble min-h-screen">
@@ -41,7 +44,7 @@ tailwind.config = {
   </div>
 </div>
 
-<main class="max-w-3xl mx-auto px-6 py-16 md:py-24 flex flex-col items-center">
+<main class="max-w-3xl mx-auto px-6 py-16 md:py-24 flex flex-col items-center" id="main-wrap">
 
   <!-- INTRO STATE -->
   <div id="state-intro" class="fade-enter text-center max-w-2xl">
@@ -100,72 +103,9 @@ tailwind.config = {
     </form>
   </div>
 
-  <!-- DASHBOARD STATE -->
-  <div id="state-dashboard" class="hidden-state fade-enter w-full max-w-4xl mx-auto">
+  <!-- DASHBOARD STATE — injected dynamically -->
+  <div id="state-dashboard" class="hidden-state fade-enter w-full"></div>
 
-    <!-- Exposure Figure -->
-    <div class="border border-danger/30 bg-danger/5 p-8 md:p-12 mb-8 text-center relative overflow-hidden">
-      <div class="absolute top-0 left-0 w-full h-1 bg-danger"></div>
-      <h4 class="font-sans text-[10px] tracking-[0.2em] text-danger uppercase mb-4 font-bold">Estimated Baseline Exposure</h4>
-      <div class="font-serif text-5xl md:text-7xl text-marble mb-4 tracking-tight" id="exposure-dollar">$0</div>
-      <p class="font-sans text-xs text-marble opacity-60 uppercase tracking-[0.1em] max-w-lg mx-auto">Based on active regulatory penalty structures and current civil liability caps.</p>
-    </div>
-
-    <!-- Score Tiles -->
-    <div class="grid grid-cols-2 gap-4 mb-8">
-      <div class="border border-shadow bg-[#080808] p-6">
-        <div class="flex justify-between items-start mb-4">
-          <h5 class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase">Product Risk</h5>
-          <span id="ext-tier" class="font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void">—</span>
-        </div>
-        <div class="font-serif text-4xl text-marble" id="ext-score">0</div>
-      </div>
-      <div class="border border-shadow bg-[#080808] p-6">
-        <div class="flex justify-between items-start mb-4">
-          <h5 class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase">Ops / IP Risk</h5>
-          <span id="int-tier" class="font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void">—</span>
-        </div>
-        <div class="font-serif text-4xl text-marble" id="int-score">0</div>
-      </div>
-    </div>
-
-    <!-- Ignorance Disclaimer -->
-    <div id="ignorance-disclaimer" class="hidden border border-gold/30 bg-gold/5 p-6 mb-8">
-      <p class="font-sans text-xs text-gold leading-relaxed"><strong class="uppercase tracking-widest text-[10px]">Note on "Not Sure" answers:</strong> Legal exposure exists independent of your awareness of it. Regulators do not accept ignorance as a defense. The gaps flagged as uncertain carry the same liability weight as confirmed gaps.</p>
-    </div>
-
-    <!-- Active Gaps -->
-    <div id="active-gaps-section" class="hidden mb-8">
-      <div class="border-b border-shadow pb-4 mb-6">
-        <h3 class="font-serif text-2xl md:text-3xl text-marble">Your diagnostic identified <span id="gap-count" class="text-danger">0</span> active gap<span id="gap-plural">s</span>.</h3>
-        <p class="font-sans text-xs text-marble opacity-40 mt-2 uppercase tracking-widest">Each gap is an independent litigation trigger. All are active right now.</p>
-      </div>
-      <div id="gaps-list" class="flex flex-col gap-3"></div>
-    </div>
-
-    <!-- What Closes Them -->
-    <div id="fix-section" class="hidden mb-8">
-      <div class="border-b border-shadow pb-4 mb-6">
-        <h3 class="font-serif text-2xl md:text-3xl text-marble">What closes them.</h3>
-        <p class="font-sans text-xs text-marble opacity-40 mt-2 uppercase tracking-widest">Each document is purpose-built for the specific gap it closes.</p>
-      </div>
-      <div id="docs-list" class="flex flex-col gap-3"></div>
-    </div>
-
-    <!-- Pricing -->
-    <div id="pricing-section" class="border border-gold/30 bg-[#080808] p-8 mb-8 text-center">
-      <div id="pricing-content"></div>
-    </div>
-
-    <!-- CTA -->
-    <div class="border border-shadow p-8 md:p-10 text-center">
-      <h3 id="cta-heading" class="font-serif text-3xl md:text-4xl text-marble mb-4 leading-tight"></h3>
-      <p id="cta-body" class="font-sans text-sm text-marble opacity-70 leading-relaxed mb-8 max-w-2xl mx-auto"></p>
-      <a id="cta-btn" href="#" class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 font-bold"></a>
-      <p class="font-sans text-[10px] tracking-widest text-marble opacity-30 uppercase mt-6">Review-Ready Drafts · Local Counsel Validation Required · Not a Law Firm</p>
-    </div>
-
-  </div>
 </main>
 
 <footer class="flex flex-col items-center py-12 bg-void border-t border-shadow">
@@ -175,8 +115,8 @@ tailwind.config = {
 </footer>
 
 <script type="module">
-import { initializeApp }                         from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+import { initializeApp }                                    from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getFirestore, doc, setDoc, serverTimestamp }      from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey:"AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
@@ -200,7 +140,7 @@ setTimeout(() => {
 }, 500);
 
 // ── STATE ─────────────────────────────────────────────────────────────
-let route=[], idx=0, extScore=0, intScore=0, unsureFlag=false, activeGaps=[];
+let route=[], idx=0, extScore=0, intScore=0, unsureFlag=false, activeGaps=[], routeType='A';
 
 // ── QUESTIONS ─────────────────────────────────────────────────────────
 const Q = [
@@ -411,7 +351,7 @@ function fmt(n) {
   return '$'+n;
 }
 
-// ── RENDER ─────────────────────────────────────────────────────────────
+// ── RENDER QUESTION ────────────────────────────────────────────────────
 function renderQ(q) {
   document.getElementById('question-text').innerText = q.text;
   const c = document.getElementById('options-container');
@@ -431,6 +371,7 @@ function renderQ(q) {
 
 function answer(q, opt) {
   if (q.lane==='master') {
+    routeType = opt.logic;
     if      (opt.logic==='A') route = Q.filter(x=>x.lane==='external');
     else if (opt.logic==='B') route = Q.filter(x=>x.lane==='internal');
     else                      route = Q.filter(x=>x.lane!=='master');
@@ -454,150 +395,24 @@ function showGate() {
   sw('state-quiz','state-gate');
 }
 
+// ── DASHBOARD ──────────────────────────────────────────────────────────
 window.loadDashboard = function() {
+  // Widen main container for 2-col layout
+  document.getElementById('main-wrap').classList.remove('max-w-3xl');
+  document.getElementById('main-wrap').classList.add('max-w-6xl');
+
   const ed=tier(extScore,true), id=tier(intScore,false);
-  document.getElementById('ext-tier').className=`font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void ${ed.color}`;
-  document.getElementById('ext-tier').innerText=ed.text;
-  document.getElementById('int-tier').className=`font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void ${id.color}`;
-  document.getElementById('int-tier').innerText=id.text;
-  document.getElementById('ext-score').innerText=extScore;
-  document.getElementById('int-score').innerText=intScore;
   const tLow=ed.low+id.low, tHigh=ed.high+id.high;
-  document.getElementById('exposure-dollar').innerText=`${fmt(tLow)} – ${fmt(tHigh)}+`;
-  if (unsureFlag) document.getElementById('ignorance-disclaimer').classList.remove('hidden');
-
-      // Active gaps — tiered reveal
-  if (activeGaps.length>0) {
-    document.getElementById('active-gaps-section').classList.remove('hidden');
-    document.getElementById('gap-count').innerText=activeGaps.length;
-    document.getElementById('gap-plural').innerText=activeGaps.length===1?'':'s';
-    const gl=document.getElementById('gaps-list');
-    gl.innerHTML='';
-
-    activeGaps.forEach((g,i)=>{
-      if (i===0) {
-        // TIER 1 — fully visible
-        gl.innerHTML+=`
-          <div class="border border-danger/40 bg-[#080808] p-5">
-            <div class="flex items-start gap-4">
-              <div class="w-2 h-2 rounded-full bg-danger mt-2 flex-shrink-0"></div>
-              <div>
-                <div class="font-sans text-[10px] tracking-[0.15em] text-danger uppercase font-bold mb-1">${g.trap}</div>
-                <div class="font-serif text-lg text-marble leading-snug">${g.plain}</div>
-              </div>
-            </div>
-          </div>`;
-      } else if (i<=2) {
-        // TIER 2 — blurred with lock label
-        gl.innerHTML+=`
-          <div class="border border-shadow bg-[#080808] p-5 relative overflow-hidden">
-            <div style="filter:blur(4px); user-select:none; pointer-events:none;">
-              <div class="flex items-start gap-4">
-                <div class="w-2 h-2 rounded-full bg-danger mt-2 flex-shrink-0"></div>
-                <div>
-                  <div class="font-sans text-[10px] tracking-[0.15em] text-danger uppercase font-bold mb-1">${g.trap}</div>
-                  <div class="font-serif text-lg text-marble leading-snug">${g.plain}</div>
-                </div>
-              </div>
-            </div>
-            <div class="absolute inset-0 flex items-center justify-center">
-              <div class="flex items-center gap-2 bg-[#050505]/90 border border-shadow px-4 py-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <span class="font-sans text-[10px] tracking-[0.15em] text-gold uppercase font-bold">Unlock in full report</span>
-              </div>
-            </div>
-          </div>`;
-      }
-    });
-
-    // TIER 3 — redacted bar for remainder
-    const redacted = activeGaps.length - 3;
-    if (redacted > 0) {
-      gl.innerHTML+=`
-        <div class="border border-shadow bg-[#0a0a0a] p-5">
-          <div class="flex items-center gap-4">
-            <div class="flex-1 h-5 bg-[#1a1a1a] relative overflow-hidden">
-              <div class="absolute inset-0 flex items-center px-4">
-                <div class="w-full h-2 bg-shadow rounded"></div>
-              </div>
-            </div>
-            <div class="font-sans text-[10px] tracking-[0.15em] text-marble opacity-40 uppercase font-bold flex-shrink-0">${redacted} additional gap${redacted===1?'':'s'} classified</div>
-          </div>
-          <div class="flex items-center gap-4 mt-3">
-            <div class="flex-1 h-5 bg-[#1a1a1a] relative overflow-hidden">
-              <div class="absolute inset-0 flex items-center px-4">
-                <div class="w-3/4 h-2 bg-shadow rounded"></div>
-              </div>
-            </div>
-            <div class="font-sans text-[10px] text-marble opacity-20 uppercase flex-shrink-0">██████████████</div>
-          </div>
-          ${redacted>1?`<div class="flex items-center gap-4 mt-3">
-            <div class="flex-1 h-5 bg-[#1a1a1a] relative overflow-hidden">
-              <div class="absolute inset-0 flex items-center px-4">
-                <div class="w-5/6 h-2 bg-shadow rounded"></div>
-              </div>
-            </div>
-            <div class="font-sans text-[10px] text-marble opacity-20 uppercase flex-shrink-0">██████████████</div>
-          </div>`:''}
-          <div class="mt-4 pt-4 border-t border-shadow">
-            <p class="font-sans text-[10px] tracking-[0.1em] text-marble opacity-40 uppercase">Full gap breakdown delivered post-engagement · Lex Nova HQ</p>
-          </div>
-        </div>`;
-    }
-
-    // Documents — collapsed minimal list, no separate section
-    document.getElementById('fix-section').classList.remove('hidden');
-    const dl=document.getElementById('docs-list');
-    dl.innerHTML='';
-    const seen=new Set();
-    // Only show docs for visible gap (gap 0)
-    const visibleGap = activeGaps[0];
-    if(visibleGap && !seen.has(visibleGap.doc)){
-      seen.add(visibleGap.doc);
-      dl.innerHTML+=`
-        <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-3 border border-shadow bg-[#080808] p-5 items-start">
-          <div class="font-sans text-[10px] tracking-[0.15em] text-gold uppercase font-bold pt-1">${visibleGap.doc}</div>
-          <div>
-            <div class="font-sans text-sm text-marble font-semibold mb-1">${visibleGap.docName}</div>
-            <div class="font-sans text-xs text-marble opacity-50 leading-relaxed">${visibleGap.docPurpose}</div>
-          </div>
-        </div>`;
-    }
-    // Remaining docs blurred
-    const remainingDocs = activeGaps.slice(1).filter(g=>!seen.has(g.doc) && (seen.add(g.doc)||true));
-    if(remainingDocs.length>0){
-      dl.innerHTML+=`
-        <div class="border border-shadow bg-[#080808] p-5 relative overflow-hidden">
-          <div style="filter:blur(3px); user-select:none; pointer-events:none;" class="flex flex-col gap-3">
-            ${remainingDocs.slice(0,2).map(g=>`
-              <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-3 items-start">
-                <div class="font-sans text-[10px] tracking-[0.15em] text-gold uppercase font-bold">${g.doc}</div>
-                <div>
-                  <div class="font-sans text-sm text-marble font-semibold mb-1">${g.docName}</div>
-                  <div class="font-sans text-xs text-marble opacity-50">${g.docPurpose}</div>
-                </div>
-              </div>`).join('<div class="border-t border-shadow"></div>')}
-          </div>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="flex items-center gap-2 bg-[#050505]/90 border border-shadow px-4 py-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              <span class="font-sans text-[10px] tracking-[0.15em] text-gold uppercase font-bold">Full kit revealed post-engagement</span>
-            </div>
-          </div>
-        </div>`;
-    }
-  }
 
   // Plan routing
   const expRange=`${fmt(tLow)} – ${fmt(tHigh)}+`;
   let plan, price, origPrice, ctaH, ctaB, ctaT, ctaHref;
-
   if (extScore>50 && intScore>40) {
     plan="The Complete Stack"; price="$2,000"; origPrice="$2,500";
     ctaHref=`apply.html?plan=complete_stack&ext=${extScore}&int=${intScore}`;
     ctaH="You have unprotected exposure on every surface.";
-    ctaB=`The ${expRange} above is not theoretical. Your product architecture has no legal defense against autonomous agent liability, and your team is operating AI tools that are actively moving your IP into the public domain. Every day this stays unfixed is a day a single incident can end the company.`;
-    ctaT="Close Both Gaps — Apply for The Complete Stack";
+    ctaB=`The ${expRange} above is not theoretical. Your product architecture has no legal defense against autonomous agent liability, and your team is operating AI tools actively moving your IP into the public domain. Every day this stays unfixed is a day a single incident can end the company.`;
+    ctaT="Close Both Gaps — Apply Now";
   } else if (extScore>50) {
     plan="The Agentic Shield"; price="$997"; origPrice="$1,500";
     ctaHref=`apply.html?plan=agentic_shield&ext=${extScore}&int=${intScore}`;
@@ -608,32 +423,133 @@ window.loadDashboard = function() {
     plan="The Workplace Shield"; price="$997"; origPrice="$1,500";
     ctaHref=`apply.html?plan=workplace_shield&ext=${extScore}&int=${intScore}`;
     ctaH="Your team is building your company's value into someone else's model.";
-    ctaB="Every uncontrolled AI tool your employees use is a potential data breach, an IP transfer, and a client contract violation happening simultaneously — with no documentation that you tried to prevent it. The Workplace Shield installs the policy layer, the IP assignment, and the audit trail before the incident that makes all three relevant.";
-    ctaT="Protect What You've Built — Apply for The Workplace Shield";
+    ctaB="Every uncontrolled AI tool your employees use is a potential data breach, an IP transfer, and a client contract violation happening simultaneously — with no documentation that you tried to prevent it.";
+    ctaT="Protect What You've Built — Apply Now";
   } else {
     plan="A Gap Review"; price="$750"; origPrice=null;
     ctaHref=`apply.html?plan=gap_review&ext=${extScore}&int=${intScore}`;
     ctaH="Your visible gaps are low. Your invisible ones aren't.";
-    ctaB="A low diagnostic score means your known architecture is cleaner than most. It does not mean you're protected. The gaps that destroy companies are the ones that don't show up in a 9-question audit. A Gap Review maps exactly what sits beneath the surface — before a funder, a regulator, or opposing counsel finds it first.";
-    ctaT="Surface the Hidden Gaps — Apply for a Gap Review";
+    ctaB="A low diagnostic score means your known architecture is cleaner than most. It does not mean you're protected. The gaps that destroy companies are the ones that don't show up in a 9-question audit.";
+    ctaT="Surface the Hidden Gaps — Apply Now";
   }
 
-  // Pricing block
-  document.getElementById('pricing-content').innerHTML=`
-    <div class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-4 font-bold">The Fix: ${plan}</div>
-    <div class="flex items-center justify-center gap-4 mb-3">
-      ${origPrice?`<div class="font-serif text-3xl text-marble line-through opacity-40">${origPrice}</div>`:''}
-      <div class="font-serif text-5xl text-gold">${price}</div>
-    </div>
-    <div class="font-sans text-xs text-marble opacity-50 uppercase tracking-widest mb-4">Founding Client Rate</div>
-    <div class="inline-block border border-gold/30 bg-gold/5 px-5 py-3">
-      <p class="font-sans text-xs text-marble opacity-70 leading-relaxed max-w-md">72-hour delivery · Review-Ready Drafts · Local counsel validation required · <strong class="text-gold">3 founding spots remaining.</strong> Standard pricing resumes after spot 3 is filled.</p>
+  // ── LEFT COLUMN: GAPS ─────────────────────────────────────────────
+  const visibleCount = routeType === 'C' ? 3 : 2;
+  let gapsHtml = '';
+
+  if (activeGaps.length === 0) {
+    gapsHtml = `<div class="border border-shadow bg-[#080808] p-6">
+      <p class="font-sans text-sm text-marble opacity-60">No active gaps detected across the assessed dimensions. A Gap Review is recommended to surface sub-surface architecture risks.</p>
+    </div>`;
+  } else {
+    activeGaps.forEach((g, i) => {
+      if (i < visibleCount) {
+        gapsHtml += `
+          <div class="border border-danger/40 bg-[#080808] p-6">
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 rounded-full bg-danger mt-2 flex-shrink-0"></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-sans text-[10px] tracking-[0.15em] text-danger uppercase font-bold mb-2">${g.trap}</div>
+                <div class="font-serif text-xl text-marble leading-snug mb-5">${g.plain}</div>
+                <div class="border-t border-shadow/50 pt-4 grid grid-cols-[90px_1fr] gap-3 items-start">
+                  <div class="font-sans text-[9px] tracking-[0.15em] text-gold uppercase font-bold pt-0.5 leading-relaxed">${g.doc}</div>
+                  <div>
+                    <div class="font-sans text-sm text-marble font-semibold mb-1">${g.docName}</div>
+                    <div class="font-sans text-xs text-marble opacity-50 leading-relaxed">${g.docPurpose}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }
+    });
+
+    // Redacted remainder
+    const redacted = activeGaps.length - visibleCount;
+    if (redacted > 0) {
+      const bars = Array.from({length: Math.min(redacted, 3)}, (_, i) => {
+        const w = ['w-full','w-4/5','w-11/12'][i];
+        return `<div class="flex items-center gap-4">
+          <div class="flex-1 h-5 bg-[#111] relative overflow-hidden">
+            <div class="absolute inset-0 flex items-center px-3">
+              <div class="${w} h-2 bg-shadow rounded"></div>
+            </div>
+          </div>
+          <div class="font-sans text-[10px] text-marble opacity-20 flex-shrink-0 font-mono">██████████████</div>
+        </div>`;
+      }).join('');
+      gapsHtml += `
+        <div class="border border-shadow bg-[#0a0a0a] p-6">
+          <div class="flex flex-col gap-3">${bars}</div>
+          <div class="mt-5 pt-4 border-t border-shadow flex items-center justify-between">
+            <p class="font-sans text-[10px] tracking-[0.1em] text-marble opacity-40 uppercase">${redacted} additional gap${redacted===1?'':'s'} classified</p>
+            <p class="font-sans text-[10px] tracking-widest text-marble opacity-30 uppercase">Full breakdown post-engagement</p>
+          </div>
+        </div>`;
+    }
+  }
+
+  // ── RIGHT COLUMN: STICKY PANEL ────────────────────────────────────
+  const unsureNote = unsureFlag
+    ? `<p class="font-sans text-[10px] text-gold leading-relaxed mt-3 border-t border-gold/20 pt-3">Gaps flagged as uncertain carry full liability weight. Regulators do not accept ignorance as a defense.</p>`
+    : '';
+
+  const rightHtml = `
+    <div class="lg:sticky lg:top-8 flex flex-col gap-4">
+
+      <!-- Exposure -->
+      <div class="border border-danger/30 bg-danger/5 p-6 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-danger"></div>
+        <div class="font-sans text-[9px] tracking-[0.2em] text-danger uppercase font-bold mb-3">Estimated Baseline Exposure</div>
+        <div class="font-serif text-4xl md:text-5xl text-marble tracking-tight mb-2">${fmt(tLow)} – ${fmt(tHigh)}+</div>
+        <div class="font-sans text-[9px] text-marble opacity-40 uppercase tracking-widest">Active regulatory penalty structures</div>
+        ${unsureNote}
+      </div>
+
+      <!-- Score tiles -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="border border-shadow bg-[#080808] p-4">
+          <div class="font-sans text-[9px] tracking-[0.15em] text-marble opacity-50 uppercase mb-3">Product Risk</div>
+          <div class="font-serif text-3xl text-marble mb-2">${extScore}</div>
+          <span class="font-sans text-[9px] tracking-widest px-2 py-1 uppercase text-void ${ed.color}">${ed.text}</span>
+        </div>
+        <div class="border border-shadow bg-[#080808] p-4">
+          <div class="font-sans text-[9px] tracking-[0.15em] text-marble opacity-50 uppercase mb-3">Ops / IP Risk</div>
+          <div class="font-serif text-3xl text-marble mb-2">${intScore}</div>
+          <span class="font-sans text-[9px] tracking-widest px-2 py-1 uppercase text-void ${id.color}">${id.text}</span>
+        </div>
+      </div>
+
+      <!-- Pricing + CTA -->
+      <div class="border border-gold/30 bg-[#080808] p-6">
+        <div class="font-sans text-[9px] tracking-[0.2em] text-gold uppercase font-bold mb-4">The Fix: ${plan}</div>
+        <div class="flex items-baseline gap-4 mb-1">
+          ${origPrice ? `<div class="font-serif text-2xl text-marble line-through opacity-30">${origPrice}</div>` : ''}
+          <div class="font-serif text-5xl text-gold">${price}</div>
+        </div>
+        <div class="font-sans text-[9px] text-marble opacity-40 uppercase tracking-widest mb-5">Founding Client Rate</div>
+        <p class="font-sans text-sm text-marble font-semibold leading-snug mb-3">${ctaH}</p>
+        <p class="font-sans text-xs text-marble opacity-60 leading-relaxed mb-6">${ctaB}</p>
+        <a href="${ctaHref}" class="block text-center bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-6 py-4 hover:bg-marble transition-colors duration-500 font-bold mb-5">${ctaT}</a>
+        <div class="border border-gold/20 bg-gold/5 px-4 py-3">
+          <p class="font-sans text-[10px] text-marble opacity-60 leading-relaxed text-center">72-hour delivery · Review-Ready Drafts · <strong class="text-gold">3 founding spots remaining</strong></p>
+        </div>
+      </div>
+
+      <p class="font-sans text-[9px] tracking-widest text-marble opacity-20 uppercase text-center">Review-Ready Drafts · Local Counsel Validation Required · Not a Law Firm</p>
     </div>`;
 
-  document.getElementById('cta-heading').innerText=ctaH;
-  document.getElementById('cta-body').innerText=ctaB;
-  const btn=document.getElementById('cta-btn');
-  btn.innerText=ctaT; btn.href=ctaHref;
+  // ── INJECT ────────────────────────────────────────────────────────
+  const dash = document.getElementById('state-dashboard');
+  dash.innerHTML = `
+    <div class="mb-8">
+      <h2 class="font-serif text-3xl md:text-4xl text-marble">Your diagnostic identified <span class="text-danger">${activeGaps.length}</span> active gap${activeGaps.length===1?'':'s'}.</h2>
+      <p class="font-sans text-xs text-marble opacity-40 mt-2 uppercase tracking-widest">Each gap is an independent litigation trigger. All are active right now.</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 items-start">
+      <div class="flex flex-col gap-4">${gapsHtml}</div>
+      <div>${rightHtml}</div>
+    </div>`;
 
   sw('state-gate','state-dashboard');
 };
