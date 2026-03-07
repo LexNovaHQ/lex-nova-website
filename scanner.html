@@ -1,564 +1,629 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Risk Diagnostic | Lex Nova HQ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        void: '#050505', gold: '#C5A059', marble: '#EAE8E3',
-                        shadow: '#1A1A1A', danger: '#ef4444', warning: '#f97316',
-                        moderate: '#eab308', safe: '#10b981'
-                    },
-                    fontFamily: {
-                        serif: ['"Cormorant Garamond"', 'serif'],
-                        sans:  ['"Inter"', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .fade-enter { opacity: 0; transform: translateY(10px); transition: all 0.4s ease; }
-        .fade-enter-active { opacity: 1; transform: translateY(0); }
-        .hidden-state { display: none !important; }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Risk Scanner — Lex Nova HQ</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap">
+<script>
+tailwind.config = {
+  theme: { extend: {
+    colors: { void:'#050505', shadow:'#1a1a1a', marble:'#e8e4dc', gold:'#C5A059', danger:'#c0392b' },
+    fontFamily: { serif:['Cormorant Garamond','serif'], sans:['Inter','sans-serif'] }
+  }}
+}
+</script>
+<style>
+  body { background:#050505; }
+  .hidden-state { display:none; }
+  .fade-enter { animation: fadeIn 0.4s ease forwards; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  .bg-danger\/5  { background-color:rgba(192,57,43,0.05); }
+  .border-danger\/30 { border-color:rgba(192,57,43,0.3); }
+  .bg-gold\/5    { background-color:rgba(197,160,89,0.05); }
+  .border-gold\/30   { border-color:rgba(197,160,89,0.3); }
+</style>
 </head>
+<body class="bg-void text-marble min-h-screen">
 
-<body class="bg-void text-marble font-sans antialiased selection:bg-gold selection:text-void min-h-screen flex flex-col relative">
+<!-- EXIT INTENT MODAL -->
+<div id="exit-modal" class="hidden fixed inset-0 bg-void/95 z-50 flex items-center justify-center p-6">
+  <div class="max-w-lg w-full border border-shadow bg-[#080808] p-10 text-center">
+    <h3 class="font-serif text-3xl text-marble mb-4">Before you go.</h3>
+    <p class="font-sans text-sm text-marble opacity-60 leading-relaxed mb-8">Leave your email and we'll send you the top 3 legal gaps destroying AI companies right now — with the exact clauses that close them.</p>
+    <form id="exit-form" onsubmit="processExitForm(event)" class="flex flex-col gap-4">
+      <input type="email" id="exit-email" required placeholder="your@company.com" class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors text-center">
+      <button type="submit" id="exit-submit-btn" class="bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-8 py-4 hover:bg-marble transition-colors font-bold">Send Me The Gaps</button>
+    </form>
+    <button onclick="closeExitModal()" class="mt-6 font-sans text-xs text-marble opacity-30 hover:opacity-60 transition-opacity uppercase tracking-widest">No thanks</button>
+  </div>
+</div>
 
-    <nav class="w-full py-8 px-6 md:px-12 flex justify-between items-center z-50 relative border-b border-shadow">
-        <a href="index.html" class="flex items-center gap-4 hover:opacity-80 transition-opacity group">
-            <img src="logo.png" alt="Lex Nova Pillar" class="h-6 md:h-8 w-auto">
-            <span class="font-serif text-xl tracking-widest text-gold uppercase mt-1">Lex Nova <span class="text-marble opacity-50 text-sm ml-1">HQ</span></span>
-        </a>
-        <div id="nav-links" class="hidden md:flex gap-8 items-center text-marble opacity-80 transition-opacity duration-500">
-            <a href="mandate.html"    class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">Division Mandate</a>
-            <a href="engagement.html" class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">Engagement</a>
-            <a href="architect.html"  class="font-sans text-xs tracking-[0.15em] uppercase hover:text-gold transition-colors duration-500">The Architect</a>
-        </div>
-    </nav>
+<main class="max-w-3xl mx-auto px-6 py-16 md:py-24 flex flex-col items-center">
 
-    <main class="flex-grow flex items-center justify-center p-6 w-full py-16">
-        <div class="max-w-3xl w-full">
+  <!-- INTRO STATE -->
+  <div id="state-intro" class="fade-enter text-center max-w-2xl">
+    <div class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-8">Lex Nova HQ · AI Risk Diagnostic</div>
+    <h1 class="font-serif text-5xl md:text-7xl leading-tight text-marble mb-8">Map Your Legal Exposure.</h1>
+    <p class="font-sans text-sm text-marble opacity-60 leading-relaxed mb-4 max-w-lg mx-auto">9 questions. 90 seconds. Identifies your active legal gaps against the 10 case law traps that are destroying AI companies right now.</p>
+    <p class="font-sans text-xs text-marble opacity-40 leading-relaxed mb-12 max-w-lg mx-auto">Answer accurately. Ignorance of an architectural gap maximises your legal liability.</p>
+    <button onclick="startScanner()" class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 font-bold">Initialize Audit</button>
+  </div>
 
-            <!-- WELCOME STATE -->
-            <div id="state-welcome" class="text-center fade-enter fade-enter-active">
-                <h1 class="font-sans text-xs tracking-[0.3em] text-gold uppercase mb-6">Diagnostic Engine</h1>
-                <h2 class="font-serif text-4xl md:text-6xl leading-tight text-marble mb-6">Map Your Exposure.</h2>
-                <p class="font-sans text-sm md:text-base text-marble opacity-60 leading-relaxed mb-12 max-w-xl mx-auto">
-                    This engine identifies your active financial liability based on current UETA §14 and EU AI Act enforcement. Answer accurately. Ignorance of an architectural gap maximises your legal liability.
-                </p>
-                <button onclick="startScanner()" class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 font-bold">
-                    Initialize Audit
-                </button>
-            </div>
+  <!-- QUIZ STATE -->
+  <div id="state-quiz" class="hidden-state fade-enter w-full">
+    <div class="mb-8 flex justify-between items-center text-xs font-sans tracking-[0.2em] text-marble opacity-50 uppercase">
+      <span id="progress-text">Question 1</span>
+      <span class="text-gold">Logic Engine</span>
+    </div>
+    <div class="w-full h-1 bg-shadow mb-12">
+      <div id="progress-bar" class="h-full bg-gold transition-all duration-500" style="width:10%"></div>
+    </div>
+    <div id="question-container" class="mb-12">
+      <h3 id="question-text" class="font-serif text-3xl md:text-4xl leading-snug text-marble mb-8">Loading...</h3>
+      <div id="options-container" class="flex flex-col gap-4"></div>
+    </div>
+  </div>
 
-            <!-- QUIZ STATE -->
-            <div id="state-quiz" class="hidden-state fade-enter w-full">
-                <div class="mb-8 flex justify-between items-center text-xs font-sans tracking-[0.2em] text-marble opacity-50 uppercase">
-                    <span id="progress-text">Question 1 of 10</span>
-                    <span class="text-gold">Logic Engine</span>
-                </div>
-                <div class="w-full h-1 bg-shadow mb-12">
-                    <div id="progress-bar" class="h-full bg-gold transition-all duration-500" style="width:10%"></div>
-                </div>
-                <div id="question-container" class="mb-12">
-                    <h3 id="question-text" class="font-serif text-3xl md:text-4xl leading-snug text-marble mb-8">Loading...</h3>
-                    <div id="options-container" class="flex flex-col gap-4"></div>
-                </div>
-            </div>
+  <!-- GATE STATE -->
+  <div id="state-gate" class="hidden-state fade-enter text-center max-w-xl mx-auto">
+    <div class="grid grid-cols-2 gap-6 mb-10">
+      <div class="border border-shadow bg-[#080808] p-5">
+        <h5 class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase mb-3">Product Risk</h5>
+        <div id="gate-ext-color" class="w-full h-2 bg-shadow mb-3 transition-colors duration-700"></div>
+        <span id="gate-ext-label" class="font-sans text-xs tracking-widest text-marble uppercase">Calculating</span>
+      </div>
+      <div class="border border-shadow bg-[#080808] p-5">
+        <h5 class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase mb-3">Ops / IP Risk</h5>
+        <div id="gate-int-color" class="w-full h-2 bg-shadow mb-3 transition-colors duration-700"></div>
+        <span id="gate-int-label" class="font-sans text-xs tracking-widest text-marble uppercase">Calculating</span>
+      </div>
+    </div>
+    <h2 class="font-serif text-4xl leading-tight text-marble mb-4">Your diagnostic is ready.</h2>
+    <p class="font-sans text-sm text-marble opacity-60 leading-relaxed mb-8">Your complete exposure figures, gap breakdown, and remediation architecture are calculated. Enter your details to unlock your report.</p>
+    <form id="gate-form" onsubmit="processGateForm(event)" class="flex flex-col gap-5 text-left">
+      <div>
+        <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Full Name</label>
+        <input type="text" id="lead-name" required class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors">
+      </div>
+      <div>
+        <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Work Email</label>
+        <input type="email" id="lead-email" required class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors">
+      </div>
+      <div>
+        <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Legal Company Name</label>
+        <input type="text" id="lead-company" required class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors">
+      </div>
+      <button type="submit" id="gate-submit-btn" class="mt-4 bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 font-bold w-full">Unlock My Report</button>
+    </form>
+  </div>
 
-            <!-- GATE STATE -->
-            <div id="state-gate" class="hidden-state fade-enter text-center max-w-xl mx-auto">
-                <div class="grid grid-cols-2 gap-6 mb-10">
-                    <div class="border border-shadow bg-[#080808] p-5">
-                        <h5 class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase mb-3">Product Risk</h5>
-                        <div id="gate-ext-color" class="w-full h-2 bg-shadow mb-3 transition-colors duration-700"></div>
-                        <span id="gate-ext-label" class="font-sans text-xs tracking-widest text-marble uppercase">Calculating</span>
-                    </div>
-                    <div class="border border-shadow bg-[#080808] p-5">
-                        <h5 class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase mb-3">Ops / IP Risk</h5>
-                        <div id="gate-int-color" class="w-full h-2 bg-shadow mb-3 transition-colors duration-700"></div>
-                        <span id="gate-int-label" class="font-sans text-xs tracking-widest text-marble uppercase">Calculating</span>
-                    </div>
-                </div>
-                <h2 class="font-serif text-4xl leading-tight text-marble mb-4">Your diagnostic is ready.</h2>
-                <p class="font-sans text-sm text-marble opacity-60 leading-relaxed mb-8">
-                    Your complete exposure figures, regulatory anchors, and specific gap breakdown are calculated. Enter your details to unlock your report.
-                </p>
-                <form id="gate-form" onsubmit="processGateForm(event)" class="flex flex-col gap-5 text-left">
-                    <div>
-                        <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Full Name</label>
-                        <input type="text" id="lead-name" required class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors">
-                    </div>
-                    <div>
-                        <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Work Email</label>
-                        <input type="email" id="lead-email" required class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors">
-                    </div>
-                    <div>
-                        <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Legal Company Name</label>
-                        <input type="text" id="lead-company" required class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors">
-                    </div>
-                    <button type="submit" id="gate-submit-btn" class="mt-4 bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 font-bold w-full text-center">
-                        Unlock My Report
-                    </button>
-                </form>
-            </div>
+  <!-- DASHBOARD STATE -->
+  <div id="state-dashboard" class="hidden-state fade-enter w-full max-w-4xl mx-auto">
 
-            <!-- DASHBOARD STATE -->
-            <div id="state-dashboard" class="hidden-state fade-enter w-full max-w-4xl mx-auto">
-                <div class="border border-danger/30 bg-danger/5 p-8 md:p-12 mb-8 text-center relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-full h-1 bg-danger"></div>
-                    <h4 class="font-sans text-[10px] tracking-[0.2em] text-danger uppercase mb-4 font-bold">Estimated Baseline Exposure</h4>
-                    <div class="font-serif text-5xl md:text-7xl text-marble mb-4 tracking-tight" id="exposure-dollar">$0</div>
-                    <p class="font-sans text-xs text-marble opacity-60 uppercase tracking-[0.1em] max-w-lg mx-auto">
-                        Based on active regulatory penalty structures and current civil liability caps.
-                    </p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div class="border border-shadow bg-[#080808] p-8">
-                        <div class="flex justify-between items-center mb-6">
-                            <h5 class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase">Product Liability</h5>
-                            <span id="ext-tier" class="font-sans text-[10px] tracking-widest px-2 py-1 bg-shadow text-marble uppercase">Calculating</span>
-                        </div>
-                        <div class="text-4xl font-serif text-marble mb-2"><span id="ext-score">0</span><span class="text-xl opacity-30">/100</span></div>
-                    </div>
-                    <div class="border border-shadow bg-[#080808] p-8">
-                        <div class="flex justify-between items-center mb-6">
-                            <h5 class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase">Internal / IP Liability</h5>
-                            <span id="int-tier" class="font-sans text-[10px] tracking-widest px-2 py-1 bg-shadow text-marble uppercase">Calculating</span>
-                        </div>
-                        <div class="text-4xl font-serif text-marble mb-2"><span id="int-score">0</span><span class="text-xl opacity-30">/100</span></div>
-                    </div>
-                </div>
-                <div id="ignorance-disclaimer" class="hidden border-l-2 border-warning pl-6 py-2 mb-12">
-                    <p class="font-sans text-xs text-warning opacity-90 leading-relaxed max-w-2xl">
-                        <strong class="uppercase tracking-widest">Note on Enforcement:</strong> Ignorance of an architectural gap does not shield you from strict liability. Undocumented compliance is legally prosecuted as non-compliance.
-                    </p>
-                </div>
-                <div class="border border-gold bg-[#080808] p-8 md:p-12 text-center mt-12">
-                    <h3 id="cta-heading" class="font-serif text-3xl text-marble mb-4">Your architecture requires patching.</h3>
-                    <p id="cta-body" class="font-sans text-sm text-marble opacity-70 max-w-2xl mx-auto leading-relaxed mb-8">
-                        Based on your specific vulnerability profile, you require commercial logic injection to limit strict liability.
-                    </p>
-                    <a href="#" id="cta-btn" class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-8 py-5 hover:bg-marble transition-colors font-bold w-full md:w-auto">
-                        View Solution
-                    </a>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <!-- EXIT INTENT MODAL -->
-    <div id="exit-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-void/90 backdrop-blur-sm" onclick="closeExitModal()"></div>
-        <div class="relative bg-[#080808] border border-shadow w-full max-w-xl p-8 md:p-12 shadow-2xl text-center">
-            <h2 class="font-serif text-3xl md:text-4xl text-marble mb-4">Leaving your architecture exposed?</h2>
-            <p class="font-sans text-sm text-marble opacity-70 leading-relaxed mb-8">
-                You haven't completed your diagnostic. Drop your email below and we will send you a secure link to finish mapping your liability when you have more time.
-            </p>
-            <form id="exit-form" onsubmit="processExitForm(event)" class="flex flex-col gap-4 mb-8">
-                <input type="email" id="exit-email" required placeholder="Enter your work email" class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors text-center">
-                <button type="submit" id="exit-submit-btn" class="bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-8 py-4 hover:bg-marble transition-colors duration-500 font-bold w-full">
-                    Save My Progress
-                </button>
-            </form>
-            <button onclick="closeExitModal()" class="font-sans text-xs tracking-widest text-marble opacity-50 hover:text-gold uppercase transition-colors border-b border-transparent hover:border-gold pb-1">
-                Continue to diagnostic
-            </button>
-        </div>
+    <!-- Exposure Figure -->
+    <div class="border border-danger/30 bg-danger/5 p-8 md:p-12 mb-8 text-center relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-full h-1 bg-danger"></div>
+      <h4 class="font-sans text-[10px] tracking-[0.2em] text-danger uppercase mb-4 font-bold">Estimated Baseline Exposure</h4>
+      <div class="font-serif text-5xl md:text-7xl text-marble mb-4 tracking-tight" id="exposure-dollar">$0</div>
+      <p class="font-sans text-xs text-marble opacity-60 uppercase tracking-[0.1em] max-w-lg mx-auto">Based on active regulatory penalty structures and current civil liability caps.</p>
     </div>
 
-   <script type="module">
-        import { initializeApp }                                        from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, serverTimestamp }           from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+    <!-- Score Tiles -->
+    <div class="grid grid-cols-2 gap-4 mb-8">
+      <div class="border border-shadow bg-[#080808] p-6">
+        <div class="flex justify-between items-start mb-4">
+          <h5 class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase">Product Risk</h5>
+          <span id="ext-tier" class="font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void">—</span>
+        </div>
+        <div class="font-serif text-4xl text-marble" id="ext-score">0</div>
+      </div>
+      <div class="border border-shadow bg-[#080808] p-6">
+        <div class="flex justify-between items-start mb-4">
+          <h5 class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase">Ops / IP Risk</h5>
+          <span id="int-tier" class="font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void">—</span>
+        </div>
+        <div class="font-serif text-4xl text-marble" id="int-score">0</div>
+      </div>
+    </div>
 
-        const firebaseConfig = {
-            apiKey:            "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
-            authDomain:        "lexnova-hq.firebaseapp.com",
-            projectId:         "lexnova-hq",
-            storageBucket:     "lexnova-hq.firebasestorage.app",
-            messagingSenderId: "539475214055",
-            appId:             "1:539475214055:web:c01a99ec94ff073a9b6c42"
-        };
+    <!-- Ignorance Disclaimer -->
+    <div id="ignorance-disclaimer" class="hidden border border-gold/30 bg-gold/5 p-6 mb-8">
+      <p class="font-sans text-xs text-gold leading-relaxed"><strong class="uppercase tracking-widest text-[10px]">Note on "Not Sure" answers:</strong> Legal exposure exists independent of your awareness of it. Regulators do not accept ignorance as a defense. The gaps flagged as uncertain carry the same liability weight as confirmed gaps.</p>
+    </div>
 
-        const app = initializeApp(firebaseConfig);
-        const db  = getFirestore(app);
+    <!-- Active Gaps -->
+    <div id="active-gaps-section" class="hidden mb-8">
+      <div class="border-b border-shadow pb-4 mb-6">
+        <h3 class="font-serif text-2xl md:text-3xl text-marble">Your diagnostic identified <span id="gap-count" class="text-danger">0</span> active gap<span id="gap-plural">s</span>.</h3>
+        <p class="font-sans text-xs text-marble opacity-40 mt-2 uppercase tracking-widest">Each gap is an independent litigation trigger. All are active right now.</p>
+      </div>
+      <div id="gaps-list" class="flex flex-col gap-3"></div>
+    </div>
 
-        const LEAD_WEBHOOK = "https://hook.eu1.make.com/q7nnd3klwdmlmtesq5no4yfsmk3v8ua7";
+    <!-- What Closes Them -->
+    <div id="fix-section" class="hidden mb-8">
+      <div class="border-b border-shadow pb-4 mb-6">
+        <h3 class="font-serif text-2xl md:text-3xl text-marble">What closes them.</h3>
+        <p class="font-sans text-xs text-marble opacity-40 mt-2 uppercase tracking-widest">Each document is purpose-built for the specific gap it closes.</p>
+      </div>
+      <div id="docs-list" class="flex flex-col gap-3"></div>
+    </div>
 
-    // ─── THE CRM TRACKER (FIRE 1: CLICKED) ─────────────────────
-        // Wrapping in a slight timeout ensures Firebase is 100% awake before firing
-        setTimeout(() => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const prospectEmail = urlParams.get('email'); // Looking specifically for ?email=
+    <!-- Pricing -->
+    <div id="pricing-section" class="border border-gold/30 bg-[#080808] p-8 mb-8 text-center">
+      <div id="pricing-content"></div>
+    </div>
 
-            if (prospectEmail) {
-                // Clean the email exactly how the completion form does it
-                const cleanEmail = prospectEmail.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase().trim();
-                console.log("🔥 [DEBUG 1] URL Email found:", cleanEmail);
-                
-                const prospectRef = doc(db, "prospects", cleanEmail);
-                
-                setDoc(prospectRef, {
-                    scannerClicked: true,
-                    status: 'Warm', // Instantly bump them in the pipeline
-                    lastActive: serverTimestamp(),
-                    updatedAt: serverTimestamp()
-                }, { merge: true })
-                .then(() => {
-                    console.log("✅ [DEBUG 2] Firebase updated: Click tracked perfectly.");
-                })
-                .catch((err) => {
-                    console.error("❌ [DEBUG 2] Firebase failed to update:", err);
-                });
-            } else {
-                console.log("ℹ️ [DEBUG] No ?email= found in the URL. Organic visitor.");
-            }
-        }, 500);
-        // ─── SCORING STATE ────────────────────────────────────────────
-        let currentRoute = [];
-        let currentIndex = 0;
-        let extScore     = 0;
-        let intScore     = 0;
-        let unsureFlag   = false;
+    <!-- CTA -->
+    <div class="border border-shadow p-8 md:p-10 text-center">
+      <h3 id="cta-heading" class="font-serif text-3xl md:text-4xl text-marble mb-4 leading-tight"></h3>
+      <p id="cta-body" class="font-sans text-sm text-marble opacity-70 leading-relaxed mb-8 max-w-2xl mx-auto"></p>
+      <a id="cta-btn" href="#" class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 font-bold"></a>
+      <p class="font-sans text-[10px] tracking-widest text-marble opacity-30 uppercase mt-6">Review-Ready Drafts · Local Counsel Validation Required · Not a Law Firm</p>
+    </div>
 
-        // ─── QUESTION DATABASE ────────────────────────────────────────
-        const questions = [
-            {
-                id: 1, lane: 'master',
-                text: "What is your primary AI exposure surface right now?",
-                options: [
-                    { text: "We build AI into our product (Agents, Customer-facing)", logic: 'A' },
-                    { text: "We use AI internally (Content, Operations, Delivery)",   logic: 'B' },
-                    { text: "Both. We build with AI and use it internally.",           logic: 'C' }
-                ]
-            },
-            {
-                id: 2, lane: 'external',
-                text: "If your AI agent can take real-world actions, do your contracts contain a defined liability cap specifically for autonomous agent actions?",
-                options: [
-                    { text: "Yes, explicitly defined.",                            extPts: 0  },
-                    { text: "We have a general liability cap, not agent-specific.", extPts: 20 },
-                    { text: "No cap / I'm not sure.",                              extPts: 40, unsure: true }
-                ]
-            },
-            {
-                id: 3, lane: 'external',
-                text: "Do your Terms of Service address AI hallucinations — outputs that are false, misleading, or fabricated?",
-                options: [
-                    { text: "Yes, with a specific disclaimer and waiver.",    extPts: 0  },
-                    { text: "We have a general disclaimer, not AI-specific.", extPts: 25 },
-                    { text: "No / I'm not sure.",                             extPts: 50, unsure: true }
-                ]
-            },
-            {
-                id: 4, lane: 'external',
-                text: "Does your product process personal data from EU or UK users?",
-                options: [
-                    { text: "Yes — we have a signed DPA and SCCs in place.", extPts: 0  },
-                    { text: "Yes — but no DPA or SCCs.",                      extPts: 45, unsure: true },
-                    { text: "No EU/UK users.",                                extPts: 0  }
-                ]
-            },
-            {
-                id: 5, lane: 'external',
-                text: "Does your AI product make or assist with consequential decisions — credit, hiring, healthcare, or legal?",
-                options: [
-                    { text: "No.",                                            extPts: 0  },
-                    { text: "Yes — with human review documented.",            extPts: 10 },
-                    { text: "Yes — fully automated / I'm not sure.",          extPts: 60, unsure: true }
-                ]
-            },
-            {
-                id: 6, lane: 'internal',
-                text: "Do your employees use AI tools (ChatGPT, Claude, Gemini, Copilot) for work tasks?",
-                options: [
-                    { text: "Yes — with a formal AI usage policy.", intPts: 0  },
-                    { text: "Yes — informally, no policy.",         intPts: 35, unsure: true },
-                    { text: "No.",                                  intPts: 0  }
-                ]
-            },
-            {
-                id: 7, lane: 'internal',
-                text: "When employees use AI to create content, code, or documents — who owns the output?",
-                options: [
-                    { text: "Clearly defined in our IP or employment agreements.", intPts: 0  },
-                    { text: "We assume we own it, but it's not documented.",       intPts: 40, unsure: true },
-                    { text: "We haven't thought about this.",                      intPts: 55, unsure: true }
-                ]
-            },
-            {
-                id: 8, lane: 'internal',
-                text: "Has your company run an audit to identify which AI tools employees are using without approval?",
-                options: [
-                    { text: "Yes — formal Shadow AI audit completed.", intPts: 0  },
-                    { text: "Informal check only.",                    intPts: 25 },
-                    { text: "No audit conducted.",                     intPts: 45, unsure: true }
-                ]
-            },
-            {
-                id: 9, lane: 'internal',
-                text: "Do you have a documented Human-in-the-Loop (HITL) protocol for AI-assisted decisions?",
-                options: [
-                    { text: "Yes, formally documented protocol.",       intPts: 0  },
-                    { text: "Humans are in the loop, but undocumented.", intPts: 30 },
-                    { text: "No protocol / I'm not sure.",              intPts: 40, unsure: true },
-                    { text: "We don't use AI for these decisions.",      intPts: 0  }
-                ]
-            }
-        ];
+  </div>
+</main>
 
-        // ─── CORE FUNCTIONS ───────────────────────────────────────────
-        function switchState(hideId, showId) {
-            document.getElementById(hideId).classList.remove('fade-enter-active');
-            setTimeout(() => {
-                document.getElementById(hideId).classList.add('hidden-state');
-                document.getElementById(showId).classList.remove('hidden-state');
-                setTimeout(() => document.getElementById(showId).classList.add('fade-enter-active'), 50);
-            }, 400);
-        }
+<footer class="flex flex-col items-center py-12 bg-void border-t border-shadow">
+  <div class="font-serif text-xl tracking-widest text-gold uppercase mb-6">Lex Nova HQ</div>
+  <p class="font-sans text-xs text-marble opacity-40 uppercase tracking-widest max-w-2xl leading-relaxed text-center mb-4">Commercial Architecture Practice, Not a Law Firm.<br>Review-Ready Drafts Only. No Attorney-Client Relationship.</p>
+  <p class="font-sans text-xs text-marble opacity-30">&copy; 2026 Lex Nova HQ. All rights reserved.</p>
+</footer>
 
-        function getTierData(score, isExt) {
-            if (isExt) {
-                if (score > 75) return { color:'bg-danger',   text:'Critical', low:1500000, high:10000000 };
-                if (score > 50) return { color:'bg-warning',  text:'High',     low:400000,  high:1500000  };
-                if (score > 25) return { color:'bg-moderate', text:'Moderate', low:75000,   high:400000   };
-                return             { color:'bg-safe',     text:'Low',      low:0,       high:75000    };
-            } else {
-                if (score > 75) return { color:'bg-danger',   text:'Critical', low:600000,  high:2000000  };
-                if (score > 50) return { color:'bg-warning',  text:'High',     low:200000,  high:600000   };
-                if (score > 25) return { color:'bg-moderate', text:'Moderate', low:30000,   high:200000   };
-                return             { color:'bg-safe',     text:'Low',      low:0,       high:30000    };
-            }
-        }
+<script type="module">
+import { initializeApp }                         from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-        function formatCash(n) {
-            if (n >= 1000000) return "$" + (n / 1000000).toFixed(1) + "M";
-            if (n >= 1000)    return "$" + (n / 1000).toFixed(0) + "k";
-            return "$" + n;
-        }
+const app = initializeApp({
+  apiKey:"AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
+  authDomain:"lexnova-hq.firebaseapp.com",
+  projectId:"lexnova-hq",
+  storageBucket:"lexnova-hq.firebasestorage.app",
+  messagingSenderId:"539475214055",
+  appId:"1:539475214055:web:c01a99ec94ff073a9b6c42"
+});
+const db = getFirestore(app);
+const WEBHOOK = "https://hook.eu1.make.com/q7nnd3klwdmlmtesq5no4yfsmk3v8ua7";
 
-        function renderQuestion(q) {
-            document.getElementById('question-text').innerText = q.text;
-            const container = document.getElementById('options-container');
-            container.innerHTML = '';
-            q.options.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = "w-full text-left bg-[#080808] border border-shadow p-5 text-marble font-sans text-sm hover:border-gold hover:text-gold transition-colors duration-300";
-                btn.innerText = opt.text;
-                btn.onclick   = () => handleAnswer(q, opt);
-                container.appendChild(btn);
-            });
-            if (currentRoute.length > 0) {
-                document.getElementById('progress-bar').style.width   = `${((currentIndex + 1) / currentRoute.length) * 100}%`;
-                document.getElementById('progress-text').innerText    = `Question ${currentIndex + 1} of ${currentRoute.length}`;
-            }
-        }
+// ── FIRE 1: CLICK TRACKER ──────────────────────────────────────────────
+setTimeout(() => {
+  const email = new URLSearchParams(window.location.search).get('email');
+  if (email) {
+    const clean = email.replace(/[^a-zA-Z0-9@._-]/g,'').toLowerCase().trim();
+    setDoc(doc(db,"prospects",clean),{ scannerClicked:true, status:'Warm', lastActive:serverTimestamp(), updatedAt:serverTimestamp() },{ merge:true })
+    .catch(e => console.error("Click track failed:",e));
+  }
+}, 500);
 
-        function handleAnswer(question, option) {
-            if (question.lane === 'master') {
-                if      (option.logic === 'A') currentRoute = questions.filter(q => q.lane === 'external');
-                else if (option.logic === 'B') currentRoute = questions.filter(q => q.lane === 'internal');
-                else if (option.logic === 'C') currentRoute = questions.filter(q => q.lane !== 'master');
-                currentIndex = 0;
-                renderQuestion(currentRoute[currentIndex]);
-                return;
-            }
-            if (option.extPts) extScore += option.extPts;
-            if (option.intPts) intScore += option.intPts;
-            if (option.unsure) unsureFlag = true;
-            currentIndex++;
-            if (currentIndex < currentRoute.length) {
-                renderQuestion(currentRoute[currentIndex]);
-            } else {
-                showGate();
-            }
-        }
+// ── STATE ─────────────────────────────────────────────────────────────
+let route=[], idx=0, extScore=0, intScore=0, unsureFlag=false, activeGaps=[];
 
-        function showGate() {
-            const extData = getTierData(extScore, true);
-            const intData = getTierData(intScore, false);
-            document.getElementById('gate-ext-color').className = `w-full h-2 mb-3 ${extData.color}`;
-            document.getElementById('gate-ext-label').innerText = extData.text;
-            document.getElementById('gate-int-color').className = `w-full h-2 mb-3 ${intData.color}`;
-            document.getElementById('gate-int-label').innerText = intData.text;
-            switchState('state-quiz', 'state-gate');
-        }
+// ── QUESTIONS ─────────────────────────────────────────────────────────
+const Q = [
+  {
+    id:1, lane:'master',
+    text:"Where is your company most exposed right now?",
+    options:[
+      {text:"We build AI into our product (Agents, Customer-facing)", logic:'A'},
+      {text:"We use AI internally (Content, Operations, Delivery)",   logic:'B'},
+      {text:"Both. We build with AI and use it internally.",           logic:'C'}
+    ]
+  },
+  {
+    id:2, lane:'external',
+    text:"Your AI takes actions on users' behalf — sends emails, executes purchases, submits forms, runs API calls. Is there a defined liability cap in your contracts specifically for these autonomous actions?",
+    gap:{
+      trap:"UETA §14 — Agentic Liability",
+      plain:"Your agents are operating with uncapped liability on every action they take",
+      doc:"DOC_AGT",
+      docName:"Agentic Systems Addendum",
+      docPurpose:"Financial Kill Switch + autonomous action authorization boundaries + agent failure protocols"
+    },
+    options:[
+      {text:"Yes — agent-specific cap, explicitly defined in our agreements",         extPts:0},
+      {text:"We have a general liability cap, but nothing agent-specific",            extPts:20},
+      {text:"No defined cap / we don't think this applies to us / not sure",         extPts:45, unsure:true}
+    ]
+  },
+  {
+    id:3, lane:'external',
+    text:"A user acts on something your AI generated — a recommendation, a summary, an automated decision — and it was wrong. What does your Terms of Service say happens next?",
+    gap:{
+      trap:"Moffatt — Hallucination Liability",
+      plain:"Your product has no legal defense when AI outputs cause user harm",
+      doc:"DOC_TOS",
+      docName:"AI-Native Terms of Service",
+      docPurpose:"AS-IS warranty + hallucination disclaimer + user reliance waiver"
+    },
+    options:[
+      {text:"We have an AI-specific disclaimer and AS-IS waiver",      extPts:0},
+      {text:"We have a general disclaimer — not AI-specific",          extPts:25},
+      {text:"No disclaimer / I'm not sure what our ToS says",          extPts:55, unsure:true}
+    ]
+  },
+  {
+    id:4, lane:'external',
+    text:"Before a user interacts with your AI for the first time, how do they agree to your Terms of Service?",
+    gap:{
+      trap:"Specht — Consent Invalidity",
+      plain:"Every user agreement you've formed is legally void — retroactively",
+      doc:"DOC_TOS",
+      docName:"AI-Native Terms of Service",
+      docPurpose:"Clickwrap consent architecture + recorded acceptance mechanism before first AI interaction"
+    },
+    options:[
+      {text:"Explicit checkbox or modal — recorded before first interaction",              extPts:0},
+      {text:"ToS is linked in the footer or onboarding flow — no active click required",  extPts:40},
+      {text:"No consent mechanism / I'm not sure how ours works",                         extPts:55, unsure:true}
+    ]
+  },
+  {
+    id:5, lane:'external',
+    text:"When your AI generates content, code, or creative output that users will publish, sell, or build on — who legally owns it?",
+    gap:{
+      trap:"Thaler — IP Ownership Void",
+      plain:"Every output your product generates exists in a legal ownership vacuum",
+      doc:"DOC_TOS",
+      docName:"AI-Native Terms of Service",
+      docPurpose:"Output ownership clauses + HITL authorship requirement + IP assignment framework"
+    },
+    options:[
+      {text:"Ownership is explicitly defined in our ToS with a HITL requirement",           extPts:0},
+      {text:"We assume the user owns it — but it's not formally addressed",                extPts:40, unsure:true},
+      {text:"We haven't addressed this / outputs go directly to users without a clause",   extPts:55, unsure:true}
+    ]
+  },
+  {
+    id:6, lane:'external',
+    text:"Does your product learn from, train on, or fine-tune using data that users upload or generate inside your platform?",
+    gap:{
+      trap:"Rite Aid + Bartz — Disgorgement + Training Data Copyright",
+      plain:"A regulator can order your model deleted — not fined, deleted. Irreversible.",
+      doc:"DOC_DPA",
+      docName:"Data Processing Agreement",
+      docPurpose:"RAG-only mandate + disgorgement shield + model deletion limitation clause"
+    },
+    options:[
+      {text:"No — we use RAG only. User data never touches our model weights",              extPts:0},
+      {text:"User data improves the product but stays isolated and deletable",             extPts:20},
+      {text:"Yes we fine-tune on user inputs / I'm not certain what our architecture does",extPts:50, unsure:true}
+    ]
+  },
+  {
+    id:7, lane:'external',
+    text:"Does your AI influence decisions that directly affect someone's money, job, health, or legal status — credit scoring, hiring filters, medical triage, legal recommendations?",
+    gap:{
+      trap:"UnitedHealth — Algorithmic Discrimination",
+      plain:"Your AI is making consequential decisions with no documented human oversight",
+      doc:"DOC_TOS",
+      docName:"AI-Native Terms of Service",
+      docPurpose:"High-risk AI provisions + HITL mandate + no-bias warranty + NIST RMF compliance hooks"
+    },
+    options:[
+      {text:"No — our product doesn't operate in these verticals",                              extPts:0},
+      {text:"Yes — but every decision has a documented human review step",                     extPts:15},
+      {text:"Yes — it's partially or fully automated / I'm not sure if it qualifies",         extPts:60, unsure:true}
+    ]
+  },
+  {
+    id:8, lane:'external',
+    text:"Does your product generate content involving real people or companies, create an ongoing AI persona users engage with repeatedly, or synthesise voice, image, or video?",
+    gap:{
+      trap:"Walters + Character.AI + Deepfake — Content Liability Trifecta",
+      plain:"Your product is generating defamation, reliance liability, and right of publicity exposure simultaneously",
+      doc:"DOC_TOS + DOC_AUP",
+      docName:"AI-Native Terms of Service + Acceptable Use Policy",
+      docPurpose:"Content liability disclaimers + right of publicity shield + emotional reliance safeguards + input warranty"
+    },
+    options:[
+      {text:"No — none of these apply to our product",                                          extPts:0},
+      {text:"Yes — and we have specific disclaimers, content policies, and user warranties",    extPts:20},
+      {text:"Yes — one or more applies but we haven't specifically addressed the legal exposure",extPts:55, unsure:true}
+    ]
+  },
+  {
+    id:9, lane:'internal',
+    text:"Right now — are your employees pasting client data, internal documents, or proprietary information into AI tools like ChatGPT or Gemini?",
+    gap:{
+      trap:"Shadow AI — Data Leak",
+      plain:"Your employees are moving client data into public AI models right now — with no legal defense",
+      doc:"DOC_HND + DOC_SCAN",
+      docName:"AI Employee Handbook + Shadow AI Scanner",
+      docPurpose:"Traffic Light Policy (banned/restricted/permitted tools) + anonymous discovery survey to surface hidden usage"
+    },
+    options:[
+      {text:"No — we use only enterprise-licensed, data-isolated AI tools",                   intPts:0},
+      {text:"Possibly — we have informal guidelines but nothing enforceable",                  intPts:35, unsure:true},
+      {text:"Yes freely / we haven't addressed this / I don't know what tools they're using", intPts:55, unsure:true}
+    ]
+  },
+  {
+    id:10, lane:'internal',
+    text:"An employee uses AI to generate something valuable — a software module, a pitch framework, a client deliverable. If they left tomorrow, could they legally claim ownership of it?",
+    gap:{
+      trap:"Thaler — Internal IP Void",
+      plain:"Your employees can walk out with AI-generated IP your company built and paid for",
+      doc:"DOC_IP",
+      docName:"IP Assignment Deed",
+      docPurpose:"Explicit assignment of all AI-generated outputs, prompts, and selection logic decisions to the company"
+    },
+    options:[
+      {text:"No — our employment agreements explicitly cover AI-generated outputs",        intPts:0},
+      {text:"Probably not — but it has never been legally tested or documented",           intPts:40, unsure:true},
+      {text:"Our contracts predate AI and haven't been updated / I'm not sure",           intPts:55, unsure:true}
+    ]
+  },
+  {
+    id:11, lane:'internal',
+    text:"Do you know every AI tool your team is using right now — including the ones they chose themselves, without approval?",
+    gap:{
+      trap:"Shadow AI Discovery — Unknown Tool Exposure",
+      plain:"You can't govern liability you can't see — and you don't know what you don't know",
+      doc:"DOC_SCAN",
+      docName:"Shadow AI Scanner",
+      docPurpose:"Anonymous survey framework that surfaces unauthorized AI tool usage before it becomes a breach event"
+    },
+    options:[
+      {text:"Yes — formal audit completed, unauthorized tools identified and addressed",   intPts:0},
+      {text:"We think we know — but it's not formally documented",                        intPts:25},
+      {text:"No full visibility / no audit conducted",                                    intPts:50, unsure:true}
+    ]
+  },
+  {
+    id:12, lane:'internal',
+    text:"When your AI produces something that influences a client deliverable, a business decision, or a public communication — is there a documented human review step before it goes out?",
+    gap:{
+      trap:"HITL — Undocumented AI Decisions",
+      plain:"When something goes wrong, you have no paper trail proving you weren't negligent",
+      doc:"DOC_SOP",
+      docName:"HITL Authorship Protocol",
+      docPurpose:"Documented human review workflow that creates the evidentiary record regulators and courts look for"
+    },
+    options:[
+      {text:"Yes — formal documented review protocol exists",                intPts:0},
+      {text:"Humans review informally — but nothing is documented",          intPts:30},
+      {text:"No protocol / outputs go out directly / I'm not sure",         intPts:45, unsure:true}
+    ]
+  }
+];
 
-        window.loadDashboard = function() { // Expose to window so processGateForm can call it
-            const extData = getTierData(extScore, true);
-            const intData = getTierData(intScore, false);
+// ── TIER DATA ──────────────────────────────────────────────────────────
+function tier(score, ext) {
+  if (ext) {
+    if (score>=150) return {text:'CRITICAL', color:'bg-danger',     low:250000, high:500000};
+    if (score>=80)  return {text:'HIGH',     color:'bg-gold',       low:100000, high:250000};
+    if (score>=40)  return {text:'ELEVATED', color:'bg-yellow-600', low:50000,  high:100000};
+                    return {text:'BASELINE', color:'bg-green-800',  low:0,      high:50000 };
+  } else {
+    if (score>=100) return {text:'CRITICAL', color:'bg-danger',     low:150000, high:350000};
+    if (score>=60)  return {text:'HIGH',     color:'bg-gold',       low:75000,  high:150000};
+    if (score>=30)  return {text:'ELEVATED', color:'bg-yellow-600', low:25000,  high:75000 };
+                    return {text:'BASELINE', color:'bg-green-800',  low:0,      high:25000 };
+  }
+}
+function fmt(n) {
+  if (n>=1000000) return '$'+(n/1000000).toFixed(1)+'M';
+  if (n>=1000)    return '$'+(n/1000).toFixed(0)+'k';
+  return '$'+n;
+}
 
-            document.getElementById('ext-tier').className  = `font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void ${extData.color}`;
-            document.getElementById('ext-tier').innerText  = extData.text;
-            document.getElementById('int-tier').className  = `font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void ${intData.color}`;
-            document.getElementById('int-tier').innerText  = intData.text;
-            document.getElementById('ext-score').innerText = extScore;
-            document.getElementById('int-score').innerText = intScore;
+// ── RENDER ─────────────────────────────────────────────────────────────
+function renderQ(q) {
+  document.getElementById('question-text').innerText = q.text;
+  const c = document.getElementById('options-container');
+  c.innerHTML = '';
+  q.options.forEach(opt => {
+    const b = document.createElement('button');
+    b.className = "w-full text-left bg-[#080808] border border-shadow p-5 text-marble font-sans text-sm hover:border-gold hover:text-gold transition-colors duration-300";
+    b.innerText = opt.text;
+    b.onclick = () => answer(q, opt);
+    c.appendChild(b);
+  });
+  if (route.length>0) {
+    document.getElementById('progress-bar').style.width = `${((idx+1)/route.length)*100}%`;
+    document.getElementById('progress-text').innerText  = `Question ${idx+1} of ${route.length}`;
+  }
+}
 
-            const totalLow  = extData.low  + intData.low;
-            const totalHigh = extData.high + intData.high;
-            document.getElementById('exposure-dollar').innerText = `${formatCash(totalLow)} – ${formatCash(totalHigh)}+`;
+function answer(q, opt) {
+  if (q.lane==='master') {
+    if      (opt.logic==='A') route = Q.filter(x=>x.lane==='external');
+    else if (opt.logic==='B') route = Q.filter(x=>x.lane==='internal');
+    else                      route = Q.filter(x=>x.lane!=='master');
+    idx=0; renderQ(route[idx]); return;
+  }
+  if (opt.extPts) extScore += opt.extPts;
+  if (opt.intPts) intScore += opt.intPts;
+  if (opt.unsure) unsureFlag = true;
+  const pts = opt.extPts||opt.intPts||0;
+  if (pts>0 && q.gap && !activeGaps.find(g=>g.trap===q.gap.trap)) activeGaps.push(q.gap);
+  idx++;
+  if (idx<route.length) renderQ(route[idx]); else showGate();
+}
 
-            if (unsureFlag) document.getElementById('ignorance-disclaimer').classList.remove('hidden');
+function showGate() {
+  const ed=tier(extScore,true), id=tier(intScore,false);
+  document.getElementById('gate-ext-color').className=`w-full h-2 mb-3 ${ed.color}`;
+  document.getElementById('gate-ext-label').innerText=ed.text;
+  document.getElementById('gate-int-color').className=`w-full h-2 mb-3 ${id.color}`;
+  document.getElementById('gate-int-label').innerText=id.text;
+  sw('state-quiz','state-gate');
+}
 
-            const ctaBtn = document.getElementById('cta-btn');
-            if (extScore > 50 && intScore > 40) {
-                document.getElementById('cta-heading').innerText = "You have active exposure on both surfaces.";
-                document.getElementById('cta-body').innerText    = "Your diagnostic shows critical gaps in your external product architecture and your internal AI operations. The Complete Stack covers both.";
-                ctaBtn.innerText = "Apply for The Complete Stack";
-                ctaBtn.href      = "apply.html?plan=complete_stack"; // Standardized links
-            } else if (extScore > 50) {
-                document.getElementById('cta-heading').innerText = "Your primary exposure is in your product architecture.";
-                document.getElementById('cta-body').innerText    = "Your commercial agreements and user consent architecture are void under active case law. The Agentic Shield closes each gap directly.";
-                ctaBtn.innerText = "Apply for The Agentic Shield";
-                ctaBtn.href      = "apply.html?plan=agentic_shield";
-            } else if (intScore > 40) {
-                document.getElementById('cta-heading').innerText = "Your primary exposure is operational.";
-                document.getElementById('cta-body').innerText    = "Your team's AI outputs are falling into the public domain, and you lack documented behavioural oversight. The Workplace Shield addresses this.";
-                ctaBtn.innerText = "Apply for The Workplace Shield";
-                ctaBtn.href      = "apply.html?plan=workplace_shield";
-            } else {
-                document.getElementById('cta-heading').innerText = "Your baseline architecture is stronger than most.";
-                document.getElementById('cta-body').innerText    = "Your diagnostic shows low active exposure, but quiet gaps remain. A targeted Gap Review will surface them before they become enforcement events.";
-                ctaBtn.innerText = "Apply for a Gap Review";
-                ctaBtn.href      = "apply.html?plan=gap_review";
-            }
-            switchState('state-gate', 'state-dashboard');
-        }
+window.loadDashboard = function() {
+  const ed=tier(extScore,true), id=tier(intScore,false);
+  document.getElementById('ext-tier').className=`font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void ${ed.color}`;
+  document.getElementById('ext-tier').innerText=ed.text;
+  document.getElementById('int-tier').className=`font-sans text-[10px] tracking-widest px-2 py-1 uppercase text-void ${id.color}`;
+  document.getElementById('int-tier').innerText=id.text;
+  document.getElementById('ext-score').innerText=extScore;
+  document.getElementById('int-score').innerText=intScore;
+  const tLow=ed.low+id.low, tHigh=ed.high+id.high;
+  document.getElementById('exposure-dollar').innerText=`${fmt(tLow)} – ${fmt(tHigh)}+`;
+  if (unsureFlag) document.getElementById('ignorance-disclaimer').classList.remove('hidden');
 
-        // ─── EXIT INTENT ──────────────────────────────────────────────
-        let exitIntentFired = false;
+  // Active gaps
+  if (activeGaps.length>0) {
+    document.getElementById('active-gaps-section').classList.remove('hidden');
+    document.getElementById('gap-count').innerText=activeGaps.length;
+    document.getElementById('gap-plural').innerText=activeGaps.length===1?'':'s';
+    const gl=document.getElementById('gaps-list');
+    gl.innerHTML='';
+    activeGaps.forEach(g=>{
+      gl.innerHTML+=`
+        <div class="border border-shadow bg-[#080808] p-5">
+          <div class="flex items-start gap-4">
+            <div class="w-2 h-2 rounded-full bg-danger mt-2 flex-shrink-0"></div>
+            <div>
+              <div class="font-sans text-[10px] tracking-[0.15em] text-danger uppercase font-bold mb-1">${g.trap}</div>
+              <div class="font-serif text-lg text-marble leading-snug">${g.plain}</div>
+            </div>
+          </div>
+        </div>`;
+    });
 
-        document.addEventListener('mouseleave', function(e) {
-            const dashboardVisible = !document.getElementById('state-dashboard').classList.contains('hidden-state');
-            const gateVisible      = !document.getElementById('state-gate').classList.contains('hidden-state');
-            if (e.clientY < 0 && !exitIntentFired && !dashboardVisible && !gateVisible) {
-                exitIntentFired = true;
-                document.getElementById('exit-modal').classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            }
-        });
+    // Document fix section
+    document.getElementById('fix-section').classList.remove('hidden');
+    const dl=document.getElementById('docs-list');
+    dl.innerHTML='';
+    const seen=new Set();
+    activeGaps.forEach(g=>{
+      if (!seen.has(g.doc)) {
+        seen.add(g.doc);
+        dl.innerHTML+=`
+          <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-3 border border-shadow bg-[#080808] p-5 items-start">
+            <div class="font-sans text-[10px] tracking-[0.15em] text-gold uppercase font-bold pt-1">${g.doc}</div>
+            <div>
+              <div class="font-sans text-sm text-marble font-semibold mb-1">${g.docName}</div>
+              <div class="font-sans text-xs text-marble opacity-50 leading-relaxed">${g.docPurpose}</div>
+            </div>
+          </div>`;
+      }
+    });
+  }
 
-        window.closeExitModal = function() {
-            document.getElementById('exit-modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-            setTimeout(() => { exitIntentFired = false; }, 1000);
-        }
+  // Plan routing
+  const expRange=`${fmt(tLow)} – ${fmt(tHigh)}+`;
+  let plan, price, origPrice, ctaH, ctaB, ctaT, ctaHref;
 
-        // ─── EXIT FORM ────────────────────────────────────────────────
-        window.processExitForm = async function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('exit-submit-btn');
-            btn.innerText = "Saved.";
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
+  if (extScore>50 && intScore>40) {
+    plan="The Complete Stack"; price="$2,000"; origPrice="$2,500";
+    ctaHref=`apply.html?plan=complete_stack&ext=${extScore}&int=${intScore}`;
+    ctaH="You have unprotected exposure on every surface.";
+    ctaB=`The ${expRange} above is not theoretical. Your product architecture has no legal defense against autonomous agent liability, and your team is operating AI tools that are actively moving your IP into the public domain. Every day this stays unfixed is a day a single incident can end the company.`;
+    ctaT="Close Both Gaps — Apply for The Complete Stack";
+  } else if (extScore>50) {
+    plan="The Agentic Shield"; price="$997"; origPrice="$1,500";
+    ctaHref=`apply.html?plan=agentic_shield&ext=${extScore}&int=${intScore}`;
+    ctaH="Your product is live. Your legal architecture isn't.";
+    ctaB=`The ${expRange} above is your current uncapped liability. Every user interaction your AI executes without a consent mechanism, liability cap, or AS-IS waiver is a direct line to that number. The Agentic Shield closes every gap your diagnostic identified — before the first incident.`;
+    ctaT="Fix This Now — Apply for The Agentic Shield";
+  } else if (intScore>40) {
+    plan="The Workplace Shield"; price="$997"; origPrice="$1,500";
+    ctaHref=`apply.html?plan=workplace_shield&ext=${extScore}&int=${intScore}`;
+    ctaH="Your team is building your company's value into someone else's model.";
+    ctaB="Every uncontrolled AI tool your employees use is a potential data breach, an IP transfer, and a client contract violation happening simultaneously — with no documentation that you tried to prevent it. The Workplace Shield installs the policy layer, the IP assignment, and the audit trail before the incident that makes all three relevant.";
+    ctaT="Protect What You've Built — Apply for The Workplace Shield";
+  } else {
+    plan="A Gap Review"; price="$750"; origPrice=null;
+    ctaHref=`apply.html?plan=gap_review&ext=${extScore}&int=${intScore}`;
+    ctaH="Your visible gaps are low. Your invisible ones aren't.";
+    ctaB="A low diagnostic score means your known architecture is cleaner than most. It does not mean you're protected. The gaps that destroy companies are the ones that don't show up in a 9-question audit. A Gap Review maps exactly what sits beneath the surface — before a funder, a regulator, or opposing counsel finds it first.";
+    ctaT="Surface the Hidden Gaps — Apply for a Gap Review";
+  }
 
-            const email    = document.getElementById('exit-email').value.trim();
-            const docId    = email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
-            const leadData = {
-                email, name: "", company: "", leadType: "ghost_lead",
-                source: "scanner_exit", status: "new",
-                productRiskScore: 0, internalOpsScore: 0,
-                uncertaintyFlag: false, notes: "Captured via Exit Intent on Scanner"
-            };
+  // Pricing block
+  document.getElementById('pricing-content').innerHTML=`
+    <div class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-4 font-bold">The Fix: ${plan}</div>
+    <div class="flex items-center justify-center gap-4 mb-3">
+      ${origPrice?`<div class="font-serif text-3xl text-marble line-through opacity-40">${origPrice}</div>`:''}
+      <div class="font-serif text-5xl text-gold">${price}</div>
+    </div>
+    <div class="font-sans text-xs text-marble opacity-50 uppercase tracking-widest mb-4">Founding Client Rate</div>
+    <div class="inline-block border border-gold/30 bg-gold/5 px-5 py-3">
+      <p class="font-sans text-xs text-marble opacity-70 leading-relaxed max-w-md">72-hour delivery · Review-Ready Drafts · Local counsel validation required · <strong class="text-gold">3 founding spots remaining.</strong> Standard pricing resumes after spot 3 is filled.</p>
+    </div>`;
 
-            try {
-                await setDoc(doc(db, "leads", docId), {
-                    ...leadData, createdAt: serverTimestamp(), lastTouched: serverTimestamp()
-                }, { merge: true });
-            } catch(err) { console.log("Firestore write failed:", err); }
+  document.getElementById('cta-heading').innerText=ctaH;
+  document.getElementById('cta-body').innerText=ctaB;
+  const btn=document.getElementById('cta-btn');
+  btn.innerText=ctaT; btn.href=ctaHref;
 
-            try {
-                await fetch(LEAD_WEBHOOK, {
-                    method: 'POST',
-                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
-                });
-            } catch(err) {}
+  sw('state-gate','state-dashboard');
+};
 
-            setTimeout(() => { window.closeExitModal(); }, 1500);
-        }
+// ── GATE FORM ──────────────────────────────────────────────────────────
+window.processGateForm = async function(e) {
+  e.preventDefault();
+  const btn=document.getElementById('gate-submit-btn');
+  btn.innerText="Unlocking..."; btn.disabled=true;
+  const name=document.getElementById('lead-name').value.trim();
+  const email=document.getElementById('lead-email').value.trim().toLowerCase();
+  const company=document.getElementById('lead-company').value.trim();
+  const gapTraps=activeGaps.map(g=>g.trap);
+  try {
+    await setDoc(doc(db,"leads",email),{
+      name,email,company,
+      scannerCompleted:true,
+      scannerExternalScore:extScore,
+      scannerInternalScore:intScore,
+      activeGaps:gapTraps,
+      status:'warm_lead', source:'scanner', unsureFlag,
+      createdAt:serverTimestamp(), updatedAt:serverTimestamp()
+    },{merge:true});
+    await setDoc(doc(db,"prospects",email),{
+      scannerCompleted:true,
+      scannerExternalScore:extScore,
+      scannerInternalScore:intScore,
+      activeGaps:gapTraps,
+      status:'Warm', updatedAt:serverTimestamp()
+    },{merge:true});
+    fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,company,extScore,intScore,activeGaps:gapTraps,source:'scanner'})}).catch(()=>{});
+  } catch(err){ console.error("Gate write failed:",err); }
+  loadDashboard();
+};
 
-        // ─── GATE FORM (FIRE 2: COMPLETED) ────────────────────────────
-        window.processGateForm = async function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('gate-submit-btn');
-            btn.innerText = "Analyzing...";
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
+// ── EXIT INTENT ────────────────────────────────────────────────────────
+let exitFired=false;
+document.addEventListener('mouseleave',function(e){
+  const dashV=!document.getElementById('state-dashboard').classList.contains('hidden-state');
+  const gateV=!document.getElementById('state-gate').classList.contains('hidden-state');
+  if(e.clientY<0 && !exitFired && !dashV && !gateV){
+    exitFired=true;
+    document.getElementById('exit-modal').classList.remove('hidden');
+    document.body.style.overflow='hidden';
+  }
+});
+window.closeExitModal=function(){
+  document.getElementById('exit-modal').classList.add('hidden');
+  document.body.style.overflow='auto';
+  setTimeout(()=>{exitFired=false;},1000);
+};
+window.processExitForm=async function(e){
+  e.preventDefault();
+  const btn=document.getElementById('exit-submit-btn');
+  btn.innerText="Saved."; btn.disabled=true;
+  const email=document.getElementById('exit-email').value.trim().toLowerCase();
+  try {
+    await setDoc(doc(db,"leads",email),{email,status:'cold_lead',source:'exit_intent',createdAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});
+    fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,source:'exit_intent'})}).catch(()=>{});
+  } catch(err){console.error("Exit write failed:",err);}
+  setTimeout(closeExitModal,1500);
+};
 
-            const leadName    = document.getElementById('lead-name').value.trim();
-            const leadEmail   = document.getElementById('lead-email').value.trim();
-            const leadCompany = document.getElementById('lead-company').value.trim();
-
-            localStorage.setItem('ln_name',    leadName);
-            localStorage.setItem('ln_email',   leadEmail);
-            localStorage.setItem('ln_company', leadCompany);
-
-            const docId = leadEmail.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
-            const leadData = {
-                email: leadEmail, name: leadName, company: leadCompany,
-                leadType: "warm_lead", source: "scanner", status: "warm",
-                productRiskScore: extScore, internalOpsScore: intScore,
-                uncertaintyFlag: unsureFlag, notes: ""
-            };
-
-            // 1. Update Leads Collection
-            try {
-                await setDoc(doc(db, "leads", docId), {
-                    ...leadData, createdAt: serverTimestamp(), lastTouched: serverTimestamp()
-                }, { merge: true });
-            } catch(err) { console.log("Firestore write failed:", err); }
-
-            // 2. Update Prospects Collection (The Double Fire 🔥🔥)
-            try {
-                await setDoc(doc(db, "prospects", docId), {
-                    scannerCompleted: true,
-                    scannerExternalScore: extScore,
-                    scannerInternalScore: intScore,
-                    status: "Warm", // Automatically bump them down the pipeline funnel!
-                    updatedAt: new Date().toISOString()
-                }, { merge: true });
-            } catch(err) { console.log("Prospect CRM update failed:", err); }
-
-            // 3. Webhook Backup
-            try {
-                await fetch(LEAD_WEBHOOK, {
-                    method: 'POST',
-                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ...leadData, createdAt: new Date().toISOString() })
-                });
-            } catch(err) {}
-
-            window.loadDashboard();
-        }
-
-        // ─── START ────────────────────────────────────────────────────
-        window.startScanner = function() {
-            const navLinks = document.getElementById('nav-links');
-            if (navLinks) {
-                navLinks.style.opacity = '0';
-                setTimeout(() => { navLinks.style.display = 'none'; }, 500);
-            }
-            currentRoute = [questions[0]];
-            currentIndex = 0;
-            renderQuestion(questions[0]);
-            switchState('state-welcome', 'state-quiz');
-        }
-    </script>
-
-    <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v67327c56f0bb4ef8b305cae61679db8f1769101564043" integrity="sha512-rdcWY47ByXd76cbCFzznIcEaCN71jqkWBBqlwhF1SY7KubdLKZiEGeP7AyieKZlGP9hbY/MhGrwXzJC/HulNyg==" data-cf-beacon='{"version":"2024.11.0","token":"dfc3f5e5add24a01a5276f49e5abec40","r":1}' crossorigin="anonymous"></script>
+// ── UTIL ───────────────────────────────────────────────────────────────
+function sw(from,to){
+  document.getElementById(from).classList.add('hidden-state');
+  document.getElementById(from).classList.remove('fade-enter');
+  const t=document.getElementById(to);
+  t.classList.remove('hidden-state');
+  t.classList.add('fade-enter');
+}
+window.startScanner=function(){ sw('state-intro','state-quiz'); renderQ(Q[0]); };
+</script>
 </body>
 </html>
-  
-
-
-
-
