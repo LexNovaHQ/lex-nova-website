@@ -81,7 +81,7 @@
                     <div>
                         <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Registration Jurisdiction</label>
                         <select id="apply-jurisdiction" name="Jurisdiction" required
-                                class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-3 text-marble font-sans text-sm transition-all">
+                                 class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-3 text-marble font-sans text-sm transition-all">
                             <option value="">Select jurisdiction</option>
                             <option value="us">United States</option>
                             <option value="uk">United Kingdom</option>
@@ -455,8 +455,8 @@
             </div>
 
         </div></div><script type="module">
-        import { initializeApp }                              from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, updateDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+        import { initializeApp }                               from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey:             "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
@@ -486,8 +486,8 @@
         };
 
         const PLAN_DETAILS = {
-            agentic_shield:   { tier:'Kit',     product:'Agentic Shield',    fee:'$997 USD',   payment:'100% Upfront', delivery:'48 hours from Intake Form submission', revisions:'1 Round' },
-            workplace_shield: { tier:'Kit',     product:'Workplace Shield',  fee:'$997 USD',   payment:'100% Upfront', delivery:'48 hours from Intake Form submission', revisions:'1 Round' },
+            agentic_shield:   { tier:'Kit',      product:'Agentic Shield',    fee:'$997 USD',   payment:'100% Upfront', delivery:'48 hours from Intake Form submission', revisions:'1 Round' },
+            workplace_shield: { tier:'Kit',      product:'Workplace Shield',  fee:'$997 USD',   payment:'100% Upfront', delivery:'48 hours from Intake Form submission', revisions:'1 Round' },
             complete_stack:   { tier:'Bundle',  product:'Complete Stack',    fee:'$2,000 USD', payment:'100% Upfront', delivery:'72 hours from Intake Form submission', revisions:'2 Rounds' },
             flagship:         { tier:'Flagship',product:'Flagship',          fee:'To be confirmed per scope', payment:'60% Deposit / 40% on Delivery', delivery:'To be confirmed per scope', revisions:'Throughout project duration' }
         };
@@ -504,11 +504,8 @@
 
             if (targetPlan && PLAN_PRICES[targetPlan]) {
                 const radio = document.querySelector(`input[name="plan_selection"][value="${targetPlan}"]`);
-                if (radio) {
-                    radio.checked = true;
-                }
+                if (radio) radio.checked = true;
             } else {
-                // Fallback: Default to Agentic Shield if they land here directly
                 const defaultRadio = document.querySelector('input[name="plan_selection"][value="agentic_shield"]');
                 if (defaultRadio) defaultRadio.checked = true;
             }
@@ -531,7 +528,7 @@
 
         // ── BUTTON LABEL ───────────────────────────────────────────────
         function updateButtonLabel(planValue) {
-            const btn        = document.getElementById('checkout-btn');
+            const btn         = document.getElementById('checkout-btn');
             const isAccepted = document.getElementById('engagement-checkbox').checked;
             btn.innerText    = isAccepted ? "Initialize Payment Gateway" : "Accept Terms To Continue";
         }
@@ -548,30 +545,26 @@
             const today   = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
             const contact = [fname, lname].filter(Boolean).join(' ') || '[Contact Name]';
             
-            // The Golden Thread Injection
             const refDisplay = pid || 'LN-[YEAR]-[NUMBER] — To be confirmed upon payment';
 
-            // Header injection
-            document.getElementById('el-date').textContent         = today;
-            document.getElementById('el-ref').textContent          = refDisplay;
-            document.getElementById('el-client-name').textContent  = company  || '[Client Company Name]';
-            document.getElementById('el-contact').textContent      = contact;
-            document.getElementById('el-client-email').textContent = email    || '[Client Email]';
-            document.getElementById('el-dear').textContent         = fname    || '[Contact Name]';
-            document.getElementById('el-client-body').textContent  = company  || '[Client Name]';
+            document.getElementById('el-date').textContent          = today;
+            document.getElementById('el-ref').textContent           = refDisplay;
+            document.getElementById('el-client-name').textContent   = company  || '[Client Company Name]';
+            document.getElementById('el-contact').textContent       = contact;
+            document.getElementById('el-client-email').textContent  = email    || '[Client Email]';
+            document.getElementById('el-dear').textContent          = fname    || '[Contact Name]';
+            document.getElementById('el-client-body').textContent   = company  || '[Client Name]';
 
-            // Schedule A injection
-            document.getElementById('el-sa-date').textContent      = today;
-            document.getElementById('el-sa-ref').textContent       = refDisplay;
-            document.getElementById('el-sa-client').textContent    = company  || '[Client Name]';
-            document.getElementById('el-sa-tier').textContent      = pd.tier      ? `☑ ${pd.tier}`      : '[To be confirmed]';
-            document.getElementById('el-sa-product').textContent   = pd.product   || '[To be confirmed]';
-            document.getElementById('el-sa-fee').textContent       = pd.fee       || '[To be confirmed]';
-            document.getElementById('el-sa-payment').textContent   = pd.payment   || '[To be confirmed]';
-            document.getElementById('el-sa-delivery').textContent  = pd.delivery  || '[To be confirmed]';
-            document.getElementById('el-sa-revisions').textContent = pd.revisions || '[To be confirmed]';
+            document.getElementById('el-sa-date').textContent       = today;
+            document.getElementById('el-sa-ref').textContent        = refDisplay;
+            document.getElementById('el-sa-client').textContent     = company  || '[Client Name]';
+            document.getElementById('el-sa-tier').textContent       = pd.tier      ? `☑ ${pd.tier}`      : '[To be confirmed]';
+            document.getElementById('el-sa-product').textContent    = pd.product   || '[To be confirmed]';
+            document.getElementById('el-sa-fee').textContent        = pd.fee       || '[To be confirmed]';
+            document.getElementById('el-sa-payment').textContent    = pd.payment   || '[To be confirmed]';
+            document.getElementById('el-sa-delivery').textContent   = pd.delivery  || '[To be confirmed]';
+            document.getElementById('el-sa-revisions').textContent  = pd.revisions || '[To be confirmed]';
 
-            // Reset scroll and button state
             const container = document.getElementById('engagement-scroll-container');
             container.scrollTop = 0;
             const btn = document.getElementById('accept-modal-btn');
@@ -582,11 +575,9 @@
 
             document.getElementById('engagement-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
-            // Check in case content is short enough to already be at bottom
             window.checkScrollBottom();
         }
 
-        // ── MODAL — SCROLL CHECK ───────────────────────────────────────
         window.checkScrollBottom = function() {
             const container = document.getElementById('engagement-scroll-container');
             const btn       = document.getElementById('accept-modal-btn');
@@ -599,7 +590,6 @@
             }
         }
 
-        // ── MODAL — ACCEPT ─────────────────────────────────────────────
         function acceptEngagement() {
             document.getElementById('engagement-checkbox').checked = true;
             const vc = document.getElementById('visual-checkbox');
@@ -608,24 +598,19 @@
             document.getElementById('check-icon').classList.remove('hidden');
             const plan = document.querySelector('input[name="plan_selection"]:checked')?.value;
             if (plan) updateButtonLabel(plan);
-            else {
-                const btn     = document.getElementById('checkout-btn');
-                btn.innerText = "Initialize Payment Gateway";
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
+            
             document.getElementById('checkout-btn').classList.remove('opacity-50', 'cursor-not-allowed');
             document.getElementById('engagement-modal').classList.add('hidden');
             document.body.style.overflow = 'auto';
         }
 
-        // ── PREVENT DIRECT CHECKBOX CLICK ─────────────────────────────
         window.preventDirectCheck = function(e) {
             e.preventDefault();
             if (!document.getElementById('engagement-checkbox').checked) window.openEngagementModal();
         }
 
         // ════════════════════════════════════════════════════════════════════════
-        // ═════════ THE CHECKOUT ENGINE & NEGOTIATION FLIP ═══════════════════════
+        // ═════════ THE CHECKOUT ENGINE ══════════════════════════════════════════
         // ════════════════════════════════════════════════════════════════════════
         window.processCheckout = async function(event) {
             event.preventDefault();
@@ -649,58 +634,49 @@
 
             const leadData = {
                 email,
-                name:                     `${firstName} ${lastName}`.trim(),
+                name:                      `${firstName} ${lastName}`.trim(),
                 firstName,
                 lastName,
                 company,
                 registrationJurisdiction,   
                 plan,                       
                 price,
-                leadType:                 "hot_lead",
-                status:                   "hot_payment_pending",
-                source:                   "apply",
-                prospectId:               pid || null, // THE GOLDEN THREAD
-                elAccepted:               true,
-                elAcceptedAt:             new Date().toISOString()
+                leadType:                  "hot_lead",
+                status:                    "hot_payment_pending",
+                source:                    "apply",
+                prospectId:                pid || null, 
+                elAccepted:                true,
+                elAcceptedAt:              new Date().toISOString()
             };
 
             try {
-                // 1. Write to /leads — NOT /clients (Webhook creates /clients post-payment)
+                // 1. Write to /leads
                 const docId = email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
                 await setDoc(doc(db, "leads", docId), {
                     ...leadData,
                     lastTouched: serverTimestamp()
                 }, { merge: true });
 
-                // 2. The Negotiation Flip: Update CRM status
+                // 2. The Negotiation Flip (TARGET BY PROSPECT ID KEY)
                 if (pid) {
-                    const q = query(collection(db, "prospects"), where("prospectId", "==", pid));
-                    const snap = await getDocs(q);
-                    if (!snap.empty) {
-                        await updateDoc(snap.docs[0].ref, {
-                            status: 'Negotiating',
-                            updatedAt: serverTimestamp()
-                        });
-                        console.log(`[SYSTEM] Prospect ${pid} moved to Negotiating.`);
-                    }
+                    await updateDoc(doc(db, "prospects", pid), {
+                        status: 'Negotiating',
+                        updatedAt: serverTimestamp()
+                    });
+                    console.log(`[SYSTEM] Prospect ${pid} moved to Negotiating.`);
                 }
 
-            } catch(err) {
-                console.log("Firestore write failed:", err);
-            }
+            } catch(err) { console.log("Firestore write failed:", err); }
 
-            // 3. Notify Make.com Scenario 2 (checkout notification)
+            // 3. Notify Make.com Scenario 2
             try {
                 await fetch(CHECKOUT_WEBHOOK, {
                     method:  "POST",
                     headers: { "Content-Type": "application/json" },
                     body:    JSON.stringify({ ...leadData, timestamp: new Date().toISOString() })
                 });
-            } catch(err) {
-                console.log("Webhook failed:", err);
-            }
+            } catch(err) { console.log("Webhook failed:", err); }
 
-            // Redirect to PayPal
             window.location.href = PAYPAL_LINKS[plan] || PAYPAL_LINKS['agentic_shield'];
         }
 
