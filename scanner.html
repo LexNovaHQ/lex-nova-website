@@ -16,9 +16,6 @@ tailwind.config = {
 }
 </script>
 <style>
-/* ════════════════════════════════════════════════════════════════════════ */
-/* ═════════ BASE STYLES ══════════════════════════════════════════════════ */
-/* ════════════════════════════════════════════════════════════════════════ */
   body { background:#050505; }
   .hidden-state { display:none; }
   .fade-enter { animation: fadeIn 0.4s ease forwards; }
@@ -113,8 +110,8 @@ tailwind.config = {
 </footer>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-import { getFirestore, doc, setDoc, updateDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+import { initializeApp }                                    from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getFirestore, doc, setDoc, serverTimestamp }       from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey:"AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
@@ -127,52 +124,38 @@ const app = initializeApp({
 const db = getFirestore(app);
 const WEBHOOK = "https://hook.eu1.make.com/q7nnd3klwdmlmtesq5no4yfsmk3v8ua7";
 
-// ════════════════════════════════════════════════════════════════════════
-// ═════════ THE GOLDEN THREAD (ID-AWARE TRACKER) ═════════════════════════
-// ════════════════════════════════════════════════════════════════════════
+// ── THE GOLDEN THREAD TRACKER ──────────────────────────────────────────
 const urlParams = new URLSearchParams(window.location.search);
 const pid = urlParams.get('pid'); 
-const legacyEmail = urlParams.get('email');
+const legacyEmail = urlParams.get('email'); // Fallback for old links
 
-let activeProspectRef = null;
-
-// Store PID so apply.html can access it for the Engagement Letter Draft
 if (pid) localStorage.setItem('ln_pid', pid);
 
-// ── FIRE 1: THE STEALTH CAPTURE (CLICK TRACKER) ──
-setTimeout(async () => {
+// ── FIRE 1: CLICK TRACKER ──────────────────────────────────────────────
+setTimeout(() => {
   try {
+    let docId = null;
     if (pid) {
-      const q = query(collection(db, "prospects"), where("prospectId", "==", pid));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        activeProspectRef = snap.docs[0].ref;
-        await setDoc(activeProspectRef, { 
-            scannerClicked: true, 
-            status: 'Warm', 
-            lastActive: serverTimestamp(), 
-            updatedAt: serverTimestamp() 
-        }, { merge: true });
-        console.log(`[SYSTEM] Stealth Capture: Prospect ID ${pid} locked.`);
-      }
+      docId = pid; // Use Prospect ID as Document Key
     } else if (legacyEmail) {
-      const clean = legacyEmail.replace(/[^a-zA-Z0-9@._-]/g,'').toLowerCase().trim();
-      activeProspectRef = doc(db, "prospects", clean);
-      await setDoc(activeProspectRef, { 
-          scannerClicked: true, 
-          status: 'Warm', 
-          lastActive: serverTimestamp(), 
-          updatedAt: serverTimestamp() 
-      }, { merge: true });
+      docId = legacyEmail.replace(/[^a-zA-Z0-9@._-]/g,'').toLowerCase().trim();
     }
-  } catch(e) { console.error("Click track failed:", e); }
+    
+    if (docId) {
+      setDoc(doc(db,"prospects",docId), { 
+        scannerClicked: true, 
+        status: 'Warm', 
+        lastActive: serverTimestamp(), 
+        updatedAt: serverTimestamp() 
+      }, { merge: true }).catch(e => console.error("Click track failed:", e));
+    }
+  } catch(e) { console.error(e); }
 }, 500);
 
-// ════════════════════════════════════════════════════════════════════════
-// ═════════ QUIZ STATE & LOGIC ═══════════════════════════════════════════
-// ════════════════════════════════════════════════════════════════════════
+// ── STATE ─────────────────────────────────────────────────────────────
 let route=[], idx=0, extScore=0, intScore=0, unsureFlag=false, activeGaps=[], routeType='A';
 
+// ── QUESTIONS ─────────────────────────────────────────────────────────
 const Q = [
   {
     id:1, lane:'master',
@@ -425,9 +408,7 @@ function showGate() {
   sw('state-quiz','state-gate');
 }
 
-// ════════════════════════════════════════════════════════════════════════
-// ═════════ THE DASHBOARD (DIAGNOSTIC REVEAL) ════════════════════════════
-// ════════════════════════════════════════════════════════════════════════
+// ── DASHBOARD ──────────────────────────────────────────────────────────
 window.loadDashboard = function() {
   // Widen main container for 2-col layout
   document.getElementById('main-wrap').classList.remove('max-w-3xl');
@@ -436,8 +417,8 @@ window.loadDashboard = function() {
   const ed=tier(extScore,true), id=tier(intScore,false);
   const tLow=ed.low+id.low, tHigh=ed.high+id.high;
 
-  // Append PID to the Apply URL if it exists
-  const pidParam = pid ? `&pid=${pid}` : '';
+  // Propagate pid to apply URL if present
+  const pidParam = pid ? `&pid=${encodeURIComponent(pid)}` : '';
 
   // Plan routing
   const expRange=`${fmt(tLow)} – ${fmt(tHigh)}+`;
@@ -468,7 +449,7 @@ window.loadDashboard = function() {
     ctaT="Surface the Hidden Gaps — Apply Now";
   }
 
-  // ── KIT DOCUMENT MANIFESTS ──
+  // ── KIT DOCUMENT MANIFESTS ────────────────────────────────────────
   const KITS = {
     agentic: [
       {doc:'DOC_TOS', name:'AI-Native Terms of Service',    purpose:'AS-IS warranty · hallucination disclaimer · clickwrap consent · IP ownership · high-risk AI provisions'},
@@ -514,7 +495,7 @@ window.loadDashboard = function() {
       </div>
     </div>` : '';
 
-  // ── LEFT COLUMN: GAPS ──
+  // ── LEFT COLUMN: GAPS ─────────────────────────────────────────────
   const visibleCount = routeType === 'C' ? 3 : 2;
   let gapsHtml = '';
 
@@ -570,7 +551,7 @@ window.loadDashboard = function() {
     }
   }
 
-  // ── RIGHT COLUMN: STICKY PANEL ──
+  // ── RIGHT COLUMN: STICKY PANEL ────────────────────────────────────
   const unsureNote = unsureFlag
     ? `<p class="font-sans text-[10px] text-gold leading-relaxed mt-3 border-t border-gold/20 pt-3">Gaps flagged as uncertain carry full liability weight. Regulators do not accept ignorance as a defense.</p>`
     : '';
@@ -617,7 +598,7 @@ window.loadDashboard = function() {
       <p class="font-sans text-[9px] tracking-widest text-marble opacity-20 uppercase text-center">Review-Ready Drafts · Local Counsel Validation Required · Not a Law Firm</p>
     </div>`;
 
-  // ── INJECT ──
+  // ── INJECT ────────────────────────────────────────────────────────
   const dash = document.getElementById('state-dashboard');
   dash.innerHTML = `
     <div class="mb-8">
@@ -632,62 +613,51 @@ window.loadDashboard = function() {
   sw('state-gate','state-dashboard');
 };
 
-// ════════════════════════════════════════════════════════════════════════
-// ═════════ FIRE 2: THE DECISION DESK (GATE FORM SUBMIT) ═════════════════
-// ════════════════════════════════════════════════════════════════════════
+// ── GATE FORM (FIRE 2) ────────────────────────────────────────────────
 window.processGateForm = async function(e) {
   e.preventDefault();
-  const btn = document.getElementById('gate-submit-btn');
-  btn.innerText = "Unlocking..."; btn.disabled = true;
-  const name = document.getElementById('lead-name').value.trim();
-  const email = document.getElementById('lead-email').value.trim().toLowerCase();
-  const company = document.getElementById('lead-company').value.trim();
-  const gapTraps = activeGaps.map(g=>g.trap);
-  
-  const prospectUpdate = {
-      scannerCompleted: true,
-      scannerExternalScore: extScore,
-      scannerInternalScore: intScore,
-      activeGaps: gapTraps,
-      status: 'Hot', // Escalated to Decision Desk
-      updatedAt: serverTimestamp()
-  };
-
+  const btn=document.getElementById('gate-submit-btn');
+  btn.innerText="Unlocking..."; btn.disabled=true;
+  const name=document.getElementById('lead-name').value.trim();
+  const email=document.getElementById('lead-email').value.trim().toLowerCase();
+  const company=document.getElementById('lead-company').value.trim();
+  const gapTraps=activeGaps.map(g=>g.trap);
   try {
-    // 1. Log to Leads Database
+    // 1. Write to Leads collection
     await setDoc(doc(db,"leads",email),{
-      name, email, company,
+      name,email,company,
       prospectId: pid || null,
-      scannerCompleted: true,
-      scannerExternalScore: extScore,
-      scannerInternalScore: intScore,
-      activeGaps: gapTraps,
-      status: 'warm_lead', source: 'scanner', unsureFlag,
-      createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+      scannerCompleted:true,
+      scannerExternalScore:extScore,
+      scannerInternalScore:intScore,
+      activeGaps:gapTraps,
+      status:'warm_lead', source:'scanner', unsureFlag,
+      createdAt:serverTimestamp(), updatedAt:serverTimestamp()
     },{merge:true});
     
-    // 2. Update Prospect Database (Golden Thread ID Sync)
-    if (activeProspectRef) {
-        await setDoc(activeProspectRef, prospectUpdate, {merge:true});
-    } else {
-        await setDoc(doc(db,"prospects",email), prospectUpdate, {merge:true});
-    }
+    // 2. Update Prospect status via the Golden Thread Document ID
+    const prospectDocId = pid || email.replace(/[^a-zA-Z0-9@._-]/g,'').toLowerCase().trim();
+    await setDoc(doc(db,"prospects",prospectDocId),{
+      scannerCompleted:true,
+      scannerExternalScore:extScore,
+      scannerInternalScore:intScore,
+      activeGaps:gapTraps,
+      status:'Hot', 
+      updatedAt:serverTimestamp()
+    },{merge:true});
 
-    // 3. Fire Webhook to Make.com / Instantly
+    // 3. Keep Webhook exactly as is
     fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,company,extScore,intScore,activeGaps:gapTraps,source:'scanner'})}).catch(()=>{});
   } catch(err){ console.error("Gate write failed:",err); }
   
-  // Write to localStorage so apply.html can autofill the checkout form
+  // Write to localStorage so apply.html can autofill the form
   localStorage.setItem('ln_name',    name);
   localStorage.setItem('ln_email',   email);
   localStorage.setItem('ln_company', company);
-  
   loadDashboard();
 };
 
-// ════════════════════════════════════════════════════════════════════════
-// ═════════ EXIT INTENT ENGINE ═══════════════════════════════════════════
-// ════════════════════════════════════════════════════════════════════════
+// ── EXIT INTENT ────────────────────────────────────────────────────────
 let exitFired=false;
 document.addEventListener('mouseleave',function(e){
   const dashV=!document.getElementById('state-dashboard').classList.contains('hidden-state');
@@ -715,9 +685,7 @@ window.processExitForm=async function(e){
   setTimeout(closeExitModal,1500);
 };
 
-// ════════════════════════════════════════════════════════════════════════
-// ═════════ UTILITIES ════════════════════════════════════════════════════
-// ════════════════════════════════════════════════════════════════════════
+// ── UTIL ───────────────────────────────────────────────────────────────
 function sw(from,to){
   document.getElementById(from).classList.add('hidden-state');
   document.getElementById(from).classList.remove('fade-enter');
