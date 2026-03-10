@@ -126,17 +126,19 @@ const WEBHOOK = "https://hook.eu1.make.com/q7nnd3klwdmlmtesq5no4yfsmk3v8ua7";
 
 // ── THE GOLDEN THREAD TRACKER ──────────────────────────────────────────
 const urlParams = new URLSearchParams(window.location.search);
-const pid = urlParams.get('pid'); 
-const legacyEmail = urlParams.get('email'); // Fallback for old links
+const pidFromUrl = urlParams.get('pid'); 
+const legacyEmail = urlParams.get('email');
 
-if (pid) localStorage.setItem('ln_pid', pid);
+if (pidFromUrl) localStorage.setItem('ln_pid', pidFromUrl);
 
 // ── FIRE 1: CLICK TRACKER ──────────────────────────────────────────────
 setTimeout(() => {
   try {
+    const activePid = pidFromUrl || localStorage.getItem('ln_pid');
     let docId = null;
-    if (pid) {
-      docId = pid; // Use Prospect ID as Document Key
+
+    if (activePid) {
+      docId = activePid;
     } else if (legacyEmail) {
       docId = legacyEmail.replace(/[^a-zA-Z0-9@._-]/g,'').toLowerCase().trim();
     }
@@ -418,7 +420,8 @@ window.loadDashboard = function() {
   const tLow=ed.low+id.low, tHigh=ed.high+id.high;
 
   // Propagate pid to apply URL if present
-  const pidParam = pid ? `&pid=${encodeURIComponent(pid)}` : '';
+  const activePid = pidFromUrl || localStorage.getItem('ln_pid');
+  const pidParam = activePid ? `&pid=${encodeURIComponent(activePid)}` : '';
 
   // Plan routing
   const expRange=`${fmt(tLow)} – ${fmt(tHigh)}+`;
@@ -622,11 +625,14 @@ window.processGateForm = async function(e) {
   const email=document.getElementById('lead-email').value.trim().toLowerCase();
   const company=document.getElementById('lead-company').value.trim();
   const gapTraps=activeGaps.map(g=>g.trap);
+
+  const activePid = pidFromUrl || localStorage.getItem('ln_pid');
+
   try {
     // 1. Write to Leads collection
     await setDoc(doc(db,"leads",email),{
       name,email,company,
-      prospectId: pid || null,
+      prospectId: activePid || null,
       scannerCompleted:true,
       scannerExternalScore:extScore,
       scannerInternalScore:intScore,
@@ -635,8 +641,17 @@ window.processGateForm = async function(e) {
       createdAt:serverTimestamp(), updatedAt:serverTimestamp()
     },{merge:true});
     
-    // 2. Update Prospect status via the Golden Thread Document ID
-    const prospectDocId = pid || email.replace(/[^a-zA-Z0-9@._-]/g,'').toLowerCase().trim();
+    // 2. Update Prospect status via Document ID
+    // Priority: activePid (LN-P) > legacyEmail (Clean Email)
+    let prospectDocId = activePid;
+    if (!prospectDocId && legacyEmail) {
+      prospectDocId = legacyEmail.replace(/[^a-zA-Z0-9@._-]/g,'').toLowerCase().trim();
+    }
+    // Final Fallback: try the email typed in the form
+    if (!prospectDocId) {
+      prospectDocId = email.replace(/[^a-zA-Z0-9@._-]/g,'').toLowerCase().trim();
+    }
+
     await setDoc(doc(db,"prospects",prospectDocId),{
       scannerCompleted:true,
       scannerExternalScore:extScore,
@@ -646,7 +661,7 @@ window.processGateForm = async function(e) {
       updatedAt:serverTimestamp()
     },{merge:true});
 
-    // 3. Keep Webhook exactly as is
+    // 3. Fire Webhook
     fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,company,extScore,intScore,activeGaps:gapTraps,source:'scanner'})}).catch(()=>{});
   } catch(err){ console.error("Gate write failed:",err); }
   
