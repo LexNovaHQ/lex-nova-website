@@ -16,6 +16,9 @@ tailwind.config = {
 }
 </script>
 <style>
+/* ════════════════════════════════════════════════════════════════════════ */
+/* ═════════ BASE STYLES ══════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════════════ */
   body { background:#050505; }
   .hidden-state { display:none; }
   .fade-enter { animation: fadeIn 0.4s ease forwards; }
@@ -31,7 +34,6 @@ tailwind.config = {
 </head>
 <body class="bg-void text-marble min-h-screen">
 
-<!-- EXIT INTENT MODAL -->
 <div id="exit-modal" class="hidden fixed inset-0 bg-void/95 z-50 flex items-center justify-center p-6">
   <div class="max-w-lg w-full border border-shadow bg-[#080808] p-10 text-center">
     <h3 class="font-serif text-3xl text-marble mb-4">Before you go.</h3>
@@ -46,7 +48,6 @@ tailwind.config = {
 
 <main class="max-w-3xl mx-auto px-6 py-16 md:py-24 flex flex-col items-center" id="main-wrap">
 
-  <!-- INTRO STATE -->
   <div id="state-intro" class="fade-enter text-center max-w-2xl">
     <div class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-8">Lex Nova HQ · AI Risk Diagnostic</div>
     <h1 class="font-serif text-5xl md:text-7xl leading-tight text-marble mb-8">Map Your Legal Exposure.</h1>
@@ -55,7 +56,6 @@ tailwind.config = {
     <button onclick="startScanner()" class="inline-block bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 font-bold">Initialize Audit</button>
   </div>
 
-  <!-- QUIZ STATE -->
   <div id="state-quiz" class="hidden-state fade-enter w-full">
     <div class="mb-8 flex justify-between items-center text-xs font-sans tracking-[0.2em] text-marble opacity-50 uppercase">
       <span id="progress-text">Question 1</span>
@@ -70,7 +70,6 @@ tailwind.config = {
     </div>
   </div>
 
-  <!-- GATE STATE -->
   <div id="state-gate" class="hidden-state fade-enter text-center max-w-xl mx-auto">
     <div class="grid grid-cols-2 gap-6 mb-10">
       <div class="border border-shadow bg-[#080808] p-5">
@@ -103,7 +102,6 @@ tailwind.config = {
     </form>
   </div>
 
-  <!-- DASHBOARD STATE — injected dynamically -->
   <div id="state-dashboard" class="hidden-state fade-enter w-full"></div>
 
 </main>
@@ -115,8 +113,8 @@ tailwind.config = {
 </footer>
 
 <script type="module">
-import { initializeApp }                                    from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-import { getFirestore, doc, setDoc, serverTimestamp }      from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getFirestore, doc, setDoc, updateDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey:"AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
@@ -129,20 +127,52 @@ const app = initializeApp({
 const db = getFirestore(app);
 const WEBHOOK = "https://hook.eu1.make.com/q7nnd3klwdmlmtesq5no4yfsmk3v8ua7";
 
-// ── FIRE 1: CLICK TRACKER ──────────────────────────────────────────────
-setTimeout(() => {
-  const email = new URLSearchParams(window.location.search).get('email');
-  if (email) {
-    const clean = email.replace(/[^a-zA-Z0-9@._-]/g,'').toLowerCase().trim();
-    setDoc(doc(db,"prospects",clean),{ scannerClicked:true, status:'Warm', lastActive:serverTimestamp(), updatedAt:serverTimestamp() },{ merge:true })
-    .catch(e => console.error("Click track failed:",e));
-  }
+// ════════════════════════════════════════════════════════════════════════
+// ═════════ THE GOLDEN THREAD (ID-AWARE TRACKER) ═════════════════════════
+// ════════════════════════════════════════════════════════════════════════
+const urlParams = new URLSearchParams(window.location.search);
+const pid = urlParams.get('pid'); 
+const legacyEmail = urlParams.get('email');
+
+let activeProspectRef = null;
+
+// Store PID so apply.html can access it for the Engagement Letter Draft
+if (pid) localStorage.setItem('ln_pid', pid);
+
+// ── FIRE 1: THE STEALTH CAPTURE (CLICK TRACKER) ──
+setTimeout(async () => {
+  try {
+    if (pid) {
+      const q = query(collection(db, "prospects"), where("prospectId", "==", pid));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        activeProspectRef = snap.docs[0].ref;
+        await setDoc(activeProspectRef, { 
+            scannerClicked: true, 
+            status: 'Warm', 
+            lastActive: serverTimestamp(), 
+            updatedAt: serverTimestamp() 
+        }, { merge: true });
+        console.log(`[SYSTEM] Stealth Capture: Prospect ID ${pid} locked.`);
+      }
+    } else if (legacyEmail) {
+      const clean = legacyEmail.replace(/[^a-zA-Z0-9@._-]/g,'').toLowerCase().trim();
+      activeProspectRef = doc(db, "prospects", clean);
+      await setDoc(activeProspectRef, { 
+          scannerClicked: true, 
+          status: 'Warm', 
+          lastActive: serverTimestamp(), 
+          updatedAt: serverTimestamp() 
+      }, { merge: true });
+    }
+  } catch(e) { console.error("Click track failed:", e); }
 }, 500);
 
-// ── STATE ─────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════
+// ═════════ QUIZ STATE & LOGIC ═══════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════
 let route=[], idx=0, extScore=0, intScore=0, unsureFlag=false, activeGaps=[], routeType='A';
 
-// ── QUESTIONS ─────────────────────────────────────────────────────────
 const Q = [
   {
     id:1, lane:'master',
@@ -165,7 +195,7 @@ const Q = [
     },
     options:[
       {text:"Yes — our contracts specifically limit what we're liable for when the AI acts autonomously",  extPts:0},
-      {text:"We have some liability language but it wasn't written with AI agents in mind",               extPts:20},
+      {text:"We have some liability language but it wasn't written with AI agents in mind",                extPts:20},
       {text:"No — our contracts don't address this / we're not sure if they need to",                    extPts:45, unsure:true}
     ]
   },
@@ -181,8 +211,8 @@ const Q = [
     },
     options:[
       {text:"We're covered — our ToS specifically says AI outputs aren't guaranteed and users rely on them at their own risk",  extPts:0},
-      {text:"We have a general disclaimer somewhere but it wasn't written specifically for AI",                                 extPts:25},
-      {text:"Honestly, our ToS doesn't really address this / I'm not sure what it says",                                      extPts:55, unsure:true}
+      {text:"We have a general disclaimer somewhere but it wasn't written specifically for AI",                                  extPts:25},
+      {text:"Honestly, our ToS doesn't really address this / I'm not sure what it says",                                       extPts:55, unsure:true}
     ]
   },
   {
@@ -214,7 +244,7 @@ const Q = [
     options:[
       {text:"It's clearly defined in our terms — ownership is assigned and we require a human review step",      extPts:0},
       {text:"We assume the user owns it but we've never actually put that in writing",                           extPts:40, unsure:true},
-      {text:"We haven't thought about this — outputs just go to users",                                         extPts:55, unsure:true}
+      {text:"We haven't thought about this — outputs just go to users",                                          extPts:55, unsure:true}
     ]
   },
   {
@@ -244,9 +274,9 @@ const Q = [
       docPurpose:"High-risk AI provisions + HITL mandate + no-bias warranty + NIST RMF compliance hooks"
     },
     options:[
-      {text:"No — we don't touch any of those areas",                                                           extPts:0},
-      {text:"Yes — but a human always reviews the AI's output before anything actually happens",                extPts:15},
-      {text:"Yes — the AI's output feeds directly into those decisions / I'm not sure if ours qualifies",      extPts:60, unsure:true}
+      {text:"No — we don't touch any of those areas",                                                        extPts:0},
+      {text:"Yes — but a human always reviews the AI's output before anything actually happens",                 extPts:15},
+      {text:"Yes — the AI's output feeds directly into those decisions / I'm not sure if ours qualifies",       extPts:60, unsure:true}
     ]
   },
   {
@@ -260,9 +290,9 @@ const Q = [
       docPurpose:"Content liability disclaimers + right of publicity shield + emotional reliance safeguards + input warranty"
     },
     options:[
-      {text:"None of that applies to what we build",                                                              extPts:0},
+      {text:"None of that applies to what we build",                                                                 extPts:0},
       {text:"Yes — and we have usage policies, disclaimers, and user warranties that specifically cover this",    extPts:20},
-      {text:"Yes — one or more of those describes our product but we haven't addressed the legal side of it",     extPts:55, unsure:true}
+      {text:"Yes — one or more of those describes our product but we haven't addressed the legal side of it",      extPts:55, unsure:true}
     ]
   },
   {
@@ -293,7 +323,7 @@ const Q = [
     },
     options:[
       {text:"No — our contracts explicitly say the company owns everything AI-generated on company time",    intPts:0},
-      {text:"We assume we own it but our contracts were written before AI was a thing",                     intPts:40, unsure:true},
+      {text:"We assume we own it but our contracts were written before AI was a thing",                      intPts:40, unsure:true},
       {text:"Honestly we've never thought about this — our employment contracts don't mention AI at all",   intPts:55, unsure:true}
     ]
   },
@@ -309,7 +339,7 @@ const Q = [
     },
     options:[
       {text:"Yes — we've done a proper audit, we know every tool and we've dealt with the unauthorized ones",   intPts:0},
-      {text:"We have a rough idea but nothing has been formally checked or documented",                         intPts:25},
+      {text:"We have a rough idea but nothing has been formally checked or documented",                          intPts:25},
       {text:"Honestly no — people use what works for them and we don't have full visibility",                  intPts:50, unsure:true}
     ]
   },
@@ -324,8 +354,8 @@ const Q = [
       docPurpose:"Documented human review workflow that creates the evidentiary record regulators and courts look for"
     },
     options:[
-      {text:"Yes — there's a defined review step and we keep records of it",                              intPts:0},
-      {text:"Someone always looks at it before it goes out but we've never written the process down",     intPts:30},
+      {text:"Yes — there's a defined review step and we keep records of it",                               intPts:0},
+      {text:"Someone always looks at it before it goes out but we've never written the process down",      intPts:30},
       {text:"Not really — AI outputs go pretty much directly into the work / we haven't set this up",    intPts:45, unsure:true}
     ]
   }
@@ -334,13 +364,13 @@ const Q = [
 // ── TIER DATA ──────────────────────────────────────────────────────────
 function tier(score, ext) {
   if (ext) {
-    if (score>=150) return {text:'CRITICAL', color:'bg-danger',     low:250000, high:500000};
-    if (score>=80)  return {text:'HIGH',     color:'bg-gold',       low:100000, high:250000};
+    if (score>=150) return {text:'CRITICAL', color:'bg-danger',      low:250000, high:500000};
+    if (score>=80)  return {text:'HIGH',     color:'bg-gold',        low:100000, high:250000};
     if (score>=40)  return {text:'ELEVATED', color:'bg-yellow-600', low:50000,  high:100000};
                     return {text:'BASELINE', color:'bg-green-800',  low:0,      high:50000 };
   } else {
-    if (score>=100) return {text:'CRITICAL', color:'bg-danger',     low:150000, high:350000};
-    if (score>=60)  return {text:'HIGH',     color:'bg-gold',       low:75000,  high:150000};
+    if (score>=100) return {text:'CRITICAL', color:'bg-danger',      low:150000, high:350000};
+    if (score>=60)  return {text:'HIGH',     color:'bg-gold',        low:75000,  high:150000};
     if (score>=30)  return {text:'ELEVATED', color:'bg-yellow-600', low:25000,  high:75000 };
                     return {text:'BASELINE', color:'bg-green-800',  low:0,      high:25000 };
   }
@@ -395,7 +425,9 @@ function showGate() {
   sw('state-quiz','state-gate');
 }
 
-// ── DASHBOARD ──────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════
+// ═════════ THE DASHBOARD (DIAGNOSTIC REVEAL) ════════════════════════════
+// ════════════════════════════════════════════════════════════════════════
 window.loadDashboard = function() {
   // Widen main container for 2-col layout
   document.getElementById('main-wrap').classList.remove('max-w-3xl');
@@ -404,41 +436,44 @@ window.loadDashboard = function() {
   const ed=tier(extScore,true), id=tier(intScore,false);
   const tLow=ed.low+id.low, tHigh=ed.high+id.high;
 
+  // Append PID to the Apply URL if it exists
+  const pidParam = pid ? `&pid=${pid}` : '';
+
   // Plan routing
   const expRange=`${fmt(tLow)} – ${fmt(tHigh)}+`;
   let plan, price, origPrice, ctaH, ctaB, ctaT, ctaHref;
   if (extScore>50 && intScore>40) {
     plan="The Complete Stack"; price="$2,000"; origPrice="$2,500";
-    ctaHref=`apply.html?plan=complete_stack&ext=${extScore}&int=${intScore}`;
+    ctaHref=`apply.html?plan=complete_stack&ext=${extScore}&int=${intScore}${pidParam}`;
     ctaH="You have unprotected exposure on every surface.";
     ctaB=`The ${expRange} above is not theoretical. Your product architecture has no legal defense against autonomous agent liability, and your team is operating AI tools actively moving your IP into the public domain. Every day this stays unfixed is a day a single incident can end the company.`;
     ctaT="Close Both Gaps — Apply Now";
   } else if (extScore>50) {
     plan="The Agentic Shield"; price="$997"; origPrice="$1,500";
-    ctaHref=`apply.html?plan=agentic_shield&ext=${extScore}&int=${intScore}`;
+    ctaHref=`apply.html?plan=agentic_shield&ext=${extScore}&int=${intScore}${pidParam}`;
     ctaH="Your product is live. Your legal architecture isn't.";
     ctaB=`The ${expRange} above is your current uncapped liability. Every user interaction your AI executes without a consent mechanism, liability cap, or AS-IS waiver is a direct line to that number. The Agentic Shield closes every gap your diagnostic identified — before the first incident.`;
     ctaT="Fix This Now — Apply for The Agentic Shield";
   } else if (intScore>40) {
     plan="The Workplace Shield"; price="$997"; origPrice="$1,500";
-    ctaHref=`apply.html?plan=workplace_shield&ext=${extScore}&int=${intScore}`;
+    ctaHref=`apply.html?plan=workplace_shield&ext=${extScore}&int=${intScore}${pidParam}`;
     ctaH="Your team is building your company's value into someone else's model.";
     ctaB="Every uncontrolled AI tool your employees use is a potential data breach, an IP transfer, and a client contract violation happening simultaneously — with no documentation that you tried to prevent it.";
     ctaT="Protect What You've Built — Apply Now";
   } else {
     plan="A Gap Review"; price="$750"; origPrice=null;
-    ctaHref=`apply.html?plan=gap_review&ext=${extScore}&int=${intScore}`;
+    ctaHref=`apply.html?plan=gap_review&ext=${extScore}&int=${intScore}${pidParam}`;
     ctaH="Your visible gaps are low. Your invisible ones aren't.";
     ctaB="A low diagnostic score means your known architecture is cleaner than most. It does not mean you're protected. The gaps that destroy companies are the ones that don't show up in a 9-question audit.";
     ctaT="Surface the Hidden Gaps — Apply Now";
   }
 
-  // ── KIT DOCUMENT MANIFESTS ────────────────────────────────────────
+  // ── KIT DOCUMENT MANIFESTS ──
   const KITS = {
     agentic: [
       {doc:'DOC_TOS', name:'AI-Native Terms of Service',    purpose:'AS-IS warranty · hallucination disclaimer · clickwrap consent · IP ownership · high-risk AI provisions'},
       {doc:'DOC_AGT', name:'Agentic Systems Addendum',      purpose:'Financial Kill Switch · autonomous action authorization boundaries · agent failure protocols'},
-      {doc:'DOC_AUP', name:'Acceptable Use Policy',          purpose:'Content liability shield · right of publicity · prohibited input categories · input warranty'},
+      {doc:'DOC_AUP', name:'Acceptable Use Policy',         purpose:'Content liability shield · right of publicity · prohibited input categories · input warranty'},
       {doc:'DOC_DPA', name:'Data Processing Agreement',      purpose:'RAG-only mandate · disgorgement shield · model deletion limitation · GDPR Art.28 compliance'},
       {doc:'DOC_PP',  name:'Privacy Policy',                 purpose:'Data collection disclosure · retention schedules · user rights (GDPR/CCPA) · third-party processor list'},
       {doc:'DOC_ENG', name:'Engagement Letter',              purpose:'Scope definition · Review-Ready disclaimer · liability cap · local counsel mandate · payment terms'},
@@ -479,7 +514,7 @@ window.loadDashboard = function() {
       </div>
     </div>` : '';
 
-  // ── LEFT COLUMN: GAPS ─────────────────────────────────────────────
+  // ── LEFT COLUMN: GAPS ──
   const visibleCount = routeType === 'C' ? 3 : 2;
   let gapsHtml = '';
 
@@ -535,7 +570,7 @@ window.loadDashboard = function() {
     }
   }
 
-  // ── RIGHT COLUMN: STICKY PANEL ────────────────────────────────────
+  // ── RIGHT COLUMN: STICKY PANEL ──
   const unsureNote = unsureFlag
     ? `<p class="font-sans text-[10px] text-gold leading-relaxed mt-3 border-t border-gold/20 pt-3">Gaps flagged as uncertain carry full liability weight. Regulators do not accept ignorance as a defense.</p>`
     : '';
@@ -543,7 +578,6 @@ window.loadDashboard = function() {
   const rightHtml = `
     <div class="lg:sticky lg:top-8 flex flex-col gap-4">
 
-      <!-- Exposure -->
       <div class="border border-danger/30 bg-danger/5 p-6 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-1 bg-danger"></div>
         <div class="font-sans text-[9px] tracking-[0.2em] text-danger uppercase font-bold mb-3">Estimated Baseline Exposure</div>
@@ -552,7 +586,6 @@ window.loadDashboard = function() {
         ${unsureNote}
       </div>
 
-      <!-- Score tiles -->
       <div class="grid grid-cols-2 gap-3">
         <div class="border border-shadow bg-[#080808] p-4">
           <div class="font-sans text-[9px] tracking-[0.15em] text-marble opacity-50 uppercase mb-3">Product Risk</div>
@@ -566,7 +599,6 @@ window.loadDashboard = function() {
         </div>
       </div>
 
-      <!-- Pricing + CTA -->
       <div class="border border-gold/30 bg-[#080808] p-6">
         <div class="font-sans text-[9px] tracking-[0.2em] text-gold uppercase font-bold mb-4">The Fix: ${plan}</div>
         <div class="flex items-baseline gap-4 mb-1">
@@ -585,7 +617,7 @@ window.loadDashboard = function() {
       <p class="font-sans text-[9px] tracking-widest text-marble opacity-20 uppercase text-center">Review-Ready Drafts · Local Counsel Validation Required · Not a Law Firm</p>
     </div>`;
 
-  // ── INJECT ────────────────────────────────────────────────────────
+  // ── INJECT ──
   const dash = document.getElementById('state-dashboard');
   dash.innerHTML = `
     <div class="mb-8">
@@ -600,42 +632,62 @@ window.loadDashboard = function() {
   sw('state-gate','state-dashboard');
 };
 
-// ── GATE FORM ──────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════
+// ═════════ FIRE 2: THE DECISION DESK (GATE FORM SUBMIT) ═════════════════
+// ════════════════════════════════════════════════════════════════════════
 window.processGateForm = async function(e) {
   e.preventDefault();
-  const btn=document.getElementById('gate-submit-btn');
-  btn.innerText="Unlocking..."; btn.disabled=true;
-  const name=document.getElementById('lead-name').value.trim();
-  const email=document.getElementById('lead-email').value.trim().toLowerCase();
-  const company=document.getElementById('lead-company').value.trim();
-  const gapTraps=activeGaps.map(g=>g.trap);
+  const btn = document.getElementById('gate-submit-btn');
+  btn.innerText = "Unlocking..."; btn.disabled = true;
+  const name = document.getElementById('lead-name').value.trim();
+  const email = document.getElementById('lead-email').value.trim().toLowerCase();
+  const company = document.getElementById('lead-company').value.trim();
+  const gapTraps = activeGaps.map(g=>g.trap);
+  
+  const prospectUpdate = {
+      scannerCompleted: true,
+      scannerExternalScore: extScore,
+      scannerInternalScore: intScore,
+      activeGaps: gapTraps,
+      status: 'Hot', // Escalated to Decision Desk
+      updatedAt: serverTimestamp()
+  };
+
   try {
+    // 1. Log to Leads Database
     await setDoc(doc(db,"leads",email),{
-      name,email,company,
-      scannerCompleted:true,
-      scannerExternalScore:extScore,
-      scannerInternalScore:intScore,
-      activeGaps:gapTraps,
-      status:'warm_lead', source:'scanner', unsureFlag,
-      createdAt:serverTimestamp(), updatedAt:serverTimestamp()
+      name, email, company,
+      prospectId: pid || null,
+      scannerCompleted: true,
+      scannerExternalScore: extScore,
+      scannerInternalScore: intScore,
+      activeGaps: gapTraps,
+      status: 'warm_lead', source: 'scanner', unsureFlag,
+      createdAt: serverTimestamp(), updatedAt: serverTimestamp()
     },{merge:true});
-    await setDoc(doc(db,"prospects",email),{
-      scannerCompleted:true,
-      scannerExternalScore:extScore,
-      scannerInternalScore:intScore,
-      activeGaps:gapTraps,
-      status:'Warm', updatedAt:serverTimestamp()
-    },{merge:true});
+    
+    // 2. Update Prospect Database (Golden Thread ID Sync)
+    if (activeProspectRef) {
+        await setDoc(activeProspectRef, prospectUpdate, {merge:true});
+    } else {
+        await setDoc(doc(db,"prospects",email), prospectUpdate, {merge:true});
+    }
+
+    // 3. Fire Webhook to Make.com / Instantly
     fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,company,extScore,intScore,activeGaps:gapTraps,source:'scanner'})}).catch(()=>{});
   } catch(err){ console.error("Gate write failed:",err); }
-  // Write to localStorage so apply.html can autofill the form
+  
+  // Write to localStorage so apply.html can autofill the checkout form
   localStorage.setItem('ln_name',    name);
   localStorage.setItem('ln_email',   email);
   localStorage.setItem('ln_company', company);
+  
   loadDashboard();
 };
 
-// ── EXIT INTENT ────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════
+// ═════════ EXIT INTENT ENGINE ═══════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════
 let exitFired=false;
 document.addEventListener('mouseleave',function(e){
   const dashV=!document.getElementById('state-dashboard').classList.contains('hidden-state');
@@ -663,7 +715,9 @@ window.processExitForm=async function(e){
   setTimeout(closeExitModal,1500);
 };
 
-// ── UTIL ───────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════
+// ═════════ UTILITIES ════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════
 function sw(from,to){
   document.getElementById(from).classList.add('hidden-state');
   document.getElementById(from).classList.remove('fade-enter');
