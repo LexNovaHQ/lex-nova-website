@@ -418,7 +418,7 @@ function buildDashboard() {
     let docsToRender = activePlan === 'complete_stack' ? [...KITS.agentic, ...KITS.workplace] : (activePlan === 'workplace_shield' ? KITS.workplace : KITS.agentic);
     const manifestHTML = docsToRender.map(d => `<div class="border-l-2 border-gold pl-3"><span class="text-[9px] text-gold uppercase font-bold block">${d.id}</span><span class="text-xs text-marble">${d.n}</span></div>`).join('');
 
-    let authorityText = "Our engine processed your inputs. The gaps identified in this report are structurally verified against standard legal architectures.";
+    let authorityText = "Our engine processed your inputs. The gaps identified in this report are structurally verified against your current legal architectures available publicly.";
     if (scrapeCount > 0 || dualCount > 0) {
         authorityText = `Our forensic engine scraped your <strong>public website, legal headers, and architectural endpoints</strong> before you arrived, identifying <span class="text-white font-bold">${scrapeCount + dualCount} vulnerabilities</span>. You just confirmed <span class="text-white font-bold">${confessionCount} additional internal gaps</span>. Data sources successfully merged.`;
     }
