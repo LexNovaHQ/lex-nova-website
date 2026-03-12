@@ -128,8 +128,8 @@ const Q_INTERNAL = [
 document.addEventListener('DOMContentLoaded', async () => {
     if (pidFromUrl) {
         localStorage.setItem('ln_pid', pidFromUrl);
-        // Generate engagement reference from PID
-        engagementRefCode = `LN-${new Date().getFullYear()}-${pidFromUrl.toUpperCase().substring(0, 8)}`;
+        // Generate dynamic reference from PID
+        engagementRefCode = `LN-2026-${pidFromUrl.toUpperCase()}`;
         
         try {
             const docRef = doc(db, "prospects", pidFromUrl);
@@ -145,8 +145,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch(e) { console.error("Firebase Auth Error:", e); }
     } else {
-        // Generate fallback random engagement reference for cold inbound
-        engagementRefCode = `LN-${new Date().getFullYear()}-${Math.floor(Math.random() * 90000) + 10000}`;
+        // Fallback for cold inbound
+        engagementRefCode = `LN-2026-${Math.floor(Math.random() * 90000) + 10000}`;
     }
 
     document.getElementById('greeting-box').style.opacity = "1";
@@ -157,30 +157,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         configUI.style.opacity = "1";
     }, 2000);
 
+    // Bind Lane Selectors (Fault Tolerant)
     document.querySelectorAll('.lane-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const targetBtn = e.currentTarget;
             selectedLane = targetBtn.getAttribute('data-lane');
             document.querySelectorAll('.lane-btn').forEach(b => {
                 b.classList.remove('border-gold', 'bg-gold/5');
-                b.querySelector('div.font-bold').classList.remove('text-gold');
+                b.querySelector('.label-text')?.classList.remove('text-gold');
             });
             targetBtn.classList.add('border-gold', 'bg-gold/5');
-            targetBtn.querySelector('div.font-bold').classList.add('text-gold');
+            targetBtn.querySelector('.label-text')?.classList.add('text-gold');
             checkConfig();
         });
     });
 
+    // Bind Archetype Selectors (Fault Tolerant)
     document.querySelectorAll('.arch-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const targetBtn = e.currentTarget; 
             selectedArch = targetBtn.getAttribute('data-arch');
             document.querySelectorAll('.arch-btn').forEach(b => {
                 b.classList.remove('border-gold', 'bg-gold/5');
-                b.querySelector('div.font-bold').classList.remove('text-gold');
+                b.querySelector('.label-text')?.classList.remove('text-gold');
             });
             targetBtn.classList.add('border-gold', 'bg-gold/5');
-            targetBtn.querySelector('div.font-bold').classList.add('text-gold');
+            targetBtn.querySelector('.label-text')?.classList.add('text-gold');
             checkConfig();
         });
     });
@@ -339,15 +341,14 @@ function buildDashboard() {
         recommendedPlan = 'agentic_shield';
     }
     
-    // Set active plan to recommended initially
     activePlan = recommendedPlan;
 
     const pData = PLAN_DATA[activePlan];
     
     // Math Normalizer (Out of 100)
-    const maxRawScore = 600; 
+    const maxRawPenalty = 600; 
     const rawTotal = extScore + intScore;
-    const normalizedRiskScore = Math.min(100, Math.round((rawTotal / maxRawScore) * 100));
+    const normalizedRiskScore = Math.min(100, Math.round((rawTotal / maxRawPenalty) * 100));
     
     const exposureTotal = rawTotal * 8000;
     const fmt = n => '$' + n.toLocaleString();
@@ -515,7 +516,7 @@ function injectCheckout() {
         Object.keys(PLAN_DATA).forEach(key => {
             const pd = PLAN_DATA[key];
             const isSelected = activePlan === key;
-            const isRecommended = recommendedPlan === key; // Independent of clicks
+            const isRecommended = recommendedPlan === key; // LOCKS badge to engine verdict
             
             html += `
                 <label class="flex items-center p-5 border ${isSelected ? 'border-gold bg-gold/5' : 'border-shadow bg-[#050505] hover:border-white/20'} cursor-pointer transition-all">
