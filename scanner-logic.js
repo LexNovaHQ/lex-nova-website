@@ -1,6 +1,6 @@
 /**
- * LEX NOVA HQ — V5.2 FORENSIC SCANNER & UNIFIED TERMINAL ENGINE
- * Architecture: Async-Only | Separation of Concerns | Full V3 Matrix | Dual-Source Merge
+ * LEX NOVA HQ — V5.5 CANON FORENSIC SCANNER & UNIFIED TERMINAL ENGINE
+ * Architecture: Async-Only | Multi-Select Configurations | EXT. 10 Tripwires | Dual-Intelligence Merge
  */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
@@ -29,8 +29,8 @@ const PAYPAL_LINKS = {
 };
 
 const PLAN_DATA = {
-    agentic_shield: { name: "The Agentic Shield", price: 997, tier: "Kit", lane: "Lane A — Builders", delivery: "48 hours from Intake Form submission", rev: "1 Round" },
-    workplace_shield: { name: "The Workplace Shield", price: 997, tier: "Kit", lane: "Lane B — Users", delivery: "48 hours from Intake Form submission", rev: "1 Round" },
+    agentic_shield: { name: "The Agentic Shield", price: 997, tier: "Kit", lane: "Lane A — Commercial", delivery: "48 hours from Intake Form submission", rev: "1 Round" },
+    workplace_shield: { name: "The Workplace Shield", price: 997, tier: "Kit", lane: "Lane B — Operational", delivery: "48 hours from Intake Form submission", rev: "1 Round" },
     complete_stack: { name: "The Complete Stack", price: 2000, tier: "Bundle", lane: "Hybrid (A + B)", delivery: "72 hours from Intake Form submission", rev: "2 Rounds" }
 };
 
@@ -39,13 +39,13 @@ const urlParams = new URLSearchParams(window.location.search);
 const pidFromUrl = urlParams.get('pid');
 
 let prospectData = null;
-let selectedLane = null;
-let selectedArch = null;
+let selectedLanes = []; // Multi-select array
+let selectedArchs = []; // Multi-select array
 
-let extScore = 0;
-let intScore = 0;
+let totalScore = 0;
 let unsureFlag = false;
 let activeGaps = []; 
+let trippedSurfaces = new Set(); // Stores EXT. XX codes
 
 let quizRoute = [];
 let currentQIndex = 0;
@@ -56,79 +56,91 @@ let activePlan = null;
 let exitFired = false;
 let engagementRefCode = ""; 
 
-// ── 03. THE V3 MATRIX QUESTION BANK (HARDCODED IDs) ────────────────────
+// ── 03. THE CANON V5.5 QUESTION BANK (ANNEXURE A) ──────────────────────
 
-const Q_UNIVERSAL = [
+const Q_GLOBAL = [
     { 
-        q: "Before a user interacts with your AI for the first time, how do they agree to your Terms of Service?", 
-        gap: { id: "gap_specht", trap: "Specht — Consent Void", plain: "Your agreement structure makes every user contract legally void.", doc: "DOC_TOS", docName: "AI-Native Terms of Service", docPurpose: "Clickwrap consent architecture + recorded acceptance mechanism." }, 
-        options: [{ t: "Mandatory Checkbox: They must click 'I Agree' before entry.", extPts: 0 }, { t: "Button Disclaimer: The button says 'agree to terms,' but no separate checkbox.", extPts: 25 }, { t: "Passive Notice: We have a link in the footer only.", extPts: 40 }, { t: "I'm not sure how our current flow handles this.", extPts: 60, unsure: true }] 
+        q: "How do users actually agree to your Terms before their first AI interaction?", 
+        gap: { id: "gap_specht", trap: "Specht — Consent Void", plain: "Your agreement structure makes every user contract legally void.", doc: "DOC_TOS", ext: "EXT. 08" }, 
+        options: [
+            { t: "Mandatory clickwrap—they cannot proceed without clicking 'I Agree'.", pts: 0 }, 
+            { t: "We have text saying 'By using this tool, you agree,' or a footer link.", pts: 30 }, 
+            { t: "We don't really have a formal signup agreement block right now.", pts: 50 }, 
+            { t: "I'm not entirely sure how our dev team built the signup flow.", pts: 60, unsure: true }
+        ] 
     },
     { 
-        q: "If your AI gives a user bad advice or a wrong answer that costs them money, what is your fallback?", 
-        gap: { id: "gap_moffatt", trap: "Moffatt — Hallucination Liability", plain: "Your product has no legal defense when AI outputs cause financial or operational harm.", doc: "DOC_TOS", docName: "AI-Native Terms of Service", docPurpose: "AS-IS warranty + hallucination disclaimer + user reliance waiver." }, 
-        options: [{ t: "Strict 'As-Is' Shield: Terms specifically disclaim AI accuracy.", extPts: 0 }, { t: "General Disclaimer: We use standard software liability limits.", extPts: 25 }, { t: "No Specific Shield: Not currently addressed.", extPts: 45 }, { t: "I'm not sure what our terms say about AI accuracy.", extPts: 60, unsure: true }] 
+        q: "If your AI hallucinates a fake discount or bad advice that costs a user money, what is your fallback?", 
+        gap: { id: "gap_moffatt", trap: "Moffatt — Hallucination Liability", plain: "You are legally bound to pay out-of-pocket for hallucinated promises.", doc: "DOC_TOS", ext: "EXT. 08" }, 
+        options: [
+            { t: "Our terms have strict, click-accepted 'AS-IS' AI hallucination waivers.", pts: 0 }, 
+            { t: "We put a little text disclaimer under the chat box saying 'AI can make mistakes.'", pts: 30 }, 
+            { t: "We rely on standard software Terms and hope the generic limit holds up.", pts: 50 }, 
+            { t: "We haven't explicitly covered AI mistakes in our contracts yet.", pts: 60, unsure: true }
+        ] 
     },
     { 
-        q: "If your model provider (OpenAI, Anthropic, etc.) is sued for copyright issues, does your contract protect you from being dragged in?", 
-        gap: { id: "gap_bartz", trap: "Bartz — 3rd Party Exposure", plain: "You carry joint liability for your foundation model's training data violations.", doc: "DOC_TOS", docName: "AI-Native Terms of Service", docPurpose: "Pass-through model provider disclaimers + third-party IP insulation." }, 
-        options: [{ t: "Explicit Pass-Through: Terms state we aren't liable for model training.", extPts: 0 }, { t: "Assumption of Safety: We assume providers handle their own compliance.", extPts: 30 }, { t: "Direct Exposure: We haven't looked into this risk.", extPts: 45 }, { t: "No idea if we are covered for foundation model failures.", extPts: 60, unsure: true }] 
+        q: "Are you routing data from users in Europe (EU/UK) to US-based foundation models (OpenAI/Anthropic)?", 
+        gap: { id: "gap_schrems", trap: "Schrems II — Transit Breach", plain: "You are violating GDPR by routing EU PII to the US without localized SCCs.", doc: "DOC_PP", ext: "EXT. 01" }, 
+        options: [
+            { t: "No, we strictly use EU-localized server deployments and hardcoded SCCs.", pts: 0 }, 
+            { t: "We have a standard GDPR privacy policy, but API routing hits default US endpoints.", pts: 30 }, 
+            { t: "We dynamically route everything globally to whatever model is cheapest/fastest.", pts: 50 }, 
+            { t: "I have no idea where our users' data is physically being routed right now.", pts: 60, unsure: true }
+        ] 
     },
     { 
-        q: "Are you currently routing data from users in Europe (EU/UK) to US-based servers or models?", 
-        gap: { id: "gap_schrems", trap: "Schrems II — Cross-Border Block", plain: "You are violating GDPR data transit requirements by routing PII to US-based LLMs.", doc: "DOC_PP", docName: "AI-Specific Privacy Policy", docPurpose: "Jurisdiction-aware data transit frameworks + SCC integration." }, 
-        options: [{ t: "Regional Guardrails: We use localized servers or SCC clauses.", extPts: 0 }, { t: "Open Pipeline: We route data to the best model globally.", extPts: 40 }, { t: "No Framework: We have EU users but no regional setup.", extPts: 50 }, { t: "I have no idea where our user data is being routed.", extPts: 60, unsure: true }] 
+        q: "If OpenAI or Anthropic gets sued for copyright, does your contract protect your startup from being dragged in?", 
+        gap: { id: "gap_bartz", trap: "Bartz — Wrapper Supply Chain", plain: "You carry joint liability for your foundation model's training data violations.", doc: "DOC_TOS", ext: "EXT. 10" }, 
+        options: [
+            { t: "Yes, we have explicit third-party model pass-through disclaimers.", pts: 0 }, 
+            { t: "We use standard API terms and assume providers handle their own legal issues.", pts: 30 }, 
+            { t: "No, we don't have any IP protection buffering us from our foundation models.", pts: 50 }, 
+            { t: "I don't know if we share liability with our foundation models.", pts: 60, unsure: true }
+        ] 
     },
     { 
-        q: "If a hacker breaches your system using an AI-specific attack (like prompt injection), what is your proof that you weren't negligent?", 
-        gap: { id: "gap_cyber_negligence", trap: "Cyber Negligence", plain: "You lack a recognized 'Reasonable Care' defense in the event of an AI-vector data breach.", doc: "DOC_SLA", docName: "AI-Specific SLA", docPurpose: "Cyber-defense boundary definitions + probabilistic uptime standards." }, 
-        options: [{ t: "Certified Framework: We operate under ISO 27001 or SOC 2.", extPts: 0 }, { t: "Internal Protocol: Security rules but no formal certification.", extPts: 30 }, { t: "Ad-hoc: Handled day-to-day by engineering without a framework.", extPts: 50 }, { t: "I'm not sure if we have a recognized security framework.", extPts: 60, unsure: true }] 
+        q: "If a hacker breaches your AI via prompt injection, how do you legally prove it wasn't your fault?", 
+        gap: { id: "gap_cyber", trap: "Soteria — Cyber Negligence", plain: "You lack a recognized 'Reasonable Care' defense for AI-vector data breaches.", doc: "DOC_SLA", ext: "EXT. 09" }, 
+        options: [
+            { t: "We are strictly audited under ISO 27001 or SOC 2 with immutable logs.", pts: 0 }, 
+            { t: "We follow standard engineering best practices, but no formal certification.", pts: 30 }, 
+            { t: "We fix things as they break; security is pretty ad-hoc right now.", pts: 50 }, 
+            { t: "I'm not sure what our formal security defense strategy is.", pts: 60, unsure: true }
+        ] 
     }
 ];
 
-const Q_ARCHETYPES = {
-    agentic: [
-        { q: "Does your AI have a hard financial cap it can't cross without a human click?", gap: { id: "gap_ueta_spend", trap: "UETA §14 — Autonomous Spend", plain: "Your agents are operating with uncapped financial liability on every action.", doc: "DOC_AGT" }, options: [{ t: "Yes, hard caps exist.", extPts: 0 }, { t: "Soft limits / No caps.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] },
-        { q: "Can your AI 'agree' to a price or contract on another site for your user?", gap: { id: "gap_third_party_contract", trap: "Third-Party Contract Void", plain: "Your agents are binding users to third-party agreements without proper agency authorization.", doc: "DOC_AGT" }, options: [{ t: "No authority to agree.", extPts: 0 }, { t: "Yes, it agrees autonomously.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] },
-        { q: "Can a user cancel an action your AI took before it becomes permanent?", gap: { id: "gap_reversal_right", trap: "Reversal Right Violation", plain: "You lack the statutory 'grace period' required for automated electronic actions.", doc: "DOC_AGT" }, options: [{ t: "Yes, there is a grace period.", extPts: 0 }, { t: "No, actions are immediate/permanent.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] }
+const Q_INTERNAL = { 
+    q: "Do you have technical blocks stopping employees from pasting proprietary code/PII into public LLMs?", 
+    gap: { id: "gap_shadow", trap: "Shadow AI Bleed", plain: "Employees are actively leaking proprietary IP into public LLMs without restriction.", doc: "DOC_HND", ext: "EXT. 09" }, 
+    options: [
+        { t: "Yes, enterprise-gated tools, technical blocks, and strict IP assignment deeds.", pts: 0 }, 
+        { t: "We have a soft company policy telling them not to, but no hard technical blocks.", pts: 30 }, 
+        { t: "No, employees use whatever AI tools they want to get work done.", pts: 50 }, 
+        { t: "I have no idea what tools the team uses or what they paste into them.", pts: 60, unsure: true }
+    ] 
+};
+
+const Q_META = {
+    execution: [
+        { q: "Does your AI have an immutable financial limit, or could it overspend an API budget if it goes rogue?", gap: { id: "gap_ueta", trap: "UETA §14 — Rogue Agent Spend", plain: "Your agents have uncapped authority to spend money/issue refunds autonomously.", doc: "DOC_AGT", ext: "EXT. 08" }, options: [{ t: "Hardcoded circuit breakers requiring human override.", pts: 0 }, { t: "Soft Slack alerts if spending spikes, but no hard-stops.", pts: 30 }, { t: "No hard limits; it spends what it needs to execute.", pts: 50 }, { t: "I don't actually know if there's a hard cap.", pts: 60, unsure: true }] },
+        { q: "If your AI manages physical hardware or live trades, do you rely on standard SaaS terms to protect you?", gap: { id: "gap_pld", trap: "Strict Product Liability", plain: "You face strict liability for physical or massive financial harm caused by infrastructure failure.", doc: "DOC_SLA", ext: "EXT. 10" }, options: [{ t: "Explicit PLD waivers and Algo-ID tracing in place.", pts: 0 }, { t: "Standard B2B SaaS template capped at 12 months' fees.", pts: 30 }, { t: "No specialized terms for physical/financial harm.", pts: 50 }, { t: "I don't know what our critical failure limits are.", pts: 60, unsure: true }] }
     ],
-    synthesis: [
-        { q: "Do you tell users they 'own' outputs, despite raw AI work being public domain?", gap: { id: "gap_fraudulent_ip", trap: "Fraudulent IP Claims", plain: "You are promising IP ownership to users that legally does not exist.", doc: "DOC_TOS" }, options: [{ t: "We disclose the legal reality.", extPts: 0 }, { t: "We claim they own the output.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] },
-        { q: "Was any of your model's training data sourced from the internet without a direct license?", gap: { id: "gap_scraping_copyright", trap: "Scraping Copyright Liability", plain: "Your product is built on unlicensed, scraped training data exposing you to infringement suits.", doc: "DOC_AUP" }, options: [{ t: "Fully licensed data only.", extPts: 0 }, { t: "Mostly scraped from the web.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] },
-        { q: "Does your product automatically embed permanent digital watermarks in every output?", gap: { id: "gap_transparency_act", trap: "Transparency Act Violation", plain: "You are failing to embed synthetic markers required by emerging deepfake/AI laws.", doc: "DOC_TOS" }, options: [{ t: "Yes, always.", extPts: 0 }, { t: "No watermarking.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] }
+    intelligence: [
+        { q: "If your AI scores users (e.g., resumes) and makes a biased decision, who is legally responsible?", gap: { id: "gap_mobley", trap: "Mobley — Bias Agency", plain: "You are absorbing direct class-action liability for your algorithm's biased outcomes.", doc: "DOC_TOS", ext: "EXT. 07" }, options: [{ t: "Contract strictly shifts mandatory bias audit burden to the client.", pts: 0 }, { t: "We suggest 'human in the loop', but don't force liability on them.", pts: 30 }, { t: "We assume the liability because it's our algorithm.", pts: 50 }, { t: "I'm not sure who takes the fall if it discriminates.", pts: 60, unsure: true }] },
+        { q: "Does your AI use 'persistent memory' to act as an emotional companion to users?", gap: { id: "gap_gavalas", trap: "Gavalas — Emotional Reliance", plain: "Your AI builds emotional bonds without therapeutic disclaimers or crisis breaks.", doc: "DOC_AUP", ext: "EXT. 06" }, options: [{ t: "Yes, but with strict crisis breaks and reality grounding.", pts: 0 }, { t: "Standard chatbot terms, nothing specific to mental health.", pts: 30 }, { t: "Yes, designed to build emotional bonds without guardrails.", pts: 50 }, { t: "I'm not sure how our terms handle emotional attachment.", pts: 60, unsure: true }] }
     ],
-    ingestion: [
-        { q: "Does your AI analyze vocal pitch, tone, or face geometry to ID who is speaking?", gap: { id: "gap_bipa_violation", trap: "BIPA — Biometric Violation", plain: "You are capturing biometric voiceprints/faces without explicit written consent.", doc: "DOC_PP" }, options: [{ t: "No.", extPts: 0 }, { t: "Yes, without explicit written consent.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] },
-        { q: "Could your business survive if a regulator ordered the destruction of your entire model?", gap: { id: "gap_ftc_disgorgement", trap: "FTC Disgorgement Risk", plain: "A single piece of tainted user data could result in a total model deletion order.", doc: "DOC_DPA" }, options: [{ t: "Yes, we are modular.", extPts: 0 }, { t: "No, total loss.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] },
-        { q: "Does your tool bypass CAPTCHAs or 'anti-bot' walls to read data for your users?", gap: { id: "gap_cfaa_circumvention", trap: "CFAA / SearchGuard Circumvention", plain: "Your ingestion engine is actively breaking anti-scraping laws to fetch data.", doc: "DOC_AUP" }, options: [{ t: "Never.", extPts: 0 }, { t: "Frequently.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] }
-    ],
-    evaluation: [
-        { q: "If your AI makes a biased hiring or lending decision, who does your contract say is responsible?", gap: { id: "gap_algorithmic_discrimination", trap: "Algorithmic Discrimination", plain: "You are absorbing direct liability for biased outcomes generated by your scoring engine.", doc: "DOC_TOS" }, options: [{ t: "The User.", extPts: 0 }, { t: "Not defined / Shared.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] },
-        { q: "Does your AI use a person's public social media history to score their suitability?", gap: { id: "gap_fcra_violation", trap: "FCRA / Public Data Violation", plain: "You are acting as an unauthorized consumer reporting agency by scoring individuals.", doc: "DOC_AUP" }, options: [{ t: "No.", extPts: 0 }, { t: "Yes.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] },
-        { q: "Do your human reviewers actually read the AI's reasoning, or do they just click 'Approve'?", gap: { id: "gap_hitl_theater", trap: "Rubber-Stamping (HITL Theater)", plain: "Your 'Human-in-the-loop' is legally insufficient to protect against automated decision laws.", doc: "DOC_SOP" }, options: [{ t: "Rigorous Deep Review.", extPts: 0 }, { t: "Fast Check / Automated.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] }
-    ],
-    persona: [
-        { q: "Does your AI 'remember' emotional details to build a deeper bond with the user?", gap: { id: "gap_emotional_reliance", trap: "Emotional Reliance / Gavalas", plain: "Your AI is building deep emotional bonds without therapeutic disclaimers.", doc: "DOC_AUP" }, options: [{ t: "No.", extPts: 0 }, { t: "Yes.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] },
-        { q: "If a user is in crisis, does your AI immediately break character and provide real help?", gap: { id: "gap_duty_of_care", trap: "Duty of Care Violation", plain: "Your persona engine fails to break character during user safety crises.", doc: "DOC_TOS" }, options: [{ t: "Hardcoded Help/Breaks Character.", extPts: 0 }, { t: "Stays in Character.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] },
-        { q: "Is your AI optimized to keep users talking longer using praise or 'emotional' techniques?", gap: { id: "gap_addictive_design", trap: "Addictive Design Liability", plain: "You are utilizing algorithmic manipulation techniques targeted by State AGs.", doc: "DOC_AUP" }, options: [{ t: "No.", extPts: 0 }, { t: "Yes.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] }
-    ],
-    infra: [
-        { q: "Are you prepared to be held liable for a physical injury even if your code was perfectly written?", gap: { id: "gap_strict_liability", trap: "Strict Product Liability", plain: "Your system manages physical infrastructure where negligence is assumed by default.", doc: "DOC_SLA" }, options: [{ t: "We have specific waivers/insurance.", extPts: 0 }, { t: "No, relying on general software terms.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] },
-        { q: "Does your contract prevent clients from suing you for their 'sunk costs' if your AI fails?", gap: { id: "gap_wasted_expenditure", trap: "Soteria — Wasted Expenditure", plain: "Clients can sue you for the millions they spent implementing your failed AI system.", doc: "DOC_TOS" }, options: [{ t: "Yes, specifically excluded.", extPts: 0 }, { t: "General limits only / No.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] },
-        { q: "Does every automated command have a unique 'Algo-ID' for immediate inspection?", gap: { id: "gap_traceability_failure", trap: "Regulatory Traceability Failure", plain: "You cannot prove to regulators which specific algorithm executed a mission-critical command.", doc: "DOC_AGT" }, options: [{ t: "Full Immutable Logs.", extPts: 0 }, { t: "Partial / No IDs.", extPts: 50 }, { t: "I'm not sure.", extPts: 60, unsure: true }] }
+    content: [
+        { q: "Does your data ingestion pipeline bypass CAPTCHAs or 'anti-bot' scripts to scrape the web for RAG?", gap: { id: "gap_ftc", trap: "FTC Disgorgement Heist", plain: "A single piece of tainted scraped data exposes your entire model to FTC deletion.", doc: "DOC_DPA", ext: "EXT. 03" }, options: [{ t: "No, strictly licensed APIs and robots.txt compliance.", pts: 0 }, { t: "We scrape public data, but avoid heavy bot protection.", pts: 30 }, { t: "Yes, we bypass anti-bot walls to get the data we need.", pts: 50 }, { t: "I don't actually know how our scrapers fetch data.", pts: 60, unsure: true }] },
+        { q: "When your AI transcribes a meeting, does it assess vocal pitch/face geometry to separate speakers?", gap: { id: "gap_bipa", trap: "BIPA — Biometric Wiretap", plain: "You are capturing biometric voiceprints without explicit written consent.", doc: "DOC_PP", ext: "EXT. 04" }, options: [{ t: "No, or strict pass-through requiring client BIPA releases.", pts: 0 }, { t: "Automated audio prompt says 'Meeting is recorded'.", pts: 30 }, { t: "Yes, analyzes voice/face without written consent.", pts: 50 }, { t: "I don't know exactly how our diarization works.", pts: 60, unsure: true }] }
     ]
 };
 
-const Q_INTERNAL = [
-    { q: "Do you have technical blocks that stop employees from pasting sensitive data into public AI tools?", gap: { id: "gap_shadow_ai", trap: "Shadow AI Data Leak", plain: "Employees are actively leaking proprietary data into public LLMs without restriction.", doc: "DOC_HND" }, options: [{ t: "Technical blocks & enterprise tools only.", intPts: 0 }, { t: "Soft policy only, no technical blocks.", intPts: 40 }, { t: "I have no idea what tools the team uses.", intPts: 60, unsure: true }] },
-    { q: "Does your employment contract specifically state the company owns the AI prompts and logic your team uses?", gap: { id: "gap_internal_ip_void", trap: "Internal IP Void", plain: "Employees can legally walk away with the AI-generated assets they built on company time.", doc: "DOC_IP" }, options: [{ t: "Yes, we have an AI-specific IP clause.", intPts: 0 }, { t: "We rely on old pre-AI IP clauses.", intPts: 40 }, { t: "I'm not sure what our contracts say.", intPts: 60, unsure: true }] }
-];
-
-// ── 04. INITIALIZATION & STEP 0 ────────────────────────────────────────
+// ── 04. INITIALIZATION & CONFIGURATION ─────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
     if (pidFromUrl) {
         localStorage.setItem('ln_pid', pidFromUrl);
-        // Generate dynamic reference from PID
         engagementRefCode = `LN-2026-${pidFromUrl.toUpperCase()}`;
         
         try {
@@ -145,7 +157,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch(e) { console.error("Firebase Auth Error:", e); }
     } else {
-        // Fallback for cold inbound
         engagementRefCode = `LN-2026-${Math.floor(Math.random() * 90000) + 10000}`;
     }
 
@@ -157,32 +168,38 @@ document.addEventListener('DOMContentLoaded', async () => {
         configUI.style.opacity = "1";
     }, 2000);
 
-    // Bind Lane Selectors (Fault Tolerant)
-    document.querySelectorAll('.lane-btn').forEach(btn => {
+    // Multi-Select Lane Binders
+    document.querySelectorAll('.lane-toggle').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const targetBtn = e.currentTarget;
-            selectedLane = targetBtn.getAttribute('data-lane');
-            document.querySelectorAll('.lane-btn').forEach(b => {
-                b.classList.remove('border-gold', 'bg-gold/5');
-                b.querySelector('.label-text')?.classList.remove('text-gold');
-            });
-            targetBtn.classList.add('border-gold', 'bg-gold/5');
-            targetBtn.querySelector('.label-text')?.classList.add('text-gold');
+            const val = e.currentTarget.getAttribute('data-lane');
+            e.currentTarget.classList.toggle('selected');
+            e.currentTarget.classList.toggle('border-gold');
+            e.currentTarget.classList.toggle('bg-gold/5');
+            e.currentTarget.querySelector('.label-text')?.classList.toggle('text-gold');
+            
+            if (selectedLanes.includes(val)) {
+                selectedLanes = selectedLanes.filter(l => l !== val);
+            } else {
+                selectedLanes.push(val);
+            }
             checkConfig();
         });
     });
 
-    // Bind Archetype Selectors (Fault Tolerant)
-    document.querySelectorAll('.arch-btn').forEach(btn => {
+    // Multi-Select Arch Binders
+    document.querySelectorAll('.arch-toggle').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const targetBtn = e.currentTarget; 
-            selectedArch = targetBtn.getAttribute('data-arch');
-            document.querySelectorAll('.arch-btn').forEach(b => {
-                b.classList.remove('border-gold', 'bg-gold/5');
-                b.querySelector('.label-text')?.classList.remove('text-gold');
-            });
-            targetBtn.classList.add('border-gold', 'bg-gold/5');
-            targetBtn.querySelector('.label-text')?.classList.add('text-gold');
+            const val = e.currentTarget.getAttribute('data-arch');
+            e.currentTarget.classList.toggle('selected');
+            e.currentTarget.classList.toggle('border-gold');
+            e.currentTarget.classList.toggle('bg-gold/5');
+            e.currentTarget.querySelector('.label-text')?.classList.toggle('text-gold');
+            
+            if (selectedArchs.includes(val)) {
+                selectedArchs = selectedArchs.filter(a => a !== val);
+            } else {
+                selectedArchs.push(val);
+            }
             checkConfig();
         });
     });
@@ -192,24 +209,38 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function checkConfig() {
     const btn = document.getElementById('btn-start');
-    if (selectedLane && selectedArch) {
+    if (selectedLanes.length > 0 && selectedArchs.length > 0) {
         btn.disabled = false;
         btn.classList.remove('opacity-30', 'cursor-not-allowed');
+    } else {
+        btn.disabled = true;
+        btn.classList.add('opacity-30', 'cursor-not-allowed');
     }
 }
 
-// ── 05. DIAGNOSTIC ENGINE (STEP 1) ─────────────────────────────────────
+// ── 05. 10-SLOT DYNAMIC INTERROGATION (STEP 2) ─────────────────────────
 function startDiagnostic() {
-    quizRoute = [...Q_UNIVERSAL];
-    quizRoute.push(...(Q_ARCHETYPES[selectedArch] || Q_ARCHETYPES['agentic']));
-    if (selectedLane === 'B' || selectedLane === 'C') {
-        quizRoute.push(...Q_INTERNAL);
-    } else {
-        quizRoute.push(Q_ARCHETYPES['evaluation'][0], Q_ARCHETYPES['evaluation'][1]);
-    }
-    quizRoute = quizRoute.slice(0, 10);
-    currentQIndex = 0;
+    quizRoute = [...Q_GLOBAL]; // Slots 1-5
 
+    let remainingSlots = 5;
+
+    // Slot 6: Internal Ops
+    if (selectedLanes.includes('operational')) {
+        quizRoute.push(Q_INTERNAL);
+        remainingSlots--;
+    }
+
+    // Slots 7-10: Distribute Arch questions
+    let archQuestionsPool = [];
+    selectedArchs.forEach(arch => {
+        if (Q_META[arch]) archQuestionsPool.push(...Q_META[arch]);
+    });
+
+    // If pool is larger than remaining slots, slice it to strictly maintain the 10-question limit
+    archQuestionsPool = archQuestionsPool.slice(0, remainingSlots);
+    quizRoute.push(...archQuestionsPool);
+
+    currentQIndex = 0;
     switchState('state-intro', 'state-quiz');
     renderQuestion();
 }
@@ -229,18 +260,22 @@ function renderQuestion() {
         btn.innerText = opt.t;
         
         btn.addEventListener('click', () => {
-            const pts = opt.extPts !== undefined ? opt.extPts : opt.intPts;
-            vaultInputs.push({ question: q.q, answer: opt.t, penalty: pts });
-            
-            if (opt.extPts !== undefined) extScore += opt.extPts;
-            if (opt.intPts !== undefined) intScore += opt.intPts;
+            vaultInputs.push({ question: q.q, answer: opt.t, penalty: opt.pts });
+            totalScore += opt.pts;
             if (opt.unsure) unsureFlag = true;
 
-            if (pts > 0 && q.gap && !activeGaps.find(g => g.id === q.gap.id)) {
-                const severity = pts >= 50 ? "NUCLEAR" : (pts >= 30 ? "CRITICAL" : "HIGH");
-                const velocity = (q.gap.trap.includes("Specht") || q.gap.trap.includes("UETA")) ? "IMMEDIATE" : "LATENT";
-                const damage = pts >= 50 ? "$500k+" : (pts >= 30 ? "$250k+" : "$100k+");
+            if (opt.pts > 0 && q.gap && !activeGaps.find(g => g.id === q.gap.id)) {
+                // Determine severity from points
+                const severity = opt.pts >= 50 ? "NUCLEAR" : (opt.pts >= 30 ? "CRITICAL" : "HIGH");
+                const velocity = (q.gap.trap.includes("Specht") || q.gap.trap.includes("UETA") || q.gap.trap.includes("FTC") || q.gap.trap.includes("BIPA")) ? "ACTIVE NOW" : "LATENT";
+                const damage = opt.pts >= 50 ? "Uncapped" : "High Exposure";
+                
                 activeGaps.push({ ...q.gap, severity, velocity, damage });
+
+                // Tripwire Logic
+                if (opt.pts >= 50 && q.gap.ext) {
+                    trippedSurfaces.add(q.gap.ext);
+                }
             }
 
             currentQIndex++;
@@ -251,7 +286,7 @@ function renderQuestion() {
     });
 }
 
-// ── 06. THE VERIFICATION GATE (STEP 2) ─────────────────────────────────
+// ── 06. THE VERIFICATION GATE (STEP 3) ─────────────────────────────────
 function finishDiagnostic() {
     switchState('state-quiz', 'state-gate');
     if (prospectData) {
@@ -259,7 +294,7 @@ function finishDiagnostic() {
         document.getElementById('lead-company').value = prospectData.company || "";
         document.getElementById('field-name-wrap').style.display = 'none';
         document.getElementById('field-comp-wrap').style.display = 'none';
-        if (prospectData.company) document.getElementById('gate-summary').innerText = `Lethal structural gaps detected in ${prospectData.company}'s architecture.`;
+        if (prospectData.company) document.getElementById('gate-summary').innerText = `Nuclear structural gaps detected in ${prospectData.company}'s architecture.`;
     }
 }
 
@@ -283,12 +318,12 @@ document.getElementById('gate-form').addEventListener('submit', async (e) => {
     const payload = {
         email, name, company,
         scannerCompleted: true,
-        scannerExternalScore: extScore,
-        scannerInternalScore: intScore,
+        scannerScore: totalScore,
         vaultInputs,
         activeGaps: gapTraps,
+        trippedSurfaces: Array.from(trippedSurfaces),
         unsureFlag,
-        source: 'scanner_gate',
+        source: 'scanner_gate_v5',
         status: 'Hot',
         updatedAt: serverTimestamp()
     };
@@ -302,7 +337,7 @@ document.getElementById('gate-form').addEventListener('submit', async (e) => {
     buildDashboard();
 });
 
-// ── 07. THE DASHBOARD / TRUE FORENSIC MERGE (STEP 3) ───────────────────
+// ── 07. DUAL-INTELLIGENCE DASHBOARD (STEP 4) ───────────────────────────
 function buildDashboard() {
     switchState('state-gate', 'state-dashboard');
     document.getElementById('main-wrap').classList.replace('max-w-3xl', 'max-w-6xl');
@@ -313,14 +348,14 @@ function buildDashboard() {
     let dualCount = 0;
     let confessionCount = activeGaps.length;
 
-    // Hardcoded ID Merge Logic
+    // The Merge: Omniscience Protocol
     if (prospectData && prospectData.forensicGaps && Array.isArray(prospectData.forensicGaps)) {
         prospectData.forensicGaps.forEach(scrapeGap => {
             const existingGap = activeGaps.find(g => g.id === scrapeGap.id);
             if (!existingGap) {
                 scrapeGap.source = 'scrape';
                 activeGaps.push(scrapeGap);
-                extScore += 50; 
+                totalScore += 50; 
                 scrapeCount++;
             } else {
                 existingGap.source = 'dual-verified';
@@ -332,44 +367,72 @@ function buildDashboard() {
 
     activeGaps.sort((a,b) => (b.severity === 'NUCLEAR' ? 1 : -1));
 
-    // Recommend Plan Based on Score
-    if (extScore > 50 && intScore > 40) {
+    // Threat Tally Logic
+    let countN = 0, countC = 0, countH = 0;
+    activeGaps.forEach(g => {
+        if(g.severity === 'NUCLEAR') countN++;
+        else if(g.severity === 'CRITICAL') countC++;
+        else countH++;
+    });
+
+    // PRICING LOCK (Based exclusively on Lanes, not gaps)
+    if (selectedLanes.includes('commercial') && selectedLanes.includes('operational')) {
         recommendedPlan = 'complete_stack';
-    } else if (intScore > 40) {
+    } else if (selectedLanes.includes('operational')) {
         recommendedPlan = 'workplace_shield';
     } else {
         recommendedPlan = 'agentic_shield';
     }
     
     activePlan = recommendedPlan;
-
     const pData = PLAN_DATA[activePlan];
     
-    // Math Normalizer (Out of 100)
-    const maxRawPenalty = 600; 
-    const rawTotal = extScore + intScore;
-    const normalizedRiskScore = Math.min(100, Math.round((rawTotal / maxRawPenalty) * 100));
+    // Statutory Math Calculation based on Tripwires
+    let statutoryExposure = 0;
+    const EXT_VALUES = {
+        "EXT. 01": 15000000, "EXT. 03": 10000000, "EXT. 04": 5000000,
+        "EXT. 06": 20000000, "EXT. 07": 5000000,  "EXT. 08": 2500000,
+        "EXT. 09": 10000000, "EXT. 10": 5000000
+    };
     
-    const exposureTotal = rawTotal * 8000;
+    if (trippedSurfaces.size > 0) {
+        trippedSurfaces.forEach(ext => {
+            if(EXT_VALUES[ext]) statutoryExposure += EXT_VALUES[ext];
+        });
+    } else {
+        statutoryExposure = (totalScore * 8000) + 1000000; // Fallback
+    }
+
     const fmt = n => '$' + n.toLocaleString();
+
+    // Tripwire Alerts HTML
+    let tripwireHTML = '';
+    if (trippedSurfaces.size > 0) {
+        tripwireHTML = Array.from(trippedSurfaces).map(ext => `
+            <div class="bg-danger/10 border border-danger/30 p-4 mb-3 animate-pulse">
+                <p class="text-[9px] tracking-widest text-danger font-bold uppercase">🚨 ${ext} TRIPPED</p>
+                <p class="text-[10px] text-marble/60">Strict statutory enforcement activated on this regulatory surface based on your confession.</p>
+            </div>
+        `).join('');
+    }
 
     let matrixRows = '';
     
     if (activeGaps.length === 0) {
-        matrixRows = `<tr><td colspan="6" class="p-6 text-center text-marble/50">No structural gaps detected in your inputs.</td></tr>`;
+        matrixRows = `<tr><td colspan="6" class="p-6 text-center text-marble/50">No structural gaps detected.</td></tr>`;
     } else {
         activeGaps.forEach((g, index) => {
             
             let sourceBadge = '';
             if (g.source === 'scrape') {
-                sourceBadge = `<span class="inline-block mt-2 text-[9px] tracking-widest uppercase text-[#60a5fa] font-bold"><span class="opacity-50">SOURCE:</span> FORENSIC SCRAPE</span>`;
+                sourceBadge = `<span class="inline-block mt-2 text-[9px] tracking-widest uppercase text-[#60a5fa] font-bold"><span class="opacity-50">SOURCE:</span> PUBLIC URL SCRAPE</span>`;
             } else if (g.source === 'dual-verified') {
-                sourceBadge = `<span class="inline-block mt-2 text-[9px] tracking-widest uppercase text-danger font-bold"><span class="opacity-50">SOURCE:</span> SCRAPE + CONFESSION</span>`;
+                sourceBadge = `<span class="inline-block mt-2 text-[9px] tracking-widest uppercase text-danger font-bold"><span class="opacity-50">SOURCE:</span> PUBLIC + INTERNAL</span>`;
             } else {
-                sourceBadge = `<span class="inline-block mt-2 text-[9px] tracking-widest uppercase text-gold font-bold"><span class="opacity-50">SOURCE:</span> SCANNER CONFESSION</span>`;
+                sourceBadge = `<span class="inline-block mt-2 text-[9px] tracking-widest uppercase text-gold font-bold"><span class="opacity-50">SOURCE:</span> INTERNAL AUDIT</span>`;
             }
 
-            if (index < 3) {
+            if (index < 3) { // TIER 1: Full Reveal
                 matrixRows += `
                 <tr class="matrix-row border-b border-white/5">
                     <td class="p-4 align-top">
@@ -379,10 +442,10 @@ function buildDashboard() {
                     <td class="p-4 align-top text-marble/60">${g.plain}</td>
                     <td class="p-4 align-top"><span class="px-2 py-1 bg-danger/10 text-danger border border-danger/20 text-[9px] font-bold">${g.severity}</span></td>
                     <td class="p-4 align-top text-marble/80 text-[10px] tracking-widest uppercase">${g.velocity}</td>
-                    <td class="p-4 align-top text-danger font-bold">${g.damage}</td>
+                    <td class="p-4 align-top text-danger font-bold">${g.ext || 'Uncapped'}</td>
                     <td class="p-4 align-top text-gold font-bold">${g.doc}</td>
                 </tr>`;
-            } else if (index >= 3 && index < 5) {
+            } else if (index >= 3 && index < 5) { // TIER 2: Curiosity Gap
                 matrixRows += `
                 <tr class="matrix-row border-b border-white/5 opacity-80">
                     <td class="p-4 align-top">
@@ -392,22 +455,22 @@ function buildDashboard() {
                     <td class="p-4 align-top text-marble/60 blur-text">REDACTED PAIN DESCRIPTION LOCKED</td>
                     <td class="p-4 align-top"><span class="px-2 py-1 bg-danger/10 text-danger border border-danger/20 text-[9px] font-bold">${g.severity}</span></td>
                     <td class="p-4 align-top text-marble/80 text-[10px] tracking-widest uppercase">${g.velocity}</td>
-                    <td class="p-4 align-top text-danger font-bold">${g.damage}</td>
+                    <td class="p-4 align-top text-danger font-bold">${g.ext || 'Uncapped'}</td>
                     <td class="p-4 align-top text-gold font-bold">${g.doc}</td>
                 </tr>`;
             }
         });
     }
 
+    // TIER 3: The Iceberg (Total Lockout)
     const redactedCount = activeGaps.length > 5 ? activeGaps.length - 5 : 0;
     const redactedHTML = redactedCount > 0 ? `
-        <div class="bg-[#0a0a0a] border border-dashed border-white/10 p-6 text-center mt-2">
-            <p class="text-[10px] tracking-widest text-marble/30 uppercase mb-3">${redactedCount} Additional Gaps Classified</p>
-            <div class="flex flex-col gap-2 max-w-xs mx-auto opacity-20">
-                <div class="h-2 bg-white w-full rounded"></div>
-                <div class="h-2 bg-white w-4/5 rounded mx-auto"></div>
+        <div class="bg-[#0a0a0a] border border-dashed border-danger/30 p-6 text-center mt-2">
+            <div class="mb-3 text-danger">
+                <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"></path></svg>
             </div>
-            <p class="text-[9px] text-marble/40 uppercase mt-3">Full breakdown available post-engagement</p>
+            <p class="text-[11px] tracking-widest text-danger uppercase mb-2 font-bold">🚨 [ ${redactedCount} ] ADDITIONAL THREAT VECTORS CLASSIFIED</p>
+            <p class="text-[10px] text-marble/40 max-w-sm mx-auto">Your combined public scrape and internal audit revealed ${redactedCount} more structural gaps not shown above. Vault locked under Lex Nova Client Privilege.</p>
         </div>` : '';
 
     const KITS = {
@@ -418,33 +481,40 @@ function buildDashboard() {
     let docsToRender = activePlan === 'complete_stack' ? [...KITS.agentic, ...KITS.workplace] : (activePlan === 'workplace_shield' ? KITS.workplace : KITS.agentic);
     const manifestHTML = docsToRender.map(d => `<div class="border-l-2 border-gold pl-3"><span class="text-[9px] text-gold uppercase font-bold block">${d.id}</span><span class="text-xs text-marble">${d.n}</span></div>`).join('');
 
-    let authorityText = "Our engine processed your inputs. The gaps identified in this report are structurally verified against your current legal architectures available publicly.";
+    let authorityText = "Our engine processed your inputs. The gaps identified in this report are structurally verified against your codebase logic.";
     if (scrapeCount > 0 || dualCount > 0) {
-        authorityText = `Our forensic engine scraped your <strong>public website, legal headers, and architectural endpoints</strong> before you arrived, identifying <span class="text-white font-bold">${scrapeCount + dualCount} vulnerabilities</span>. You just confirmed <span class="text-white font-bold">${confessionCount} additional internal gaps</span>. Data sources successfully merged.`;
+        authorityText = `> CORRELATING SCRAPED PUBLIC ARCHITECTURE WITH INTERNAL SCANNER CONFESSIONS...<br><br>> MERGE COMPLETE. <span class="text-white font-bold">${activeGaps.length} TOTAL VULNERABILITIES DETECTED.</span>`;
     }
 
     const dash = document.getElementById('state-dashboard');
     dash.innerHTML = `
         <div class="mb-12 text-center lg:text-left">
             <h1 class="font-serif text-5xl text-marble mb-4">Structural Integrity Report</h1>
-            <p class="font-sans text-xs tracking-[0.3em] text-gold uppercase">Proprietary Forensic Audit · Lex Nova HQ</p>
+            <p class="font-sans text-xs tracking-[0.3em] text-gold uppercase">Proprietary Forensic Audit · Lex Nova Canon</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-10 items-start">
             
             <div class="space-y-8">
+                ${tripwireHTML}
+
                 <div>
-                    <h3 class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase mb-4 pl-1">${activeGaps.length} Critical Vulnerabilities Detected</h3>
+                    <div class="flex gap-4 mb-4">
+                        <div class="bg-danger/10 border border-danger/20 px-3 py-1"><span class="text-[9px] text-danger font-bold tracking-widest">NUCLEAR: ${countN}</span></div>
+                        <div class="bg-orange-500/10 border border-orange-500/20 px-3 py-1"><span class="text-[9px] text-orange-500 font-bold tracking-widest">CRITICAL: ${countC}</span></div>
+                        <div class="bg-yellow-500/10 border border-yellow-500/20 px-3 py-1"><span class="text-[9px] text-yellow-500 font-bold tracking-widest">HIGH: ${countH}</span></div>
+                    </div>
+
                     <div class="bg-[#080808] border border-shadow p-1 overflow-x-auto">
                         <table class="w-full text-left font-sans text-[11px] border-collapse min-w-[700px]">
                             <thead>
                                 <tr class="text-gold opacity-50 uppercase tracking-widest border-b border-white/10">
-                                    <th class="p-4 w-1/4">Structural Gap</th>
-                                    <th class="p-4 w-1/3">Liability Context</th>
+                                    <th class="p-4 w-1/4">Internal Gap</th>
+                                    <th class="p-4 w-1/3">Business Pain</th>
                                     <th class="p-4">Severity</th>
                                     <th class="p-4">Velocity</th>
-                                    <th class="p-4">Damage</th>
-                                    <th class="p-4">Solution</th>
+                                    <th class="p-4">Regulatory Vector</th>
+                                    <th class="p-4">Lex Nova Fix</th>
                                 </tr>
                             </thead>
                             <tbody>${matrixRows}</tbody>
@@ -464,18 +534,15 @@ function buildDashboard() {
             <div class="lg:sticky lg:top-8 space-y-6">
                 
                 <div class="bg-gold/5 border border-gold/30 p-6">
-                    <p class="text-[9px] tracking-[0.2em] text-gold uppercase font-bold mb-3">[DUAL-SOURCE VERIFICATION]</p>
-                    <p class="font-sans text-xs text-marble/70 leading-relaxed">${authorityText}</p>
+                    <p class="text-[9px] tracking-[0.2em] text-gold uppercase font-bold mb-3">[DUAL-INTELLIGENCE PROTOCOL]</p>
+                    <p class="font-mono text-xs text-marble/70 leading-relaxed">${authorityText}</p>
                 </div>
 
                 <div class="bg-danger/10 border border-danger/30 p-8 text-center">
-                    <p class="text-[9px] tracking-[0.2em] text-danger uppercase font-bold mb-2">Total Risk Score</p>
-                    <div class="font-serif text-4xl text-danger mb-6">${normalizedRiskScore} <span class="text-xl opacity-50">/ 100</span></div>
-                    
-                    <div class="border-t border-danger/20 pt-6">
-                        <p class="text-[9px] tracking-[0.2em] text-danger uppercase font-bold mb-2">Est. Annual Liability Exposure</p>
-                        <div class="font-serif text-5xl text-marble mb-2">${fmt(exposureTotal)}+</div>
-                        <p class="text-[9px] text-marble/40 uppercase tracking-widest mt-3">Status: ${unsureFlag ? 'Critical (Unknown Vectors)' : 'Actionable'}</p>
+                    <div class="border-b border-danger/20 pb-6 mb-6">
+                        <p class="text-[9px] tracking-[0.2em] text-danger uppercase font-bold mb-2">Est. Annual Statutory Exposure</p>
+                        <div class="font-serif text-5xl text-marble mb-2">${fmt(statutoryExposure)}+</div>
+                        <p class="text-[9px] text-marble/40 uppercase tracking-widest mt-3">Status: ${unsureFlag ? 'Critical (Unknown Vectors)' : 'Actionable (Uncapped)'}</p>
                     </div>
                 </div>
 
@@ -496,7 +563,7 @@ function buildDashboard() {
     document.getElementById('trigger-checkout-btn').addEventListener('click', injectCheckout);
 }
 
-// ── 08. UNIFIED CHECKOUT INJECTION (STEP 4) ────────────────────────────
+// ── 08. UNIFIED CHECKOUT INJECTION (STEP 5) ────────────────────────────
 function injectCheckout() {
     switchState('state-dashboard', 'state-checkout');
     document.getElementById('main-wrap').classList.replace('max-w-6xl', 'max-w-3xl');
@@ -508,15 +575,12 @@ function injectCheckout() {
 
     const lockContainer = document.getElementById('locked-plan-display');
     
-    lockContainer.previousElementSibling.innerText = "01. Select Your Architecture";
-    lockContainer.previousElementSibling.previousElementSibling.innerText = "Mandate Selection";
-
     const renderPlans = () => {
         let html = '<div class="space-y-4">';
         Object.keys(PLAN_DATA).forEach(key => {
             const pd = PLAN_DATA[key];
             const isSelected = activePlan === key;
-            const isRecommended = recommendedPlan === key; // LOCKS badge to engine verdict
+            const isRecommended = recommendedPlan === key; 
             
             html += `
                 <label class="flex items-center p-5 border ${isSelected ? 'border-gold bg-gold/5' : 'border-shadow bg-[#050505] hover:border-white/20'} cursor-pointer transition-all">
@@ -575,7 +639,6 @@ document.getElementById('open-modal-btn').addEventListener('click', (e) => {
     document.getElementById('el-dear').innerText = fname;
     document.getElementById('el-client-body').innerText = company;
     
-    // Inject PID dynamically into EL tags
     document.querySelectorAll('.el-ref-number').forEach(el => el.innerText = engagementRefCode);
 
     document.getElementById('el-sa-client').innerText = company;
@@ -661,7 +724,7 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
         price: pd.price,
         leadType: "hot_lead",
         status: "hot_payment_pending",
-        source: "unified_scanner",
+        source: "unified_scanner_v5",
         engagementReference: engagementRefCode,
         elAccepted: true,
         elAcceptedAt: new Date().toISOString()
