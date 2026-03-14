@@ -342,16 +342,16 @@ function buildDashboard() {
     switchState('state-gate', 'state-dashboard');
     document.getElementById('main-wrap').classList.replace('max-w-3xl', 'max-w-6xl');
 
-    activeGaps.forEach(g => g.source = 'confession');
-
-    let scrapeCount = 0;
-    let dualCount = 0;
-    let confessionCount = activeGaps.length;
-
-    // The Merge: Omniscience Protocol
+ // The Merge: Omniscience Protocol
     if (prospectData && prospectData.forensicGaps && Array.isArray(prospectData.forensicGaps)) {
         prospectData.forensicGaps.forEach(scrapeGap => {
             const existingGap = activeGaps.find(g => g.id === scrapeGap.id);
+            
+            // 🔥 ARM THE TRIPWIRES FROM HUNTER DATA
+            if (scrapeGap.ext) {
+                trippedSurfaces.add(scrapeGap.ext);
+            }
+
             if (!existingGap) {
                 scrapeGap.source = 'scrape';
                 activeGaps.push(scrapeGap);
@@ -359,6 +359,8 @@ function buildDashboard() {
                 scrapeCount++;
             } else {
                 existingGap.source = 'dual-verified';
+                // Prioritize the Hunter's evidence if it exists
+                if (scrapeGap.evidence) existingGap.evidence = scrapeGap.evidence;
                 dualCount++;
                 confessionCount--; 
             }
@@ -367,13 +369,69 @@ function buildDashboard() {
 
     activeGaps.sort((a,b) => (b.severity === 'NUCLEAR' ? 1 : -1));
 
-    // Threat Tally Logic
-    let countN = 0, countC = 0, countH = 0;
-    activeGaps.forEach(g => {
-        if(g.severity === 'NUCLEAR') countN++;
-        else if(g.severity === 'CRITICAL') countC++;
-        else countH++;
-    });
+    // Threat Tally Logic & Pricing Lock code remains exactly the same...
+    // [Keep your existing math logic here]
+
+    let matrixRows = '';
+    
+    if (activeGaps.length === 0) {
+        matrixRows = `<tr><td colspan="6" class="p-6 text-center text-marble/50">No structural gaps detected.</td></tr>`;
+    } else {
+        activeGaps.forEach((g, index) => {
+            
+            let sourceBadge = '';
+            if (g.source === 'scrape') {
+                sourceBadge = `<span class="inline-block mt-2 text-[9px] tracking-widest uppercase text-[#60a5fa] font-bold"><span class="opacity-50">SOURCE:</span> PUBLIC URL SCRAPE</span>`;
+            } else if (g.source === 'dual-verified') {
+                sourceBadge = `<span class="inline-block mt-2 text-[9px] tracking-widest uppercase text-danger font-bold"><span class="opacity-50">SOURCE:</span> PUBLIC + INTERNAL</span>`;
+            } else {
+                sourceBadge = `<span class="inline-block mt-2 text-[9px] tracking-widest uppercase text-gold font-bold"><span class="opacity-50">SOURCE:</span> INTERNAL AUDIT</span>`;
+            }
+
+            // 🔥 THE EVIDENCE BLOCK (Crystal clear, terminal style)
+            let evidenceBlock = '';
+            if (g.evidence) {
+                evidenceBlock = `
+                <div class="mt-4 p-3 bg-[#050505] border border-white/10 font-mono text-[10px] text-marble/70 leading-relaxed">
+                    <span class="text-gold font-bold">> LOCATION:</span> ${g.evidence.source}<br>
+                    <span class="text-danger font-bold">> VIOLATION:</span> ${g.evidence.reason}
+                </div>`;
+            }
+
+            if (index < 3) { // TIER 1: Full Reveal (Everything clear)
+                matrixRows += `
+                <tr class="matrix-row border-b border-white/5">
+                    <td class="p-4 align-top">
+                        <span class="font-bold text-marble block">${g.trap}</span>
+                        ${sourceBadge}
+                    </td>
+                    <td class="p-4 align-top">
+                        <span class="text-marble/60">${g.plain}</span>
+                        ${evidenceBlock}
+                    </td>
+                    <td class="p-4 align-top"><span class="px-2 py-1 bg-danger/10 text-danger border border-danger/20 text-[9px] font-bold">${g.severity}</span></td>
+                    <td class="p-4 align-top text-marble/80 text-[10px] tracking-widest uppercase">${g.velocity}</td>
+                    <td class="p-4 align-top text-danger font-bold">${g.ext || 'Uncapped'}</td>
+                    <td class="p-4 align-top text-gold font-bold">${g.doc}</td>
+                </tr>`;
+            } else if (index >= 3 && index < 5) { // TIER 2: Curiosity Gap (Trap blurred, Evidence CLEAR)
+                matrixRows += `
+                <tr class="matrix-row border-b border-white/5 opacity-80">
+                    <td class="p-4 align-top">
+                        <span class="font-bold text-marble blur-text">REDACTED TRAP</span>
+                        ${sourceBadge}
+                    </td>
+                    <td class="p-4 align-top">
+                        <span class="text-marble/60 blur-text">REDACTED PAIN DESCRIPTION LOCKED</span>
+                        ${evidenceBlock} </td>
+                    <td class="p-4 align-top"><span class="px-2 py-1 bg-danger/10 text-danger border border-danger/20 text-[9px] font-bold">${g.severity}</span></td>
+                    <td class="p-4 align-top text-marble/80 text-[10px] tracking-widest uppercase">${g.velocity}</td>
+                    <td class="p-4 align-top text-danger font-bold">${g.ext || 'Uncapped'}</td>
+                    <td class="p-4 align-top text-gold font-bold">${g.doc}</td>
+                </tr>`;
+            }
+        });
+    }
 
     // PRICING LOCK (Based exclusively on Lanes, not gaps)
     if (selectedLanes.includes('commercial') && selectedLanes.includes('operational')) {
