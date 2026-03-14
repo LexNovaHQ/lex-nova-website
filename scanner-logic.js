@@ -629,8 +629,17 @@ function injectCheckout() {
     const fullName = localStorage.getItem('ln_name') || "";
     document.getElementById('apply-fname').value = fullName.split(' ')[0] || "";
     document.getElementById('apply-lname').value = fullName.split(' ').slice(1).join(' ') || "";
-    document.getElementById('apply-company').value = localStorage.getItem('ln_company') || "";
-
+    document.getElementById('apply-company').value = localStorage.getItem('ln_company') || prospectData?.company || "";
+    
+    // 🔥 AUTO-FILL JURISDICTION FROM HUNTER SCRAPE
+    if (prospectData && prospectData.registrationJurisdiction) {
+        const jurisInput = document.getElementById('apply-jurisdiction');
+        // Match the hunter's scraped data to the dropdown values (us, uk, eu, etc)
+        const match = Array.from(jurisInput.options).find(opt => 
+            prospectData.registrationJurisdiction.toLowerCase().includes(opt.value.toLowerCase())
+        );
+        if (match) jurisInput.value = match.value;
+    }
     const lockContainer = document.getElementById('locked-plan-display');
     
     const renderPlans = () => {
@@ -778,6 +787,15 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
         name: `${firstName} ${lastName}`.trim(),
         firstName, lastName, company,
         registrationJurisdiction: jurisdiction,
+        
+        // 🔥 PASSING THE V5.5 ARRAYS FORWARD
+        linkedinUrl: prospectData?.linkedinUrl || "",
+        serviceJurisdictions: prospectData?.serviceJurisdictions || "",
+        lanes: prospectData?.lanes || selectedLanes,
+        metaVerbs: prospectData?.metaVerbs || selectedArchs,
+        intArchetypes: prospectData?.intArchetypes || [],
+        extExposures: prospectData?.extExposures || Array.from(trippedSurfaces),
+        
         plan: activePlan,
         price: pd.price,
         leadType: "hot_lead",
