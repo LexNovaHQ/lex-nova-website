@@ -36,6 +36,10 @@
         #engagement-scroll-container::-webkit-scrollbar-track { background: #080808; }
         #engagement-scroll-container::-webkit-scrollbar-thumb { background: #1A1A1A; border-radius: 3px; }
         #engagement-scroll-container::-webkit-scrollbar-thumb:hover { background: #C5A059; }
+        
+        /* Custom Checkbox visual state for multi-select buttons */
+        .config-btn.selected .check-indicator { border-color: #C5A059; background-color: rgba(197, 160, 89, 0.1); }
+        .config-btn.selected .check-dot { opacity: 1; }
     </style>
 </head>
 
@@ -58,7 +62,7 @@
             <span class="font-serif text-xl tracking-widest text-gold uppercase mt-1">Lex Nova <span class="text-marble opacity-50 text-sm ml-1">HQ</span></span>
         </a>
         <div class="hidden md:flex gap-8 items-center text-marble opacity-80">
-            <span class="font-sans text-[10px] tracking-[0.2em] uppercase opacity-50">Forensic Engine v5.2</span>
+            <span class="font-sans text-[10px] tracking-[0.2em] uppercase opacity-50">Forensic Engine v5.5 (Canon)</span>
         </div>
     </nav>
 
@@ -75,74 +79,79 @@
             <div id="config-ui" class="w-full text-left hidden-state opacity-0 transition-opacity duration-1000">
                 <div class="mb-10 text-center md:text-left">
                     <h3 class="font-serif text-3xl md:text-4xl text-marble mb-2">Configure Your Audit</h3>
-                    <p class="font-sans text-xs text-marble/50 uppercase tracking-widest">Load the structural matrix for your specific business model.</p>
+                    <p class="font-sans text-xs text-marble/50 uppercase tracking-widest">Select all parameters that apply to dynamically build your scan.</p>
                 </div>
                 
                 <div class="mb-10">
-                    <div class="flex items-center gap-3 mb-4 border-b border-shadow pb-2">
-                        <span class="text-gold font-mono text-[10px] tracking-widest border border-gold/30 px-2 py-0.5 bg-gold/5">PHASE 01</span>
-                        <label class="font-sans text-xs tracking-[0.1em] text-marble uppercase">Where does your AI operate?</label>
+                    <div class="flex items-center justify-between mb-4 border-b border-shadow pb-2">
+                        <div class="flex items-center gap-3">
+                            <span class="text-gold font-mono text-[10px] tracking-widest border border-gold/30 px-2 py-0.5 bg-gold/5">PHASE 01</span>
+                            <label class="font-sans text-xs tracking-[0.1em] text-marble uppercase">Operational Environment</label>
+                        </div>
+                        <span class="font-sans text-[9px] text-marble/30 tracking-widest uppercase">Select all that apply</span>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <button data-lane="A" class="lane-btn group text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
-                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text">External Product</div>
-                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed">We sell AI features or platforms directly to customers (B2B/B2C).</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button type="button" data-lane="commercial" class="config-btn lane-toggle group relative text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
+                            <div class="absolute top-5 right-5 w-4 h-4 border border-shadow flex items-center justify-center check-indicator transition-colors">
+                                <div class="w-2 h-2 bg-gold opacity-0 check-dot transition-opacity"></div>
+                            </div>
+                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text pr-6">Commercial Architecture</div>
+                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed pr-6">We build and sell AI products directly to external markets (B2B/B2C).</div>
                         </button>
-                        <button data-lane="B" class="lane-btn group text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
-                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text">Internal Ops</div>
-                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed">We use AI tools to automate our internal workforce and processes.</div>
-                        </button>
-                        <button data-lane="C" class="lane-btn group text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
-                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text">Hybrid (Both)</div>
-                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed">AI is integrated into our product AND our internal operations.</div>
+                        
+                        <button type="button" data-lane="operational" class="config-btn lane-toggle group relative text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
+                            <div class="absolute top-5 right-5 w-4 h-4 border border-shadow flex items-center justify-center check-indicator transition-colors">
+                                <div class="w-2 h-2 bg-gold opacity-0 check-dot transition-opacity"></div>
+                            </div>
+                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text pr-6">Operational Architecture</div>
+                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed pr-6">We utilize AI internally to automate our own workforce and operations.</div>
                         </button>
                     </div>
                 </div>
 
                 <div class="mb-10">
-                    <div class="flex items-center gap-3 mb-4 border-b border-shadow pb-2">
-                        <span class="text-gold font-mono text-[10px] tracking-widest border border-gold/30 px-2 py-0.5 bg-gold/5">PHASE 02</span>
-                        <label class="font-sans text-xs tracking-[0.1em] text-marble uppercase">What is the primary function of your AI?</label>
+                    <div class="flex items-center justify-between mb-4 border-b border-shadow pb-2">
+                        <div class="flex items-center gap-3">
+                            <span class="text-gold font-mono text-[10px] tracking-widest border border-gold/30 px-2 py-0.5 bg-gold/5">PHASE 02</span>
+                            <label class="font-sans text-xs tracking-[0.1em] text-marble uppercase">What does your AI actually do?</label>
+                        </div>
+                        <span class="font-sans text-[9px] text-marble/30 tracking-widest uppercase">Select all that apply</span>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <button data-arch="agentic" class="arch-btn group text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
-                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text">Autonomous Agents</div>
-                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed">AI takes actions, spends money, or uses third-party APIs autonomously.</div>
+                    <div class="grid grid-cols-1 gap-4">
+                        <button type="button" data-arch="execution" class="config-btn arch-toggle group relative text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
+                            <div class="absolute top-5 right-5 w-4 h-4 border border-shadow flex items-center justify-center check-indicator transition-colors">
+                                <div class="w-2 h-2 bg-gold opacity-0 check-dot transition-opacity"></div>
+                            </div>
+                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text pr-6">Execution & Operations</div>
+                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed pr-6">Our AI takes action: it executes workflows, routes API data, moves hardware, or manages infrastructure.</div>
                         </button>
-                        <button data-arch="synthesis" class="arch-btn group text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
-                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text">Content Generation</div>
-                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed">AI writes code, generates copy, creates images, or synthesizes video.</div>
+
+                        <button type="button" data-arch="intelligence" class="config-btn arch-toggle group relative text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
+                            <div class="absolute top-5 right-5 w-4 h-4 border border-shadow flex items-center justify-center check-indicator transition-colors">
+                                <div class="w-2 h-2 bg-gold opacity-0 check-dot transition-opacity"></div>
+                            </div>
+                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text pr-6">Intelligence & Decisioning</div>
+                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed pr-6">Our AI evaluates: it scores candidates, makes health/credit decisions, bonds with users, or audits security.</div>
                         </button>
-                        <button data-arch="ingestion" class="arch-btn group text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
-                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text">Data Querying & RAG</div>
-                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed">AI reads, searches, and summarizes massive proprietary document sets.</div>
-                        </button>
-                        <button data-arch="evaluation" class="arch-btn group text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
-                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text">Scoring & Decisions</div>
-                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed">AI evaluates performance, ranks candidates, or makes credit decisions.</div>
-                        </button>
-                        <button data-arch="persona" class="arch-btn group text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
-                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text">Virtual Personas</div>
-                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed">AI acts as a virtual companion, therapist, coach, or brand representative.</div>
-                        </button>
-                        <button data-arch="infra" class="arch-btn group text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
-                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text">Mission-Critical Infra</div>
-                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed">AI manages high-stakes physical, medical, or financial backbones.</div>
+
+                        <button type="button" data-arch="content" class="config-btn arch-toggle group relative text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
+                            <div class="absolute top-5 right-5 w-4 h-4 border border-shadow flex items-center justify-center check-indicator transition-colors">
+                                <div class="w-2 h-2 bg-gold opacity-0 check-dot transition-opacity"></div>
+                            </div>
+                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text pr-6">Content & Knowledge</div>
+                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed pr-6">Our AI synthesizes: it generates media/code, bypasses bot-walls to scrape data, or transcribes meetings.</div>
                         </button>
                     </div>
                 </div>
 
-                <button id="btn-start" disabled class="w-full bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase py-5 hover:bg-marble transition-all duration-500 font-bold opacity-30 cursor-not-allowed">Commence Audit</button>
-            </div>
-
-                <button id="btn-start" disabled class="w-full bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase py-5 hover:bg-marble transition-all duration-500 font-bold opacity-30 cursor-not-allowed">Commence Audit</button>
+                <button id="btn-start" disabled class="w-full bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase py-5 hover:bg-marble transition-all duration-500 font-bold opacity-30 cursor-not-allowed">Commence Forensic Audit</button>
             </div>
         </div>
 
         <div id="state-quiz" class="hidden-state fade-enter w-full max-w-2xl">
             <div class="mb-6 flex justify-between items-center text-[10px] font-sans tracking-[0.2em] text-marble/50 uppercase">
                 <span id="progress-text">Step 1</span>
-                <span class="text-gold font-bold">V3 Matrix Engine</span>
+                <span class="text-gold font-bold">V5.5 Canon Engine</span>
             </div>
             <div class="w-full h-1 bg-shadow mb-12"><div id="progress-bar" class="h-full bg-gold transition-all duration-500" style="width:0%"></div></div>
             <div id="question-container">
@@ -154,7 +163,7 @@
         <div id="state-gate" class="hidden-state fade-enter w-full max-w-xl">
             <div class="mb-8 p-6 border-2 border-danger/40 bg-danger/10 text-center">
                 <h4 class="font-sans text-[11px] tracking-[0.2em] text-danger uppercase mb-2 font-bold animate-pulse">System Alert</h4>
-                <p id="gate-summary" class="font-serif text-2xl text-marble">Lethal structural gaps detected.</p>
+                <p id="gate-summary" class="font-serif text-2xl text-marble">Nuclear structural gaps detected.</p>
             </div>
             <h2 class="font-serif text-4xl text-marble mb-4 text-center">Your Forensic Report is Sealed.</h2>
             <p class="font-sans text-sm text-marble/60 mb-8 text-center leading-relaxed">Confirm your details to unlock the full Gaps-Pain-Damage Matrix and your remediation roadmap.</p>
@@ -247,7 +256,7 @@
                 </div>
 
                 <button type="submit" id="checkout-btn" class="w-full bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 font-bold opacity-50 cursor-not-allowed">Accept Terms To Continue</button>
-                <p class="text-center font-sans text-[10px] tracking-widest text-marble opacity-40 uppercase">Payments processed via PayPal. SSL Encrypted.</p>
+                <p class="text-center font-sans text-[10px] tracking-widest text-marble opacity-40 uppercase mt-4">Payments processed via PayPal. SSL Encrypted.</p>
             </form>
         </div>
 
@@ -562,5 +571,3 @@
     <script type="module" src="scanner-logic.js"></script>
 </body>
 </html>
-
-
