@@ -1,26 +1,15 @@
 /**
- * LEX NOVA HQ — CLIENT PORTAL (dashboard.js) — FULL REBUILD
+ * LEX NOVA HQ — CLIENT PORTAL (dashboard.js) — FULL FINAL VERSION
  * Architecture: 3 States × 5 Tabs | Date Delta Engine | Dual-Intel Radar
  *
- * STATE ROUTING:
- *   State 1 (paid)                              → Pre-Vault Purgatory
- *   State 2 (intake_received/under_review/      → Production
- *            in_production)
- *   State 3 (delivered)                         → The Reveal
- *
- * TABS:
- *   Tab 1: The Radar       — S1: Scanner gaps | S2: Vault heatmap | S3: Date Delta
- *   Tab 2: The Vault       — S1: Active form  | S2/3: Read-only
- *   Tab 3: The Shields     — S1: Locked       | S2: Animating     | S3: Downloads + Upsell
- *   Tab 4: The Checklist   — S1/2: Locked     | S3: CTO checklist
- *   Tab 5: The Syndicate   — Always active
- *
- * DEPENDENCIES: window.firebaseAuth, window.firebaseDb (from index.html)
- * NOTE: vault.js must render intake form into #tab-vault when state === 1.
+ * PATCH LOG:
+ *   v2 — Tab 1 State 1: Full report visible (no blur/lock). Post-payment client sees everything.
+ *   v2 — Tab 1 State 1: All gaps shown, Hunter evidence blocks rendered for all gaps with evidence.
+ *   v2 — CTA copy updated to reflect full visibility.
  */
 
-import { onAuthStateChanged }           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { onAuthStateChanged }              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { doc, getDoc, setDoc, updateDoc }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ── 01. CONSTANTS ──────────────────────────────────────────────────────
 const PAYPAL = {
@@ -39,24 +28,23 @@ const PLAN_NAMES = {
     flagship:         "The Flagship"
 };
 
-// Document manifest — condition fn receives full data object
 const DOC_MANIFEST = {
     agentic_shield: [
-        { id:"DOC_TOS",   name:"AI Terms of Service",       shields:["Hallucination Waiver","HITL Mandate","Liability Cap","Service Classification"] },
-        { id:"DOC_PP",    name:"Privacy Policy",            shields:["Data Minimization","GDPR Art.13 Notice","Cookie Policy","Pixel Disclosure"] },
-        { id:"DOC_AUP",   name:"Acceptable Use Policy",     shields:["Injection Ban","Deepfake Prohibition","Voice Cloning Ban","Watermark Mandate"] },
-        { id:"DOC_DPA",   name:"Data Processing Agreement", shields:["RAG-Only Mandate","Machine Unlearning","SCC Incorporation","Sub-Processor Cap"] },
-        { id:"DOC_AGT",   name:"Agentic Addendum",          shields:["Circuit Breaker","Kill Switch","UETA §14 Authority","Idempotency Key"],   condition: d => !!d.action_scopes?.is_doer },
-        { id:"DOC_SLA",   name:"AI Service Level Agreement",shields:["TTFT Standard","Maintenance Window","Uptime Math","Credit Remedy"],        condition: d => d.commercials?.uptime !== "none" || d.commercials?.ttft !== "none" },
-        { id:"DOC_PBK_A", name:"Negotiation Playbook A",    shields:["Super Cap Script","Fallback Logic","Objection Handlers","Walk-Away Lines"] }
+        { id:"DOC_TOS",   name:"AI Terms of Service",        shields:["Hallucination Waiver","HITL Mandate","Liability Cap","Service Classification"] },
+        { id:"DOC_PP",    name:"Privacy Policy",             shields:["Data Minimization","GDPR Art.13 Notice","Cookie Policy","Pixel Disclosure"] },
+        { id:"DOC_AUP",   name:"Acceptable Use Policy",      shields:["Injection Ban","Deepfake Prohibition","Voice Cloning Ban","Watermark Mandate"] },
+        { id:"DOC_DPA",   name:"Data Processing Agreement",  shields:["RAG-Only Mandate","Machine Unlearning","SCC Incorporation","Sub-Processor Cap"] },
+        { id:"DOC_AGT",   name:"Agentic Addendum",           shields:["Circuit Breaker","Kill Switch","UETA §14 Authority","Idempotency Key"],   condition: d => !!d.action_scopes?.is_doer },
+        { id:"DOC_SLA",   name:"AI Service Level Agreement", shields:["TTFT Standard","Maintenance Window","Uptime Math","Credit Remedy"],        condition: d => d.commercials?.uptime !== "none" || d.commercials?.ttft !== "none" },
+        { id:"DOC_PBK_A", name:"Negotiation Playbook A",     shields:["Super Cap Script","Fallback Logic","Objection Handlers","Walk-Away Lines"] }
     ],
     workplace_shield: [
-        { id:"DOC_SCAN",  name:"Shadow AI Scanner",         shields:["Anonymous Survey","Risk Discovery","Tool Classification","Threat Mapping"] },
-        { id:"DOC_HND",   name:"AI Employee Handbook",      shields:["Traffic Light Policy","Data Paste Ban","Tool Whitelist","Incident Reporting"] },
-        { id:"DOC_IP",    name:"IP Assignment Deed",        shields:["Prompt Ownership","Output Assignment","Moral Rights Waiver","Generation Attribution"] },
-        { id:"DOC_SOP",   name:"HITL Protocol",             shields:["Human Layer Mandate","Authorship Standard","Review Threshold","Approval Chain"] },
-        { id:"DOC_DPIA",  name:"Impact Assessment",         shields:["High-Risk Filter","EU AI Act Mapping","Scoring Matrix","Remediation Roadmap"] },
-        { id:"DOC_PBK_B", name:"Operations Playbook B",     shields:["Team Rollout Script","Manager Briefing","Exception Handling","Audit Protocol"] }
+        { id:"DOC_SCAN",  name:"Shadow AI Scanner",          shields:["Anonymous Survey","Risk Discovery","Tool Classification","Threat Mapping"] },
+        { id:"DOC_HND",   name:"AI Employee Handbook",       shields:["Traffic Light Policy","Data Paste Ban","Tool Whitelist","Incident Reporting"] },
+        { id:"DOC_IP",    name:"IP Assignment Deed",         shields:["Prompt Ownership","Output Assignment","Moral Rights Waiver","Generation Attribution"] },
+        { id:"DOC_SOP",   name:"HITL Protocol",              shields:["Human Layer Mandate","Authorship Standard","Review Threshold","Approval Chain"] },
+        { id:"DOC_DPIA",  name:"Impact Assessment",          shields:["High-Risk Filter","EU AI Act Mapping","Scoring Matrix","Remediation Roadmap"] },
+        { id:"DOC_PBK_B", name:"Operations Playbook B",      shields:["Team Rollout Script","Manager Briefing","Exception Handling","Audit Protocol"] }
     ]
 };
 
@@ -86,9 +74,9 @@ function getDocsForPlan(data) {
 
 function getUpsellLane(data) {
     if (data.plan === "agentic_shield")
-        return { label:"Workplace Shield", docs: DOC_MANIFEST.workplace_shield, price:997, paypal: PAYPAL.workplace_upsell };
+        return { label:"Workplace Shield", docs:DOC_MANIFEST.workplace_shield, price:997, paypal:PAYPAL.workplace_upsell };
     if (data.plan === "workplace_shield")
-        return { label:"Agentic Shield",   docs: DOC_MANIFEST.agentic_shield.filter(d => !d.condition), price:997, paypal: PAYPAL.agentic_upsell };
+        return { label:"Agentic Shield", docs:DOC_MANIFEST.agentic_shield.filter(d => !d.condition), price:997, paypal:PAYPAL.agentic_upsell };
     return null;
 }
 
@@ -140,7 +128,6 @@ function routeToState(data) {
 
 // ── 06. PORTAL ORCHESTRATOR ────────────────────────────────────────────
 function buildPortal(data, state) {
-    // Header
     const nm = $("dash-client-name");
     const pl = $("dash-plan-name");
     const mb = $("maintenance-badge");
@@ -148,8 +135,7 @@ function buildPortal(data, state) {
     if (pl) pl.textContent = PLAN_NAMES[data.plan] || data.plan || "Legal Architecture Kit";
     if (mb && data.maintenanceActive) mb.classList.remove("hidden");
 
-    // Progress bar
-    const lvl = { paid:1, intake_received:2, under_review:2, in_production:3, delivered:4 }[data.status] || 1;
+    const lvl = { paid:1, payment_received:1, intake_received:2, under_review:2, in_production:3, delivered:4 }[data.status] || 1;
     for (let i = 2; i <= 4; i++) {
         if (lvl >= i) {
             const nd = $(`node-${i}`); const lb = $(`label-${i}`);
@@ -168,7 +154,6 @@ function buildPortal(data, state) {
     buildTab4Checklist(data, state);
     buildTab5Syndicate(data);
 
-    // Debrief gate — fires on first State 3 load
     if (state === 3 && !data.debrief) {
         const modal = $("modal-debrief");
         if (modal) { modal.classList.remove("hidden"); document.body.style.overflow = "hidden"; }
@@ -188,8 +173,8 @@ function buildGlobalBanner(data, state) {
         text.innerHTML = `<span class="text-[10px] tracking-[0.15em] uppercase font-bold text-yellow-400">SLA PAUSED</span>
             <span class="text-[10px] text-marble opacity-60">Your 72-hour delivery clock is paused. Submit your Vault to begin production.</span>`;
     } else if (state === 2) {
-        const startTs = data.submittedAt || data.intakeReceivedAt;
-        const etaText = startTs
+        const startTs  = data.submittedAt || data.intakeReceivedAt;
+        const etaText  = startTs
             ? "Estimated Delivery: " + fmtDate(new Date(new Date(startTs).getTime() + 48 * 3600000).toISOString())
             : "ETA: 48 hours from Vault submission";
         el.className = "w-full px-6 py-3 border-b flex items-center justify-center gap-3 bg-gold/5 border-gold/30";
@@ -209,7 +194,7 @@ function buildTabAccessRules(state) {
         const btn = $(`tab-btn-${tab}`);
         if (!btn) return;
         btn.onclick = locks[tab]
-            ? (e) => { e.preventDefault(); showPortalToast(tab); }
+            ? () => showPortalToast(tab)
             : () => activateTab(tab);
     });
 }
@@ -222,9 +207,8 @@ function showPortalToast(tab) {
     const t = $("portal-toast");
     if (!t) return;
     t.textContent = msgs[tab] || "Complete the current phase to unlock.";
-    t.classList.remove("opacity-0","translate-y-2");
-    t.classList.add("opacity-100","translate-y-0");
-    setTimeout(() => { t.classList.add("opacity-0","translate-y-2"); t.classList.remove("opacity-100","translate-y-0"); }, 3000);
+    t.classList.add("opacity-100");
+    setTimeout(() => t.classList.remove("opacity-100"), 3000);
 }
 
 function activateTab(tabId) {
@@ -250,117 +234,166 @@ async function buildTab1Radar(data, state) {
     else                  await renderRadarState3(el, data);
 }
 
-// STATE 1 — Scanner Forensic Pre-Brief
+// ── STATE 1: Full Forensic Pre-Brief (no blur, no locks) ───────────────
 function renderRadarState1(el, data) {
-    // Dual-intel merge: scanner activeGaps + hunter forensicGaps
+
+    // ── Dual-intel merge ──────────────────────────────────────────────
     let gaps = [];
+
+    // Start with scanner gaps
     (data.activeGaps || []).forEach(g => {
-        if (!gaps.find(x => x.id === g.id)) gaps.push({ ...g, source: g.source || "scanner" });
+        if (!gaps.find(x => x.id === g.id)) {
+            gaps.push({ ...g, source: g.source || "scanner" });
+        }
     });
+
+    // Merge Hunter forensicGaps
     (data.forensicGaps || []).forEach(g => {
         const ex = gaps.find(x => x.id === g.id);
-        if (!ex) { gaps.push({ ...g, source: "hunter" }); }
-        else { ex.source = "dual-verified"; if (g.evidence) ex.evidence = g.evidence; }
-    });
-    gaps.sort((a,b) => ({ NUCLEAR:3, CRITICAL:2, HIGH:1 }[b.severity]||0) - ({ NUCLEAR:3, CRITICAL:2, HIGH:1 }[a.severity]||0));
-
-    const archetype     = data.internalCategory || (data.intArchetypes||[])[0] || "—";
-    const laneTags      = data.lanes || [];
-    const lane          = laneTags.includes("commercial") && laneTags.includes("operational") ? "Complete Stack" :
-                          laneTags.includes("commercial") ? "Lane A — Commercial" :
-                          laneTags.includes("operational") ? "Lane B — Operational" : "—";
-    const extExposures  = data.extExposures || Array.from(data.trippedSurfaces || []);
-
-    const sevColor = s => s==="NUCLEAR"?"#ef4444":s==="CRITICAL"?"#f97316":"#eab308";
-    const srcBadge = s => s==="dual-verified"
-        ? `<span style="font-size:9px;color:#ef4444;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">PUBLIC + INTERNAL</span>`
-        : s==="hunter"
-        ? `<span style="font-size:9px;color:#60a5fa;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">PUBLIC SCRAPE</span>`
-        : `<span style="font-size:9px;color:#C5A059;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">INTERNAL AUDIT</span>`;
-
-    let gapRows = gaps.map((g, i) => {
-        if (i < 2) {
-            const ev = g.evidence ? `<div style="margin-top:10px;padding:8px 10px;background:#050505;border:1px solid rgba(255,255,255,.08);font-family:monospace;font-size:10px;line-height:1.5;color:rgba(234,232,227,.6)">
-                <span style="color:#C5A059;font-weight:700;">&gt; LOCATION:</span> ${esc(g.evidence.source||"")}<br>
-                <span style="color:#ef4444;font-weight:700;">&gt; VIOLATION:</span> ${esc(g.evidence.reason||"")}
-            </div>` : "";
-            return `<div style="background:#080808;border:1px solid #252525;border-left:3px solid ${sevColor(g.severity)};padding:16px;margin-bottom:10px;">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:10px;">
-                    <div><div style="font-size:13px;font-weight:700;color:#EAE8E3;margin-bottom:4px;">${esc(g.trap)}</div>${srcBadge(g.source)}</div>
-                    <span style="padding:2px 8px;border:1px solid ${sevColor(g.severity)};color:${sevColor(g.severity)};font-size:9px;font-weight:800;white-space:nowrap;">${g.severity}</span>
-                </div>
-                <div style="font-size:11px;color:rgba(234,232,227,.65);line-height:1.5;">${esc(g.plain)}</div>
-                ${ev}
-                <div style="display:flex;gap:16px;margin-top:10px;font-size:10px;color:rgba(234,232,227,.4);">
-                    <span>Vector: <strong style="color:${sevColor(g.severity)}">${esc(g.ext||"—")}</strong></span>
-                    <span>Fix: <strong style="color:#C5A059">${esc(g.doc||"—")}</strong></span>
-                    <span>Velocity: <strong>${esc(g.velocity||"—")}</strong></span>
-                </div>
-            </div>`;
+        if (!ex) {
+            gaps.push({ ...g, source: "scrape" });
         } else {
-            return `<div style="background:#080808;border:1px solid #252525;border-left:3px solid #333;padding:16px;margin-bottom:10px;position:relative;overflow:hidden;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                    <div style="filter:blur(5px);font-size:13px;font-weight:700;color:#EAE8E3;flex:1;">CLASSIFIED THREAT VECTOR</div>
-                    <span style="padding:2px 8px;border:1px solid ${sevColor(g.severity)};color:${sevColor(g.severity)};font-size:9px;font-weight:800;">${g.severity}</span>
-                </div>
-                <div style="filter:blur(4px);font-size:11px;color:rgba(234,232,227,.65);">Classified business impact — submit Vault to reveal.</div>
-                <div style="position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(5,5,5,.9));pointer-events:none;"></div>
-            </div>`;
+            ex.source = "dual-verified";
+            if (g.evidence) ex.evidence = g.evidence;
+            // Escalate severity if Hunter rated it higher
+            const w = { NUCLEAR:3, CRITICAL:2, HIGH:1 };
+            if ((w[g.severity]||0) > (w[ex.severity]||0)) ex.severity = g.severity;
         }
-    }).join("");
+    });
 
-    const lockedCount = Math.max(0, gaps.length - 2);
-    const lockedBlock = lockedCount > 0 ? `<div style="border:1px dashed rgba(239,68,68,.3);padding:16px;text-align:center;margin-top:8px;background:rgba(239,68,68,.03);">
-        <div style="font-size:11px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">🔐 ${lockedCount} ADDITIONAL THREAT VECTORS CLASSIFIED</div>
-        <div style="font-size:10px;color:rgba(234,232,227,.4);">Submit your Vault to unlock your complete forensic report.</div>
-    </div>` : "";
+    // Sort: severity DESC, then evidence-bearing gaps first within same severity
+    const sevW = { NUCLEAR:3, CRITICAL:2, HIGH:1 };
+    const srcW = g => g.source === "dual-verified" ? 3 : (g.source === "scrape" || g.evidence ? 2 : 0);
+    gaps.sort((a, b) => {
+        const sd = (sevW[b.severity]||0) - (sevW[a.severity]||0);
+        return sd !== 0 ? sd : srcW(b) - srcW(a);
+    });
+
+    // ── Stats ─────────────────────────────────────────────────────────
+    const archetype    = data.internalCategory || (data.intArchetypes||[])[0] || "—";
+    const laneTags     = data.lanes || [];
+    const lane         = laneTags.includes("commercial") && laneTags.includes("operational") ? "Complete Stack" :
+                         laneTags.includes("commercial") ? "Lane A — Commercial" :
+                         laneTags.includes("operational") ? "Lane B — Operational" : "—";
+    const extExposures = data.extExposures || Array.from(data.trippedSurfaces || []);
+    const countN       = gaps.filter(g => g.severity === "NUCLEAR").length;
+    const countC       = gaps.filter(g => g.severity === "CRITICAL").length;
+    const countH       = gaps.filter(g => g.severity === "HIGH").length;
+
+    // ── Severity colour helpers ────────────────────────────────────────
+    const sColor = s => s === "NUCLEAR" ? "#ef4444" : s === "CRITICAL" ? "#f97316" : "#eab308";
+
+    // ── Source badge ──────────────────────────────────────────────────
+    const srcBadge = g => {
+        if (g.source === "dual-verified")
+            return `<span style="font-size:9px;color:#ef4444;font-weight:700;text-transform:uppercase;letter-spacing:.08em;"><span style="opacity:.5">SOURCE:</span> PUBLIC + INTERNAL</span>`;
+        if (g.source === "scrape" || g.evidence)
+            return `<span style="font-size:9px;color:#60a5fa;font-weight:700;text-transform:uppercase;letter-spacing:.08em;"><span style="opacity:.5">SOURCE:</span> PUBLIC URL SCRAPE</span>`;
+        return `<span style="font-size:9px;color:#C5A059;font-weight:700;text-transform:uppercase;letter-spacing:.08em;"><span style="opacity:.5">SOURCE:</span> INTERNAL AUDIT</span>`;
+    };
+
+    // ── Evidence block ────────────────────────────────────────────────
+    const evBlock = g => {
+        if (!g.evidence || (!g.evidence.source && !g.evidence.reason)) return "";
+        return `
+        <div style="margin-top:10px;padding:8px 10px;background:#050505;border:1px solid rgba(255,255,255,.08);font-family:monospace;font-size:10px;line-height:1.6;color:rgba(234,232,227,.6);">
+            ${g.evidence.source ? `<div><span style="color:#C5A059;font-weight:700;">&gt; LOCATION:</span> ${esc(g.evidence.source)}</div>` : ""}
+            ${g.evidence.reason ? `<div style="margin-top:4px;"><span style="color:#ef4444;font-weight:700;">&gt; VIOLATION:</span> ${esc(g.evidence.reason)}</div>` : ""}
+        </div>`;
+    };
+
+    // ── Full gap card — NO BLUR, NO LOCKS ─────────────────────────────
+    const gapCard = g => `
+    <div style="background:#080808;border:1px solid #252525;border-left:3px solid ${sColor(g.severity)};padding:16px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:10px;flex-wrap:wrap;">
+            <div>
+                <div style="font-size:13px;font-weight:700;color:#EAE8E3;margin-bottom:4px;">${esc(g.trap)}</div>
+                ${srcBadge(g)}
+            </div>
+            <span style="padding:2px 8px;border:1px solid ${sColor(g.severity)};color:${sColor(g.severity)};font-size:9px;font-weight:800;white-space:nowrap;">${g.severity}</span>
+        </div>
+        <div style="font-size:11px;color:rgba(234,232,227,.65);line-height:1.5;margin-bottom:4px;">${esc(g.plain)}</div>
+        ${evBlock(g)}
+        <div style="display:flex;gap:16px;margin-top:10px;font-size:10px;color:rgba(234,232,227,.4);flex-wrap:wrap;">
+            <span>Vector: <strong style="color:${sColor(g.severity)}">${esc(g.ext||"—")}</strong></span>
+            <span>Fix: <strong style="color:#C5A059">${esc(g.doc||"—")}</strong></span>
+            <span>Velocity: <strong style="color:rgba(234,232,227,.7)">${esc(g.velocity||"—")}</strong></span>
+        </div>
+    </div>`;
 
     el.innerHTML = `<div class="fade-in" style="padding-bottom:40px;">
+
         <div style="margin-bottom:24px;">
             <h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#EAE8E3;margin-bottom:6px;">Your Forensic Pre-Brief</h2>
-            <p style="font-size:11px;color:rgba(234,232,227,.5);letter-spacing:.1em;text-transform:uppercase;">Engine has already mapped your exposure surface. Configure your Vault to generate your bespoke architecture.</p>
+            <p style="font-size:11px;color:rgba(234,232,227,.5);letter-spacing:.1em;text-transform:uppercase;">Engine has mapped your full exposure surface. Submit your Vault to generate your bespoke architecture.</p>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:28px;">
+
+        <!-- Stats row -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px;">
             ${[
-                ["AI Archetype",          archetype,               "#C5A059"],
-                ["Architecture Lane",     lane,                    "#C5A059"],
-                ["Threat Vectors",        gaps.length+" Detected", "#ef4444"],
-                ["Regulatory Surfaces",   extExposures.join(", ")||"—", "#EAE8E3"]
-            ].map(([lbl,val,col]) => `<div style="background:#080808;border:1px solid #252525;padding:14px;">
+                ["AI Archetype",       archetype,                             "#C5A059"],
+                ["Architecture Lane",  lane,                                  "#C5A059"],
+                ["Nuclear",            countN + " Gaps",                      "#ef4444"],
+                ["Critical",           countC + " Gaps",                      "#f97316"],
+                ["High",               countH + " Gaps",                      "#eab308"],
+                ["Regulatory Surfaces",extExposures.length + " Tripped",      "#EAE8E3"]
+            ].map(([lbl,val,col]) => `
+            <div style="background:#080808;border:1px solid #252525;padding:14px;">
                 <div style="font-size:9px;color:rgba(234,232,227,.4);text-transform:uppercase;letter-spacing:.15em;margin-bottom:4px;">${lbl}</div>
-                <div style="font-size:14px;color:${col};font-weight:600;">${esc(val)}</div>
+                <div style="font-size:14px;color:${col};font-weight:600;">${esc(String(val))}</div>
             </div>`).join("")}
         </div>
-        <div style="font-size:9px;color:rgba(234,232,227,.4);text-transform:uppercase;letter-spacing:.15em;margin-bottom:12px;">DETECTED EXPOSURES (PARTIAL REVEAL)</div>
-        ${gaps.length > 0 ? gapRows + lockedBlock : `<div style="font-size:11px;color:rgba(234,232,227,.4);padding:20px 0;">No pre-scan data available. Submit your Vault to initiate your forensic audit.</div>`}
+
+        <!-- Dual-intel header -->
+        <div style="background:rgba(197,160,89,.05);border:1px solid rgba(197,160,89,.2);padding:12px 16px;margin-bottom:16px;font-family:monospace;font-size:10px;color:rgba(234,232,227,.6);line-height:1.5;">
+            <span style="color:#C5A059;font-weight:700;">&gt; DUAL-INTELLIGENCE PROTOCOL ACTIVE</span><br>
+            &gt; Public URL scrape merged with internal audit confessions.<br>
+            &gt; <span style="color:#EAE8E3;font-weight:700;">${gaps.length} TOTAL VULNERABILITIES DETECTED.</span>
+        </div>
+
+        <!-- Severity tally -->
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+            <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);padding:4px 12px;"><span style="font-size:9px;color:#ef4444;font-weight:700;letter-spacing:.1em;">NUCLEAR: ${countN}</span></div>
+            <div style="background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.2);padding:4px 12px;"><span style="font-size:9px;color:#f97316;font-weight:700;letter-spacing:.1em;">CRITICAL: ${countC}</span></div>
+            <div style="background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.2);padding:4px 12px;"><span style="font-size:9px;color:#eab308;font-weight:700;letter-spacing:.1em;">HIGH: ${countH}</span></div>
+        </div>
+
+        <!-- All gap cards — full reveal -->
+        ${gaps.length > 0
+            ? gaps.map(gapCard).join("")
+            : `<div style="font-size:11px;color:rgba(234,232,227,.4);padding:20px 0;">No pre-scan data available. Submit your Vault to initiate your forensic audit.</div>`
+        }
+
+        <!-- Vault CTA -->
         <div style="margin-top:28px;background:rgba(197,160,89,.06);border:1px solid rgba(197,160,89,.25);padding:20px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
             <div>
                 <div style="font-size:13px;font-weight:700;color:#EAE8E3;margin-bottom:4px;">Ready to seal your architecture?</div>
-                <div style="font-size:11px;color:rgba(234,232,227,.5);">Submit the Vault to unlock your complete forensic report and begin your 48-hour build.</div>
+                <div style="font-size:11px;color:rgba(234,232,227,.5);">Submit the Vault to lock your configuration and begin your 48-hour build.</div>
             </div>
             <button onclick="window.activateTab('vault')" style="background:#C5A059;color:#050505;padding:12px 24px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.15em;border:none;cursor:pointer;white-space:nowrap;">Open The Vault →</button>
         </div>
+
     </div>`;
 }
 
-// STATE 2 — Production Heatmap (vault-based, reassurance framing)
+// ── STATE 2: Production Heatmap (vault-based, reassurance) ─────────────
 function renderRadarState2(el, data) {
     const b = data.baseline || {}, a = data.architecture || {}, scope = data.action_scopes || {};
     const threats = [];
 
-    if (a.memory === "finetuning")         threats.push({ title:"Model Fine-Tuning Risk",       level:"CRITICAL", desc:"Algorithmic disgorgement risk (Rite Aid doctrine). DOC_DPA override clause restricts deletion requests to external vector store. Cannot delete embedded PII without model rebuild — mitigated via contractual indemnity limits." });
-    if (scope.is_doer)                     threats.push({ title:"Autonomous Agent Authority",   level:"CRITICAL", desc:`UETA §14 electronic agency liability activated. DOC_AGT circuit breaker hardcoded to ${scope.spend_limit||"declared session limits"}. Kill switch protocol injected. Rogue loop financial liability capped.` });
-    if (a.sensitive_bio)                   threats.push({ title:"Biometric Data Processing",    level:"CRITICAL", desc:"BIPA voiceprint capture liability active. Written consent requirements injected into DOC_PP and DOC_AUP. Diarization voiceprint exposure mitigated." });
-    if (a.processes_pii)                   threats.push({ title:"PII Processing Active",        level:"HIGH",     desc:"Personal data processing triggers GDPR/CCPA. DOC_DPA injected with RAG-Only mandate, machine unlearning rights, and sub-processor liability controls." });
-    if (b.eu_users)                        threats.push({ title:"EU/UK Data Jurisdiction",      level:"HIGH",     desc:"GDPR and EU AI Act extraterritorial application. Standard Contractual Clauses (SCCs) injected into DOC_DPA for cross-border transfers." });
+    if (a.memory === "finetuning")   threats.push({ title:"Model Fine-Tuning Risk",       level:"CRITICAL", desc:"Algorithmic disgorgement risk (Rite Aid doctrine). DOC_DPA override clause restricts deletion requests to external vector store. Cannot delete embedded PII without model rebuild — mitigated via contractual indemnity limits." });
+    if (scope.is_doer)               threats.push({ title:"Autonomous Agent Authority",   level:"CRITICAL", desc:`UETA §14 electronic agency liability activated. DOC_AGT circuit breaker hardcoded to ${scope.spend_limit||"declared session limits"}. Kill switch protocol injected. Rogue loop financial liability capped.` });
+    if (a.sensitive_bio)             threats.push({ title:"Biometric Data Processing",    level:"CRITICAL", desc:"BIPA voiceprint capture liability active. Written consent requirements injected into DOC_PP and DOC_AUP. Diarization voiceprint exposure mitigated." });
+    if (a.processes_pii)             threats.push({ title:"PII Processing Active",        level:"HIGH",     desc:"Personal data processing triggers GDPR/CCPA. DOC_DPA injected with RAG-Only mandate, machine unlearning rights, and sub-processor liability controls." });
+    if (b.eu_users)                  threats.push({ title:"EU/UK Data Jurisdiction",      level:"HIGH",     desc:"GDPR and EU AI Act extraterritorial application. Standard Contractual Clauses (SCCs) injected into DOC_DPA for cross-border transfers." });
     if (scope.is_judge_hr || scope.is_judge_fin || scope.is_judge_legal)
-                                           threats.push({ title:"High-Stakes Decisioning",      level:"HIGH",     desc:"Automated decision bias liability (Mobley doctrine). HITL mandate injected into DOC_TOS with mandatory human verification before output is actionable." });
-    if (scope.is_companion)                threats.push({ title:"Conversational AI Companion",  level:"HIGH",     desc:"Emotional reliance liability (Gavalas doctrine). Crisis break clauses and reality grounding disclaimers injected into DOC_AUP and DOC_TOS." });
-    if (scope.is_orchestrator)             threats.push({ title:"Multi-Agent Orchestration",    level:"HIGH",     desc:"Dynamic sub-processing liability chain. Vendor disclaimers and sub-processor indemnity controls injected into DOC_DPA." });
-    if (a.sensitive_health)                threats.push({ title:"Health Data Processing",       level:"HIGH",     desc:"Potential HIPAA applicability flagged. DOC_DPA includes explicit health data provisions and controller/processor delineation." });
-    if (threats.length === 0)              threats.push({ title:"Baseline SaaS Footprint",      level:"LOW",      desc:"Standard operational profile. Core legal architecture provides comprehensive coverage for your declared configuration." });
+                                     threats.push({ title:"High-Stakes Decisioning",      level:"HIGH",     desc:"Automated decision bias liability (Mobley doctrine). HITL mandate injected into DOC_TOS with mandatory human verification before output is actionable." });
+    if (scope.is_companion)          threats.push({ title:"Conversational AI Companion",  level:"HIGH",     desc:"Emotional reliance liability (Gavalas doctrine). Crisis break clauses and reality grounding disclaimers injected into DOC_AUP and DOC_TOS." });
+    if (scope.is_orchestrator)       threats.push({ title:"Multi-Agent Orchestration",    level:"HIGH",     desc:"Dynamic sub-processing liability chain. Vendor disclaimers and sub-processor indemnity controls injected into DOC_DPA." });
+    if (a.sensitive_health)          threats.push({ title:"Health Data Processing",       level:"HIGH",     desc:"Potential HIPAA applicability flagged. DOC_DPA includes explicit health data provisions and controller/processor delineation." });
+    if (threats.length === 0)        threats.push({ title:"Baseline SaaS Footprint",      level:"LOW",      desc:"Standard operational profile. Core legal architecture provides comprehensive coverage for your declared configuration." });
 
-    const lc = { CRITICAL:"#ef4444", HIGH:"#f97316", LOW:"#10b981" };
+    const lc  = { CRITICAL:"#ef4444", HIGH:"#f97316", LOW:"#10b981" };
     const startTs = data.submittedAt || data.intakeReceivedAt;
     const eta = startTs ? fmtDate(new Date(new Date(startTs).getTime() + 48*3600000).toISOString()) : "within 48 hours";
 
@@ -373,7 +406,8 @@ function renderRadarState2(el, data) {
             </div>
         </div>
         <div style="font-size:9px;color:rgba(234,232,227,.4);text-transform:uppercase;letter-spacing:.15em;margin-bottom:12px;">THREAT SURFACES BEING NEUTRALIZED BY YOUR KIT</div>
-        ${threats.map(t => `<div style="background:#080808;border:1px solid #252525;border-left:3px solid ${lc[t.level]||"#C5A059"};padding:16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+        ${threats.map(t => `
+        <div style="background:#080808;border:1px solid #252525;border-left:3px solid ${lc[t.level]||"#C5A059"};padding:16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
             <div style="flex:1;">
                 <div style="font-size:13px;font-weight:700;color:#EAE8E3;margin-bottom:6px;">${esc(t.title)}</div>
                 <div style="font-size:11px;color:rgba(234,232,227,.65);line-height:1.5;">${esc(t.desc)}</div>
@@ -386,7 +420,7 @@ function renderRadarState2(el, data) {
     </div>`;
 }
 
-// STATE 3 — Date Delta Engine
+// ── STATE 3: Date Delta Engine ─────────────────────────────────────────
 async function renderRadarState3(el, data) {
     el.innerHTML = `<div style="padding:40px;text-align:center;font-size:11px;color:rgba(234,232,227,.4);letter-spacing:.1em;">Loading Regulatory Intelligence...</div>`;
     try {
@@ -398,11 +432,8 @@ async function renderRadarState3(el, data) {
 
     const submittedAt = data.submittedAt ? new Date(data.submittedAt) : new Date();
     const today       = new Date();
+    const matched     = radarCache.filter(entry => clientMatchesEntry(data, entry));
 
-    // Filter: only entries matching client's architecture tags
-    const matched = radarCache.filter(entry => clientMatchesEntry(data, entry));
-
-    // Classify: GREEN / YELLOW / RED via Date Delta
     const classified = matched.map(entry => {
         const eff = entry.effectiveDate ? new Date(entry.effectiveDate) : null;
         if (!eff || isNaN(eff)) return { ...entry, cls:"GREEN", badge:"Covered by your architecture." };
@@ -428,7 +459,7 @@ async function renderRadarState3(el, data) {
     const clsCol = { GREEN:"#10b981", YELLOW:"#eab308", RED:"#ef4444" };
     const clsBg  = { GREEN:"rgba(16,185,129,.05)", YELLOW:"rgba(234,179,8,.05)", RED:"rgba(239,68,68,.05)" };
     const clsBrd = { GREEN:"rgba(16,185,129,.25)", YELLOW:"rgba(234,179,8,.25)", RED:"rgba(239,68,68,.3)" };
-    const clsIcon = { GREEN:"✓", YELLOW:"⚡", RED:"🚨" };
+    const clsIcon= { GREEN:"✓", YELLOW:"⚡", RED:"🚨" };
 
     const renderCards = items => items.map(e => `
     <div style="background:${clsBg[e.cls]};border:1px solid ${clsBrd[e.cls]};border-left:3px solid ${clsCol[e.cls]};padding:14px;margin-bottom:8px;">
@@ -445,9 +476,9 @@ async function renderRadarState3(el, data) {
         </div>
     </div>`).join("");
 
-    const total = classified.length;
+    const total  = classified.length;
     const covPct = total > 0 ? Math.round((greens.length / total) * 100) : 100;
-    const covColor = covPct >= 80 ? "#10b981" : covPct >= 50 ? "#eab308" : "#ef4444";
+    const covCol = covPct >= 80 ? "#10b981" : covPct >= 50 ? "#eab308" : "#ef4444";
 
     let upsellBlock = "";
     if (hasExposure) {
@@ -458,7 +489,7 @@ async function renderRadarState3(el, data) {
                     <div style="font-size:11px;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;">Liability Maintenance Active</div>
                     <div style="font-size:11px;color:rgba(234,232,227,.6);">Patch updates for the threat vectors below are in development and will deploy to your Vault automatically.</div>
                 </div>
-              </div>`
+               </div>`
             : `<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.35);padding:20px;margin-bottom:24px;">
                 <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;">
                     <span style="font-size:24px;margin-top:2px;">⚠️</span>
@@ -472,17 +503,17 @@ async function renderRadarState3(el, data) {
                         <a href="${PAYPAL.maintenance}" target="_blank" style="display:inline-block;background:#C5A059;color:#050505;padding:12px 24px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.15em;text-decoration:none;">Activate Maintenance — $297/mo →</a>
                     </div>
                 </div>
-              </div>`;
+               </div>`;
     }
 
     el.innerHTML = `<div class="fade-in" style="padding-bottom:40px;">
         <div style="background:#080808;border:1px solid #252525;padding:20px;margin-bottom:24px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:10px;">
                 <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#EAE8E3;">Regulatory Coverage Score</div>
-                <div style="font-family:'Cormorant Garamond',serif;font-size:36px;color:${covColor};">${covPct}%</div>
+                <div style="font-family:'Cormorant Garamond',serif;font-size:36px;color:${covCol};">${covPct}%</div>
             </div>
             <div style="height:6px;background:#1A1A1A;border-radius:3px;overflow:hidden;margin-bottom:10px;">
-                <div style="height:100%;background:${covColor};width:${covPct}%;transition:width 1s ease;border-radius:3px;"></div>
+                <div style="height:100%;background:${covCol};width:${covPct}%;transition:width 1s ease;border-radius:3px;"></div>
             </div>
             <div style="display:flex;gap:20px;flex-wrap:wrap;">
                 <span style="font-size:10px;color:#10b981;">✓ ${greens.length} Covered</span>
@@ -493,44 +524,42 @@ async function renderRadarState3(el, data) {
 
         ${upsellBlock}
 
-        ${reds.length > 0 ? `<div style="font-size:9px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:.15em;padding:8px 0;border-bottom:1px solid rgba(239,68,68,.2);margin-bottom:12px;">🚨 EXPOSED — Action Required</div>${renderCards(reds)}` : ""}
-        ${yellows.length > 0 ? `<div style="font-size:9px;font-weight:700;color:#eab308;text-transform:uppercase;letter-spacing:.15em;padding:8px 0;border-bottom:1px solid rgba(234,179,8,.2);margin-bottom:12px;margin-top:${reds.length>0?"20px":"0"};">⚡ UPCOMING — Maintenance Covers These</div>${renderCards(yellows)}` : ""}
-        ${greens.length > 0 ? `<details style="margin-top:${(reds.length>0||yellows.length>0)?"20px":"0"};">
+        ${reds.length>0?`<div style="font-size:9px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:.15em;padding:8px 0;border-bottom:1px solid rgba(239,68,68,.2);margin-bottom:12px;">🚨 EXPOSED — Action Required</div>${renderCards(reds)}`:""}
+        ${yellows.length>0?`<div style="font-size:9px;font-weight:700;color:#eab308;text-transform:uppercase;letter-spacing:.15em;padding:8px 0;border-bottom:1px solid rgba(234,179,8,.2);margin-bottom:12px;margin-top:${reds.length>0?"20px":"0"};">⚡ UPCOMING — Maintenance Covers These</div>${renderCards(yellows)}`:""}
+        ${greens.length>0?`<details style="margin-top:${(reds.length>0||yellows.length>0)?"20px":"0"};">
             <summary style="font-size:9px;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:.15em;cursor:pointer;padding:8px 0;border-bottom:1px solid rgba(16,185,129,.2);list-style:none;display:flex;align-items:center;gap:8px;">✓ ${greens.length} COVERED BY YOUR ARCHITECTURE <span style="opacity:.5;font-weight:400;">(click to expand)</span></summary>
             <div style="margin-top:12px;">${renderCards(greens)}</div>
-        </details>` : ""}
-        ${classified.length === 0 ? `<div style="padding:40px;text-align:center;font-size:11px;color:rgba(234,232,227,.3);font-style:italic;">No applicable regulations detected for your architecture footprint. Your Vault parameters are within baseline coverage.</div>` : ""}
+        </details>`:""}
+        ${classified.length===0?`<div style="padding:40px;text-align:center;font-size:11px;color:rgba(234,232,227,.3);font-style:italic;">No applicable regulations detected for your architecture footprint.</div>`:""}
     </div>`;
 }
 
-// Jurisdiction + tag matching for radar entries
 function clientMatchesEntry(data, entry) {
-    const b = data.baseline || {}, a = data.architecture || {}, scope = data.action_scopes || {};
+    const b = data.baseline||{}, a = data.architecture||{}, scope = data.action_scopes||{};
     const jur      = (data.registrationJurisdiction || b.hq || "").toLowerCase();
     const entryJur = (entry.jurisdiction || "").toLowerCase();
     const jurMatch =
         entryJur.includes("global") ||
         entryJur === "us-all" || entryJur.includes("us (federal") ||
-        ((entryJur.includes("eu") || entryJur.includes("european")) && b.eu_users) ||
-        ((entryJur.includes("ca") || entryJur.includes("california")) && b.ca_users) ||
+        ((entryJur.includes("eu")||entryJur.includes("european")) && b.eu_users) ||
+        ((entryJur.includes("ca")||entryJur.includes("california")) && b.ca_users) ||
         (entryJur.includes("uk") && b.eu_users) ||
         (jur && jur.length >= 2 && entryJur.includes(jur.substring(0,3)));
-
     if (!jurMatch) return false;
     if (entry.target_all) return true;
-    const te = entry.target_ext || [], ti = entry.target_int || [];
-    if (te.includes("eu_users")      && b.eu_users)               return true;
-    if (te.includes("ca_users")      && b.ca_users)               return true;
-    if (te.includes("processes_pii") && a.processes_pii)          return true;
-    if (te.includes("sensitive_data")&& (a.sensitive_health||a.sensitive_bio||a.sensitive_fin)) return true;
-    if (te.includes("finetuning")    && a.memory === "finetuning") return true;
-    if (te.includes("selfhosted")    && a.models === "selfhosted") return true;
-    if (ti.includes("is_doer")       && scope.is_doer)            return true;
-    if (ti.includes("is_judge_hr")   && scope.is_judge_hr)        return true;
-    if (ti.includes("is_judge_fin")  && scope.is_judge_fin)       return true;
-    if (ti.includes("is_judge_legal")&& scope.is_judge_legal)     return true;
-    if (ti.includes("is_companion")  && scope.is_companion)       return true;
-    if (ti.includes("is_orchestrator")&&scope.is_orchestrator)    return true;
+    const te = entry.target_ext||[], ti = entry.target_int||[];
+    if (te.includes("eu_users")       && b.eu_users)               return true;
+    if (te.includes("ca_users")       && b.ca_users)               return true;
+    if (te.includes("processes_pii")  && a.processes_pii)          return true;
+    if (te.includes("sensitive_data") && (a.sensitive_health||a.sensitive_bio||a.sensitive_fin)) return true;
+    if (te.includes("finetuning")     && a.memory==="finetuning")  return true;
+    if (te.includes("selfhosted")     && a.models==="selfhosted")  return true;
+    if (ti.includes("is_doer")        && scope.is_doer)            return true;
+    if (ti.includes("is_judge_hr")    && scope.is_judge_hr)        return true;
+    if (ti.includes("is_judge_fin")   && scope.is_judge_fin)       return true;
+    if (ti.includes("is_judge_legal") && scope.is_judge_legal)     return true;
+    if (ti.includes("is_companion")   && scope.is_companion)       return true;
+    if (ti.includes("is_orchestrator")&& scope.is_orchestrator)    return true;
     return false;
 }
 
@@ -542,20 +571,22 @@ function buildTab2Vault(data, state) {
     if (!el) return;
 
     if (state === 1) {
-        // vault.js renders the intake form into this container
         el.innerHTML = `<div id="vault-form-container" class="fade-in"></div>`;
         if (typeof window.initVaultForm === "function") window.initVaultForm();
         return;
     }
 
-    // States 2/3: Read-only display
-    const b = data.baseline || {}, a = data.architecture || {}, scope = data.action_scopes || {}, comm = data.commercials || {};
-    const row = (lbl, val) => `<div style="display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px solid rgba(197,160,89,.06);">
+    const b = data.baseline||{}, a = data.architecture||{}, scope = data.action_scopes||{}, comm = data.commercials||{};
+    const row = (lbl, val) => `
+    <div style="display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px solid rgba(197,160,89,.06);">
         <span style="font-size:11px;color:rgba(234,232,227,.45);flex:1;">${lbl}</span>
         <span style="font-size:11px;color:#EAE8E3;font-weight:600;text-align:right;max-width:55%;">${val}</span>
     </div>`;
-    const yn = v => v ? `<span style="color:#10b981;font-weight:700;">Yes</span>` : `<span style="color:rgba(234,232,227,.3);">No</span>`;
-    const sec = (title, rows) => `<div style="background:#080808;border:1px solid #252525;padding:20px;margin-bottom:12px;">
+    const yn  = v => v
+        ? `<span style="color:#10b981;font-weight:700;">Yes</span>`
+        : `<span style="color:rgba(234,232,227,.3);">No</span>`;
+    const sec = (title, rows) => `
+    <div style="background:#080808;border:1px solid #252525;padding:20px;margin-bottom:12px;">
         <div style="font-size:9px;color:#C5A059;text-transform:uppercase;letter-spacing:.15em;font-weight:700;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid rgba(197,160,89,.15);">${title}</div>
         ${rows}
     </div>`;
@@ -572,31 +603,31 @@ function buildTab2Vault(data, state) {
             row("California Users",   yn(b.ca_users))
         )}
         ${sec("Phase 2: Data Architecture",
-            row("Processes Personal Data (PII)",  yn(a.processes_pii)) +
-            row("Health / Medical Data",          yn(a.sensitive_health)) +
-            row("Biometrics / Voice Data",        yn(a.sensitive_bio)) +
-            row("Financial / Trading Data",       yn(a.sensitive_fin)) +
+            row("Processes Personal Data",  yn(a.processes_pii)) +
+            row("Health / Medical Data",    yn(a.sensitive_health)) +
+            row("Biometrics / Voice Data",  yn(a.sensitive_bio)) +
+            row("Financial / Trading Data", yn(a.sensitive_fin)) +
             row("AI Memory Architecture",
-                a.memory==="rag"         ? "RAG (Recommended)" :
-                a.memory==="finetuning"  ? `<span style="color:#ef4444;font-weight:700;">⚠ Fine-Tuning (High Risk)</span>` :
+                a.memory==="rag"        ? "RAG (Recommended)" :
+                a.memory==="finetuning" ? `<span style="color:#ef4444;font-weight:700;">⚠ Fine-Tuning (High Risk)</span>` :
                 esc(a.memory||"—")) +
             row("Model Infrastructure",
-                a.models==="thirdparty"  ? "3rd-Party APIs (OpenAI / Anthropic)" :
-                a.models==="selfhosted"  ? "Self-Hosted / Open Source" :
+                a.models==="thirdparty" ? "3rd-Party APIs (OpenAI / Anthropic)" :
+                a.models==="selfhosted" ? "Self-Hosted / Open Source" :
                 esc(a.models||"—"))
         )}
         ${sec("Phase 3: Action Scopes",
-            row("The Doer (Autonomous Actions)", yn(scope.is_doer)) +
+            row("The Doer (Autonomous)",     yn(scope.is_doer)) +
             (scope.is_doer ? row("Session Spend Limit", esc(scope.spend_limit||"—")) + row("Rate Limit / min", esc(scope.rate_limit||"—")) : "") +
-            row("The Judge (HR Screening)",      yn(scope.is_judge_hr)) +
-            row("The Judge (Legal / Contract)",  yn(scope.is_judge_legal)) +
-            row("The Judge (Financial)",         yn(scope.is_judge_fin)) +
-            row("The Companion",                 yn(scope.is_companion)) +
-            row("The Orchestrator (Multi-Agent)",yn(scope.is_orchestrator))
+            row("The Judge (HR)",             yn(scope.is_judge_hr)) +
+            row("The Judge (Legal)",          yn(scope.is_judge_legal)) +
+            row("The Judge (Financial)",      yn(scope.is_judge_fin)) +
+            row("The Companion",              yn(scope.is_companion)) +
+            row("The Orchestrator",           yn(scope.is_orchestrator))
         )}
-        ${sec("Phase 4: Service Level Commitments",
-            row("Guaranteed Uptime",         comm.uptime==="none"?"No Guarantee":(comm.uptime?comm.uptime+"%":  "—")) +
-            row("Time-to-First-Token (TTFT)", comm.ttft==="none"  ?"No Guarantee":(comm.ttft||"—"))
+        ${sec("Phase 4: Service Levels",
+            row("Guaranteed Uptime",  comm.uptime==="none"?"No Guarantee":(comm.uptime?comm.uptime+"%":"—")) +
+            row("TTFT Target",        comm.ttft==="none"  ?"No Guarantee":(comm.ttft||"—"))
         )}
     </div>`;
 }
@@ -618,11 +649,11 @@ function buildTab3Shields(data, state) {
         return;
     }
 
-    const docs         = getDocsForPlan(data);
-    const upsell       = getUpsellLane(data);
-    const isDelivered  = state === 3;
-    const debriefDone  = !!data.debrief;
-    const files        = data.files || {};
+    const docs        = getDocsForPlan(data);
+    const upsell      = getUpsellLane(data);
+    const isDelivered = state === 3;
+    const debriefDone = !!data.debrief;
+    const files       = data.files || {};
 
     const shieldsHtml = shields => shields.map(s =>
         `<span style="font-size:8px;background:rgba(197,160,89,.1);border:1px solid rgba(197,160,89,.2);color:#C5A059;padding:2px 6px;display:inline-block;margin:2px 2px 0 0;">${s}</span>`
@@ -639,15 +670,14 @@ function buildTab3Shields(data, state) {
                 <div style="margin-top:auto;">
                     ${!isDelivered
                         ? `<div style="display:flex;align-items:center;gap:8px;font-size:10px;color:rgba(234,232,227,.4);">
-                            <div style="width:6px;height:6px;border-radius:50%;background:#C5A059;animation:pulse 1.5s infinite;"></div>
-                            Architecting...
+                            <div style="width:6px;height:6px;border-radius:50%;background:#C5A059;animation:pulse 1.5s infinite;"></div>Architecting...
                            </div>`
                         : `<div style="font-size:10px;color:rgba(234,232,227,.4);">Complete Post-Mortem to unlock downloads.</div>`
                     }
                 </div>
             </div>`;
         }
-        return `<div style="background:#080808;border:1px solid rgba(197,160,89,.3);padding:20px;display:flex;flex-direction:column;min-height:180px;transition:border-color .2s;cursor:default;"
+        return `<div style="background:#080808;border:1px solid rgba(197,160,89,.3);padding:20px;display:flex;flex-direction:column;min-height:180px;transition:border-color .2s;"
             onmouseover="this.style.borderColor='#C5A059'" onmouseout="this.style.borderColor='rgba(197,160,89,.3)'">
             <div style="font-size:24px;margin-bottom:10px;">📄</div>
             <div style="font-family:'Cormorant Garamond',serif;font-size:15px;color:#C5A059;margin-bottom:4px;">${d.id}</div>
@@ -671,7 +701,7 @@ function buildTab3Shields(data, state) {
             <div style="font-size:12px;font-weight:600;color:#EAE8E3;">${d.name}</div>
         </div>`).join("") +
         `<div style="background:#080808;border:1px solid #252525;padding:20px;filter:blur(4px);pointer-events:none;min-height:130px;display:flex;align-items:center;justify-content:center;">
-            <div style="font-size:22px;color:rgba(234,232,227,.2);">+${upsell.docs.length - 3} more</div>
+            <div style="font-size:22px;color:rgba(234,232,227,.2);">+${upsell.docs.length-3} more</div>
         </div>`;
 
         upsellSection = `<div style="margin-top:40px;padding-top:32px;border-top:1px dashed rgba(197,160,89,.2);">
@@ -679,7 +709,7 @@ function buildTab3Shields(data, state) {
                 <div style="font-size:9px;color:rgba(234,232,227,.4);text-transform:uppercase;letter-spacing:.15em;margin-bottom:6px;">LOCKED — ${upsell.label}</div>
                 <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#EAE8E3;">"Your product is secure. Your ${data.plan==="agentic_shield"?"workplace":"external architecture"} is not."</div>
             </div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:20px;pointer-events:none;user-select:none;">${blurred}</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:20px;user-select:none;">${blurred}</div>
             <div style="background:rgba(197,160,89,.06);border:1px solid rgba(197,160,89,.25);padding:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
                 <div>
                     <div style="font-size:13px;font-weight:700;color:#EAE8E3;margin-bottom:4px;">${upsell.label} — ${upsell.docs.length} documents</div>
@@ -707,10 +737,10 @@ function buildTab3Shields(data, state) {
             </div>
         </div>
         ${videoBlock}
-        ${!isDelivered ? `<div style="background:rgba(197,160,89,.05);border:1px solid rgba(197,160,89,.2);padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+        ${!isDelivered?`<div style="background:rgba(197,160,89,.05);border:1px solid rgba(197,160,89,.2);padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
             <div style="width:8px;height:8px;border-radius:50%;background:#C5A059;animation:pulse 2s infinite;flex-shrink:0;"></div>
             <div style="font-size:10px;color:rgba(234,232,227,.6);">Your shields are being drafted. Each clause is being calibrated to your specific Vault configuration.</div>
-        </div>` : ""}
+        </div>`:""}
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:28px;">${docs.map(docCard).join("")}</div>
         <div style="background:#080808;border:1px solid #252525;padding:14px 16px;font-size:10px;color:rgba(234,232,227,.35);line-height:1.5;">
             ⚠ All documents are delivered as Review-Ready Drafts. Not final legal instruments. Requires independent review by qualified counsel in your operating jurisdiction before execution.
@@ -735,52 +765,53 @@ function buildTab4Checklist(data, state) {
         return;
     }
 
-    const a = data.architecture || {}, scope = data.action_scopes || {};
-    const saved = data.checklistState || {};
-
+    const a = data.architecture||{}, scope = data.action_scopes||{};
+    const saved = data.checklistState||{};
     const items = [];
-    const U = "UNIVERSAL", D = "DATA ARCHITECTURE", AG = "AGENTIC CONTROLS", DC = "DECISIONING SAFEGUARDS", C = "COMPANION SAFEGUARDS", B = "BIOMETRIC CONTROLS", H = "SENSITIVE DATA";
 
-    items.push({ cat:U,  text:"Deploy the HITL Disclaimer UI — a visible label warning users to verify AI outputs before relying on them (DOC_TOS §5.1 compliance)." });
-    items.push({ cat:U,  text:"Confirm all AI-generated content is labeled as AI-generated in user-facing interfaces (EU AI Act Art.50 / DOC_AUP §3)." });
-    items.push({ cat:U,  text:"Verify your terms-of-service clickwrap cannot be bypassed — mandatory acceptance must gate first AI interaction (DOC_TOS §2)." });
-    items.push({ cat:U,  text:"Confirm all foundation model API calls run through zero-data-retention enterprise endpoints — not default consumer tiers (DOC_DPA §4)." });
+    items.push({ cat:"UNIVERSAL",              text:"Deploy the HITL Disclaimer UI — a visible label warning users to verify AI outputs before relying on them (DOC_TOS §5.1 compliance)." });
+    items.push({ cat:"UNIVERSAL",              text:"Confirm all AI-generated content is labeled as AI-generated in user-facing interfaces (EU AI Act Art.50 / DOC_AUP §3)." });
+    items.push({ cat:"UNIVERSAL",              text:"Verify your terms-of-service clickwrap cannot be bypassed — mandatory acceptance must gate first AI interaction (DOC_TOS §2)." });
+    items.push({ cat:"UNIVERSAL",              text:"Confirm all foundation model API calls run through zero-data-retention enterprise endpoints — not default consumer tiers (DOC_DPA §4)." });
 
     if (a.processes_pii || a.memory === "rag") {
-        items.push({ cat:D, text:"Build vector deletion protocol — ability to isolate and permanently delete a specific user's embeddings from the vector store without destroying model weights (DOC_DPA §7.2)." });
-        items.push({ cat:D, text:"Implement context window isolation — verify API calls are strictly scoped by user_id to prevent cross-tenant data leakage (DOC_DPA §8.1)." });
+        items.push({ cat:"DATA ARCHITECTURE",  text:"Build vector deletion protocol — ability to isolate and permanently delete a specific user's embeddings from the vector store without destroying model weights (DOC_DPA §7.2)." });
+        items.push({ cat:"DATA ARCHITECTURE",  text:"Implement context window isolation — verify API calls are strictly scoped by user_id to prevent cross-tenant data leakage (DOC_DPA §8.1)." });
     }
     if (a.memory === "finetuning") {
-        items.push({ cat:D, text:"🔴 CRITICAL — Implement data provenance logging. Every training data point must be traceable to its source to fulfill deletion requests without model rebuild (DOC_DPA §9)." });
+        items.push({ cat:"DATA ARCHITECTURE",  text:"🔴 CRITICAL — Implement data provenance logging. Every training data point must be traceable to its source to fulfill deletion requests without model rebuild (DOC_DPA §9)." });
     }
     if (scope.is_doer) {
-        items.push({ cat:AG, text:`Hardcode circuit breaker at ${scope.spend_limit||"[declared session limit]"} — must be a hard break in code, not a Slack alert or dashboard notification (DOC_AGT §4.1).` });
-        items.push({ cat:AG, text:"Implement Kill Switch — a functional /terminate endpoint that instantly revokes all agent API keys and halts active loops within < 500ms (DOC_AGT §5.1)." });
-        items.push({ cat:AG, text:"Implement idempotency keys on all agent-initiated financial transactions to prevent duplicate execution on retry storms (DOC_AGT §6)." });
+        items.push({ cat:"AGENTIC CONTROLS",   text:`Hardcode circuit breaker at ${scope.spend_limit||"[declared session limit]"} — must be a hard break in code, not a Slack alert or dashboard notification (DOC_AGT §4.1).` });
+        items.push({ cat:"AGENTIC CONTROLS",   text:"Implement Kill Switch — a functional /terminate endpoint that instantly revokes all agent API keys and halts active loops within < 500ms (DOC_AGT §5.1)." });
+        items.push({ cat:"AGENTIC CONTROLS",   text:"Implement idempotency keys on all agent-initiated financial transactions to prevent duplicate execution on retry storms (DOC_AGT §6)." });
     }
     if (scope.is_judge_hr || scope.is_judge_fin || scope.is_judge_legal) {
-        items.push({ cat:DC, text:"Implement HITL Review Gate — before any AI scoring output is acted upon, a human reviewer must mark it reviewed. Log every review with timestamp and reviewer ID (DOC_TOS §8)." });
-        items.push({ cat:DC, text:"Deploy bias audit framework — quarterly disparate impact testing across protected categories. Retain results minimum 3 years (NYC Local Law 144 / EU AI Act compliance)." });
+        items.push({ cat:"DECISIONING",        text:"Implement HITL Review Gate — before any AI scoring output is acted upon, a human reviewer must mark it reviewed. Log every review with timestamp and reviewer ID (DOC_TOS §8)." });
+        items.push({ cat:"DECISIONING",        text:"Deploy bias audit framework — quarterly disparate impact testing across protected categories. Retain results minimum 3 years (NYC Local Law 144 / EU AI Act compliance)." });
     }
     if (scope.is_companion) {
-        items.push({ cat:C, text:"Implement crisis interruption logic — if user messages match predefined distress patterns, the AI must surface crisis resources and break the conversational loop (DOC_AUP §9)." });
+        items.push({ cat:"COMPANION",          text:"Implement crisis interruption logic — if user messages match predefined distress patterns, the AI must surface crisis resources and break the conversational loop (DOC_AUP §9)." });
     }
     if (a.sensitive_bio) {
-        items.push({ cat:B, text:"Implement biometric consent gate — written consent must be obtained BEFORE any voice or facial processing begins. Log consent with timestamp, IP, and user_id (DOC_PP §12 / BIPA compliance)." });
+        items.push({ cat:"BIOMETRICS",         text:"Implement biometric consent gate — written consent must be obtained BEFORE any voice or facial processing begins. Log consent with timestamp, IP, and user_id (DOC_PP §12 / BIPA compliance)." });
     }
     if (a.sensitive_health) {
-        items.push({ cat:H, text:"Confirm HIPAA Business Associate Agreement (BAA) is in place with all model providers that process health data. DOC_DPA §11 requires explicit BAA coverage." });
+        items.push({ cat:"HEALTH DATA",        text:"Confirm HIPAA Business Associate Agreement (BAA) is in place with all model providers that process health data. DOC_DPA §11 requires explicit BAA coverage." });
     }
 
-    const cats = [...new Set(items.map(i => i.cat))];
-    let checkHtml = "";
-    let idx = 0;
+    const cats     = [...new Set(items.map(i => i.cat))];
+    const doneCnt  = items.filter((_, i) => !!saved[i]).length;
+    const pct      = items.length > 0 ? Math.round((doneCnt / items.length) * 100) : 0;
+    const pctCol   = pct === 100 ? "#10b981" : "#C5A059";
+
+    let html = ""; let idx = 0;
     cats.forEach(cat => {
         const catItems = items.filter(i => i.cat === cat);
-        checkHtml += `<div style="font-size:9px;color:${cat===U?"#C5A059":"#EAE8E3"};text-transform:uppercase;letter-spacing:.15em;font-weight:700;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid rgba(197,160,89,.1);">${cat}</div>`;
+        html += `<div style="font-size:9px;color:${cat==="UNIVERSAL"?"#C5A059":"#EAE8E3"};text-transform:uppercase;letter-spacing:.15em;font-weight:700;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid rgba(197,160,89,.1);">${cat}</div>`;
         catItems.forEach(item => {
             const i = idx, isDone = !!saved[i];
-            checkHtml += `<div id="chk-row-${i}" style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(197,160,89,.04);cursor:pointer;" onclick="window.toggleChk(${i})">
+            html += `<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(197,160,89,.04);cursor:pointer;" onclick="window.toggleChk(${i})">
                 <div id="chkb-${i}" style="width:18px;height:18px;border:1px solid ${isDone?"#C5A059":"rgba(197,160,89,.25)"};background:${isDone?"rgba(197,160,89,.15)":"transparent"};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;transition:all .15s;">
                     ${isDone?`<span style="color:#C5A059;font-size:11px;font-weight:700;">✓</span>`:""}
                 </div>
@@ -790,10 +821,6 @@ function buildTab4Checklist(data, state) {
         });
     });
 
-    const totalItems = items.length;
-    const doneCnt    = Object.values(saved).filter(Boolean).length;
-    const pct        = totalItems > 0 ? Math.round((doneCnt / totalItems) * 100) : 0;
-
     el.innerHTML = `<div class="fade-in" style="padding-bottom:40px;">
         <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
             <div>
@@ -801,35 +828,36 @@ function buildTab4Checklist(data, state) {
                 <p style="font-size:10px;color:rgba(234,232,227,.4);text-transform:uppercase;letter-spacing:.1em;">CTO Implementation Checklist · Generated from your architecture</p>
             </div>
             <div style="text-align:right;">
-                <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:${pct===100?"#10b981":"#C5A059"};">${pct}%</div>
-                <div style="font-size:9px;color:rgba(234,232,227,.4);">${doneCnt}/${totalItems} implemented</div>
+                <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:${pctCol};">${pct}%</div>
+                <div style="font-size:9px;color:rgba(234,232,227,.4);">${doneCnt}/${items.length} implemented</div>
             </div>
         </div>
         <div style="height:4px;background:#1A1A1A;border-radius:2px;overflow:hidden;margin-bottom:24px;">
-            <div id="chk-progress" style="height:100%;background:${pct===100?"#10b981":"#C5A059"};width:${pct}%;transition:width .5s;border-radius:2px;"></div>
+            <div id="chk-progress" style="height:100%;background:${pctCol};width:${pct}%;transition:width .5s;border-radius:2px;"></div>
         </div>
-        ${checkHtml}
+        ${html}
         <div style="margin-top:24px;background:#080808;border:1px solid #252525;padding:14px 16px;font-size:10px;color:rgba(234,232,227,.35);line-height:1.5;">
             ⚠ These are implementation recommendations derived from your legal architecture. They do not constitute engineering or legal advice.
         </div>
     </div>`;
 
+    const totalItems = items.length;
     window.toggleChk = function(i) {
         const box = $(`chkb-${i}`); const lbl = $(`chkl-${i}`);
         if (!box || !lbl) return;
         const ns = { ...(window.clientData.checklistState||{}) };
         ns[i] = !ns[i];
         const done = ns[i];
-        box.style.border = `1px solid ${done?"#C5A059":"rgba(197,160,89,.25)"}`;
+        box.style.border    = `1px solid ${done?"#C5A059":"rgba(197,160,89,.25)"}`;
         box.style.background = done ? "rgba(197,160,89,.15)" : "transparent";
-        box.innerHTML = done ? `<span style="color:#C5A059;font-size:11px;font-weight:700;">✓</span>` : "";
-        lbl.style.color = done ? "rgba(234,232,227,.3)" : "#EAE8E3";
+        box.innerHTML       = done ? `<span style="color:#C5A059;font-size:11px;font-weight:700;">✓</span>` : "";
+        lbl.style.color          = done ? "rgba(234,232,227,.3)" : "#EAE8E3";
         lbl.style.textDecoration = done ? "line-through" : "none";
         window.clientData.checklistState = ns;
-        const dc = Object.values(ns).filter(Boolean).length;
-        const np = totalItems > 0 ? Math.round((dc/totalItems)*100) : 0;
+        const dc  = Object.values(ns).filter(Boolean).length;
+        const np  = totalItems > 0 ? Math.round((dc/totalItems)*100) : 0;
         const bar = $("chk-progress");
-        if (bar) { bar.style.width = np + "%"; bar.style.background = np===100?"#10b981":"#C5A059"; }
+        if (bar) { bar.style.width = np+"%"; bar.style.background = np===100?"#10b981":"#C5A059"; }
         const user = window.firebaseAuth?.currentUser;
         if (user) updateDoc(doc(window.firebaseDb,"clients",user.email),{checklistState:ns}).catch(()=>{});
     };
@@ -842,12 +870,13 @@ function buildTab5Syndicate(data) {
     const el = $("tab-syndicate");
     if (!el) return;
 
-    const refs    = data.referrals || [];
-    const reward  = data.maintenanceActive ? "Free Strategy Session" : "3 Months Free Maintenance";
+    const refs   = data.referrals || [];
+    const reward = data.maintenanceActive ? "Free Strategy Session" : "3 Months Free Maintenance";
 
     const refListHtml = refs.length === 0
         ? `<p style="font-size:11px;color:rgba(234,232,227,.3);font-style:italic;padding:20px 0;">No targets registered yet.</p>`
-        : refs.map(r => `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(197,160,89,.06);flex-wrap:wrap;gap:8px;">
+        : refs.map(r => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(197,160,89,.06);flex-wrap:wrap;gap:8px;">
             <div>
                 <div style="font-size:12px;font-weight:600;color:#EAE8E3;">${esc(r.company||r.name||"—")}</div>
                 <div style="font-size:10px;color:rgba(234,232,227,.4);">${esc(r.email||"—")} · ${r.date?fmtDate(r.date):"—"}</div>
@@ -855,24 +884,24 @@ function buildTab5Syndicate(data) {
             <span style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;padding:3px 8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(234,232,227,.4);">${r.credited?"✓ Credited":r.status||"Pending"}</span>
         </div>`).join("");
 
-    const inputStyle = `width:100%;background:#050505;border:1px solid #1A1A1A;color:#EAE8E3;padding:10px 12px;font-size:12px;font-family:'Inter',sans-serif;outline:none;box-sizing:border-box;`;
+    const iStyle = `width:100%;background:#050505;border:1px solid #1A1A1A;color:#EAE8E3;padding:10px 12px;font-size:12px;font-family:'Inter',sans-serif;outline:none;box-sizing:border-box;`;
 
     el.innerHTML = `<div class="fade-in" style="padding-bottom:40px;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;flex-wrap:wrap;">
             <div>
                 <h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#C5A059;margin-bottom:8px;">The Syndicate</h2>
-                <p style="font-size:11px;color:rgba(234,232,227,.55);line-height:1.6;margin-bottom:24px;border-bottom:1px solid #1A1A1A;padding-bottom:20px;">Founders operate in networks. Register a target founder building an AI product. If they engage Lex Nova HQ, your operation is credited immediately.</p>
+                <p style="font-size:11px;color:rgba(234,232,227,.55);line-height:1.6;margin-bottom:24px;border-bottom:1px solid #1A1A1A;padding-bottom:20px;">Register a target founder building an AI product. If they engage Lex Nova HQ, your operation is credited immediately.</p>
                 <div style="background:#080808;border:1px solid #252525;padding:24px;">
-                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#C5A059;font-weight:600;margin-bottom:20px;">
-                        <span style="width:8px;height:8px;border-radius:50%;background:#C5A059;display:inline-block;margin-right:6px;vertical-align:middle;"></span>
+                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#C5A059;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:8px;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:#C5A059;display:inline-block;"></span>
                         Reward: ${reward}
                     </div>
                     <div style="margin-bottom:14px;"><label style="display:block;font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:rgba(234,232,227,.4);margin-bottom:6px;">Target Name</label>
-                        <input type="text" id="syn-name" style="${inputStyle}" onfocus="this.style.borderColor='#C5A059'" onblur="this.style.borderColor='#1A1A1A'"></div>
+                        <input type="text" id="syn-name" style="${iStyle}" onfocus="this.style.borderColor='#C5A059'" onblur="this.style.borderColor='#1A1A1A'"></div>
                     <div style="margin-bottom:14px;"><label style="display:block;font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:rgba(234,232,227,.4);margin-bottom:6px;">Target Company</label>
-                        <input type="text" id="syn-company" style="${inputStyle}" onfocus="this.style.borderColor='#C5A059'" onblur="this.style.borderColor='#1A1A1A'"></div>
+                        <input type="text" id="syn-company" style="${iStyle}" onfocus="this.style.borderColor='#C5A059'" onblur="this.style.borderColor='#1A1A1A'"></div>
                     <div style="margin-bottom:20px;"><label style="display:block;font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:rgba(234,232,227,.4);margin-bottom:6px;">Target Work Email</label>
-                        <input type="email" id="syn-email" style="${inputStyle}" onfocus="this.style.borderColor='#C5A059'" onblur="this.style.borderColor='#1A1A1A'"></div>
+                        <input type="email" id="syn-email" style="${iStyle}" onfocus="this.style.borderColor='#C5A059'" onblur="this.style.borderColor='#1A1A1A'"></div>
                     <button onclick="window.submitRef()" style="background:#C5A059;color:#050505;width:100%;padding:14px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;border:none;cursor:pointer;font-family:'Inter',sans-serif;">Register Target</button>
                     <div id="syn-msg" style="display:none;font-size:11px;text-align:center;margin-top:12px;padding:8px;"></div>
                 </div>
@@ -925,23 +954,19 @@ if (btnDebrief) {
         const catalyst = ($("db-catalyst")?.value||"").trim();
         const result   = ($("db-result")?.value||"").trim();
         const msg      = $("db-msg");
-
         if (!catalyst || !result) {
             if (msg) { msg.style.display="block"; msg.textContent="Please complete all fields before unlocking."; }
             return;
         }
-
         btnDebrief.textContent = "Encrypting..."; btnDebrief.disabled = true;
-
         const payload = {
-            rating:      $("db-rating")?.value  || "5",
+            rating:      $("db-rating")?.value || "5",
             catalyst,
             portal:      ($("db-portal")?.value||"").trim(),
             result,
             consent:     $("db-consent")?.checked || false,
             submittedAt: new Date().toISOString()
         };
-
         try {
             const user = window.firebaseAuth?.currentUser;
             if (!user) throw new Error("Auth lost");
@@ -950,7 +975,6 @@ if (btnDebrief) {
             const modal = $("modal-debrief");
             if (modal) modal.classList.add("hidden");
             document.body.style.overflow = "auto";
-            // Unlock Shields tab — re-render to show download buttons
             buildTab3Shields(window.clientData, 3);
         } catch(e) {
             console.error("Debrief Error:", e);
