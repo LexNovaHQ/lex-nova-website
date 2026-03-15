@@ -430,10 +430,21 @@ function buildDashboard() {
     // FIX 9: Ensure all quiz-only gaps that never got a source have one
     activeGaps.forEach(g => { if (!g.source) g.source = 'scanner'; });
 
-    activeGaps.sort((a, b) => {
-        const w = { NUCLEAR: 3, CRITICAL: 2, HIGH: 1 };
-        return (w[b.severity] || 0) - (w[a.severity] || 0);
-    });
+   activeGaps.sort((a, b) => {
+    const w = { NUCLEAR: 3, CRITICAL: 2, HIGH: 1 };
+    const sevDiff = (w[b.severity] || 0) - (w[a.severity] || 0);
+    if (sevDiff !== 0) return sevDiff;
+
+    // Within same severity: dual-verified > hunter scrape > scanner only
+    // This ensures Hunter evidence surfaces to top 3 instead of being buried
+    const sourceScore = g =>
+        g.source === 'dual-verified'   ? 3 :
+        (g.source === 'scrape'         ? 2 :
+        (g.evidence                    ? 1 : 0));
+
+    return sourceScore(b) - sourceScore(a);
+});
+
 
     // FIX 5: authorityText AFTER merge so counts are correct
     let authorityText = "Our engine processed your inputs. The gaps identified in this report are structurally verified against your codebase logic.";
