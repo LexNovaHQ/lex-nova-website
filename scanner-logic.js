@@ -343,8 +343,8 @@ function buildDashboard() {
     document.getElementById('main-wrap').classList.replace('max-w-3xl', 'max-w-6xl');
 
  // The Merge: Omniscience Protocol
-    if (prospectData && prospectData.forensicGaps && Array.isArray(prospectData.forensicGaps)) {
-        prospectData.forensicGaps.forEach(scrapeGap => {
+    if (prospectData && prospectData.detectedGaps && Array.isArray(prospectData.detectedGaps)){
+        prospectData.detectedGaps.forEach(scrapeGap => {
             const existingGap = activeGaps.find(g => g.id === scrapeGap.id);
             
             // 🔥 ARM THE TRIPWIRES FROM HUNTER DATA
