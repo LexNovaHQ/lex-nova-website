@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Client Portal | Lex Nova HQ</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script>
@@ -30,553 +30,405 @@
     </script>
 
     <style>
-        /* Cinematic SPA Transitions */
-        .fade-in { animation: fadeIn 0.5s ease forwards; }
-        .fade-out { animation: fadeOut 0.4s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
-        
-        /* The Paywall Peek (Workplace Shield Upsell) */
-        .blur-target { filter: blur(5px); transition: filter 0.3s ease; }
-        .upsell-group:hover .blur-target { filter: blur(8px); }
-        .upsell-group:hover .lock-icon { opacity: 0; transform: scale(0.9); }
-        .upsell-group:hover .gold-btn { opacity: 1; transform: translateY(0) scale(1); }
-        .upsell-group:hover .border-trigger { border-color: #C5A059; box-shadow: 0 0 15px rgba(197, 160, 89, 0.2); }
-        
-        /* Active Tab State */
-        .tab-active { border-bottom: 2px solid #C5A059; color: #C5A059; opacity: 1 !important; }
-        
-        /* Elite Scrollbar */
-        ::-webkit-scrollbar { width: 4px; }
+        /* ── BASE ── */
+        *, *::before, *::after { box-sizing: border-box; }
+        body { background: #050505; color: #EAE8E3; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: #050505; }
-        ::-webkit-scrollbar-thumb { background: #1A1A1A; }
+        ::-webkit-scrollbar-thumb { background: #1A1A1A; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #C5A059; }
 
-        /* Form Input Resets */
-        input[type="text"], input[type="email"], select {
-            background: #0a0a0a; border: 1px solid #1A1A1A; color: #EAE8E3;
+        /* ── TRANSITIONS ── */
+        .fade-in  { animation: fadeIn 0.45s ease forwards; }
+        .fade-out { animation: fadeOut 0.3s ease forwards; }
+        @keyframes fadeIn  { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        @keyframes pulse   { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+        @keyframes spin    { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* ── TAB SYSTEM ── */
+        .tab-active {
+            border-bottom: 2px solid #C5A059 !important;
+            color: #C5A059 !important;
+            opacity: 1 !important;
         }
-        input[type="text"]:focus, input[type="email"]:focus, select:focus {
-            outline: none; border-color: #C5A059;
+
+        /* ── INPUT RESETS ── */
+        input, select, textarea {
+            background: #050505;
+            border: 1px solid #1A1A1A;
+            color: #EAE8E3;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            outline: none;
+            transition: border-color .2s;
+            width: 100%;
+            padding: 11px 13px;
         }
+        input:focus, select:focus, textarea:focus { border-color: #C5A059; }
+        input::placeholder, textarea::placeholder { color: rgba(234,232,227,.25); }
+        select { appearance: none; cursor: pointer; }
+        select option { background: #0a0a0a; }
+
+        /* ── VAULT PHASE NAVIGATION ── */
+        .vault-phase { display: none; }
+        .vault-phase.active { display: block; }
+
+        /* ── PROGRESS BAR NODE ── */
+        .node-pending { background: #1A1A1A; border: 2px solid #2a2a2a; }
+        .node-active  { background: #C5A059; box-shadow: 0 0 12px rgba(197,160,89,.5); }
+
+        /* ── CHECKLIST BOX ── */
+        .chk-box-el {
+            width: 18px; height: 18px; flex-shrink: 0;
+            border: 1px solid rgba(197,160,89,.25);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all .15s; margin-top: 2px;
+        }
+        .chk-box-el.done { border-color: #C5A059; background: rgba(197,160,89,.15); }
+
+        /* ── DEBRIEF MODAL ── */
+        #modal-debrief { z-index: 200; }
+
+        /* ── PORTAL TOAST ── */
+        #portal-toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(8px);
+            background: #0a0a0a; border: 1px solid rgba(197,160,89,.3);
+            padding: 10px 20px; font-size: 11px; color: rgba(234,232,227,.7);
+            letter-spacing: .05em; pointer-events: none;
+            opacity: 0; transition: all .3s ease; white-space: nowrap;
+            z-index: 500;
+        }
+        #portal-toast.opacity-100 { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* ── UPSELL HOVER ── */
+        .upsell-hover:hover .blur-layer  { filter: blur(6px); }
+        .upsell-hover:hover .reveal-cta  { opacity: 1; transform: translateY(0); }
+
+        /* ── GLOBAL BANNER ── */
+        #global-banner { transition: background .4s, border-color .4s; }
+
+        /* ── VAULT FORM INPUTS (used by vault.js) ── */
+        .vault-input { width: 100%; background: #050505; border: 1px solid #1A1A1A; color: #EAE8E3; padding: 11px 13px; font-size: 12px; font-family: 'Inter',sans-serif; outline: none; transition: border-color .2s; box-sizing: border-box; }
+        .vault-input:focus { border-color: #C5A059; }
+        .vault-label { display: block; font-size: 9px; text-transform: uppercase; letter-spacing: .2em; color: rgba(234,232,227,.45); margin-bottom: 6px; }
+        .vault-why { font-size: 10px; color: rgba(234,232,227,.35); line-height: 1.5; margin-top: 8px; }
+        .vault-check-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+        .vault-check-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: #C5A059; flex-shrink: 0; margin-top: 2px; cursor: pointer; }
+        .vault-section { background: #080808; border: 1px solid #1A1A1A; padding: 20px; margin-bottom: 12px; }
+        .vault-section-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: #EAE8E3; border-bottom: 1px solid #1A1A1A; padding-bottom: 10px; margin-bottom: 16px; }
+        .vault-nav-btn { padding: 12px 28px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .18em; border: none; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .2s; }
+        .vault-btn-primary   { background: #C5A059; color: #050505; }
+        .vault-btn-primary:hover { background: #d4b470; }
+        .vault-btn-secondary { background: transparent; color: rgba(234,232,227,.4); border: 1px solid rgba(234,232,227,.1); }
+        .vault-btn-secondary:hover { color: #C5A059; border-color: rgba(197,160,89,.4); }
+        .vault-agent-fields { display: none; margin-top: 14px; padding-left: 16px; border-left: 2px solid rgba(197,160,89,.3); }
     </style>
 </head>
 
-<body class="bg-void text-marble font-sans antialiased selection:bg-gold selection:text-void min-h-screen flex flex-col overflow-x-hidden">
+<body class="min-h-screen flex flex-col">
 
-    <nav class="w-full py-6 px-6 md:px-12 flex justify-between items-center border-b border-shadow z-50 bg-void sticky top-0">
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ═════════ SCREEN: LOGIN ══════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="screen-login" class="fixed inset-0 bg-void z-50 flex items-center justify-center p-6">
+    <div class="max-w-md w-full text-center fade-in">
+
+        <!-- Logo -->
+        <div class="mb-10">
+            <div class="font-serif text-2xl tracking-widest text-gold uppercase mb-1">Lex Nova <span class="text-marble opacity-40 text-sm">HQ</span></div>
+            <div class="font-sans text-[9px] tracking-[.25em] uppercase text-marble opacity-30">Client Portal</div>
+        </div>
+
+        <!-- STATE: INPUT -->
+        <div id="state-input" class="block space-y-5">
+            <h2 class="font-serif text-3xl md:text-4xl text-marble">Enter The Portal.</h2>
+            <p class="font-sans text-[10px] tracking-[.2em] uppercase text-marble opacity-40">Secure Passwordless Authentication</p>
+            <div class="pt-4 space-y-3">
+                <input type="email" id="email-input" placeholder="Work Email"
+                    class="w-full px-5 py-4 text-sm text-center tracking-wider bg-[#080808] border border-shadow focus:border-gold outline-none transition-colors">
+                <button id="btn-send-link"
+                    class="w-full bg-gold text-void font-sans font-bold text-[10px] tracking-[.22em] uppercase py-4 hover:bg-marble transition-colors">
+                    Send Access Link →
+                </button>
+                <p id="login-error" class="hidden text-danger text-xs tracking-widest uppercase pt-2"></p>
+            </div>
+        </div>
+
+        <!-- STATE: SENT -->
+        <div id="state-sent" class="hidden space-y-5">
+            <h2 class="font-serif text-3xl md:text-4xl text-marble">Signal Sent.</h2>
+            <p class="font-sans text-xs text-marble opacity-50 leading-relaxed">A secure access link has been transmitted.<br>Click it to authenticate your session.</p>
+        </div>
+
+        <!-- STATE: VERIFYING -->
+        <div id="state-verifying" class="hidden space-y-5">
+            <div class="w-8 h-8 border-2 border-gold border-t-transparent rounded-full mx-auto" style="animation:spin 1s linear infinite;"></div>
+            <p class="font-sans text-[10px] tracking-[.22em] uppercase text-gold" style="animation:pulse 2s infinite;">Establishing Secure Connection...</p>
+        </div>
+
+        <!-- STATE: ERROR -->
+        <div id="state-error" class="hidden space-y-5">
+            <h2 class="font-serif text-3xl text-danger">Authentication Failed.</h2>
+            <p class="font-sans text-xs text-marble opacity-50">The secure link has expired or is invalid.</p>
+            <button id="btn-return-login"
+                class="text-gold text-[10px] tracking-[.2em] uppercase border-b border-gold pb-1 hover:text-marble transition-colors">
+                Return to Gate
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ═════════ SCREEN: PORTAL ════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="screen-portal" class="hidden flex-col min-h-screen">
+
+    <!-- ── GLOBAL BANNER ── -->
+    <div id="global-banner" class="w-full px-6 py-3 border-b border-shadow bg-void flex items-center justify-center gap-3">
+        <span id="global-banner-text" class="font-sans text-[10px] tracking-[.15em] uppercase text-marble opacity-40">Loading...</span>
+    </div>
+
+    <!-- ── NAV ── -->
+    <nav class="w-full py-5 px-6 md:px-10 flex justify-between items-center border-b border-shadow bg-void sticky top-0 z-40">
         <a href="https://lexnovahq.com" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <img src="logo.png" alt="Lex Nova HQ" class="h-8 w-auto" onerror="this.style.display='none'"> 
             <span class="font-serif text-xl tracking-widest text-gold uppercase mt-1">
-                Lex Nova <span class="text-marble opacity-50 text-xs ml-1">HQ</span>
+                Lex Nova <span class="text-marble opacity-40 text-xs ml-1">HQ</span>
             </span>
         </a>
-        
-        <div id="nav-controls" class="hidden flex items-center gap-6">
-            <span id="nav-ref" class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-30 uppercase hidden md:inline-block"></span>
-            <button id="btn-signout" class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-30 uppercase hover:text-gold transition-colors">Sign Out</button>
+        <div id="nav-controls" class="hidden flex items-center gap-5">
+            <span id="nav-ref" class="font-sans text-[9px] tracking-[.2em] text-marble opacity-25 uppercase hidden md:inline-block max-w-[200px] truncate"></span>
+            <button id="btn-signout" class="font-sans text-[9px] tracking-[.2em] uppercase text-marble opacity-30 hover:text-gold hover:opacity-100 transition-all">
+                Sign Out
+            </button>
         </div>
     </nav>
 
-    <main id="app-container" class="flex-grow flex flex-col relative w-full">
-        
-        <div id="screen-login" class="flex-grow flex items-center justify-center p-6 w-full absolute inset-0 bg-void z-40 transition-opacity duration-500">
-            <div class="max-w-md w-full space-y-8 text-center fade-in">
-                
-                <div id="state-input" class="space-y-6 block">
-                    <h2 class="font-serif text-3xl md:text-4xl text-marble tracking-wide">Enter The Portal.</h2>
-                    <p class="font-sans text-xs text-marble opacity-50 tracking-widest uppercase">Secure Passwordless Authentication</p>
-                    <div class="space-y-4 pt-4">
-                        <input type="email" id="email-input" placeholder="Work Email" class="w-full px-4 py-4 text-sm tracking-wider text-center transition-colors">
-                        <button id="btn-send-link" class="w-full bg-gold text-void font-bold text-xs tracking-[0.2em] uppercase py-4 hover:bg-marble transition-colors">
-                            Send Access Link &rarr;
-                        </button>
-                        <p id="login-error" class="hidden text-danger text-xs tracking-widest uppercase mt-4"></p>
-                    </div>
-                </div>
+    <!-- ── PORTAL BODY ── -->
+    <div class="flex-grow w-full max-w-5xl mx-auto px-5 md:px-8 py-10">
 
-                <div id="state-sent" class="space-y-6 hidden">
-                    <h2 class="font-serif text-3xl md:text-4xl text-marble tracking-wide">Signal Sent.</h2>
-                    <p class="font-sans text-xs text-marble opacity-50 leading-relaxed">
-                        A secure access link has been transmitted to your email.<br>Click the link to authenticate your session.
+        <!-- CLIENT HEADER -->
+        <div class="mb-10 pb-8 border-b border-shadow">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-5 mb-8">
+                <div>
+                    <h1 class="font-serif text-3xl md:text-5xl text-marble tracking-wide">
+                        Welcome, <span id="dash-client-name" class="text-gold">Founder</span>.
+                    </h1>
+                    <p class="font-sans text-[10px] tracking-[.2em] uppercase text-marble opacity-40 mt-3">
+                        Active Engagement: <span id="dash-plan-name" class="text-gold opacity-100">Loading...</span>
                     </p>
                 </div>
-
-                <div id="state-verifying" class="space-y-6 hidden">
-                    <div class="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin mx-auto"></div>
-                    <p class="font-sans text-xs text-gold tracking-widest uppercase animate-pulse">Establishing Secure Connection...</p>
+                <div id="maintenance-badge"
+                    class="hidden border border-safe bg-safe bg-opacity-10 px-4 py-2 text-safe text-[9px] font-bold uppercase tracking-widest whitespace-nowrap">
+                    ✓ Liability Maintenance Active
                 </div>
+            </div>
 
-                <div id="state-error" class="space-y-6 hidden">
-                    <h2 class="font-serif text-3xl text-danger tracking-wide">Authentication Failed.</h2>
-                    <p class="font-sans text-xs text-marble opacity-50">The secure link has expired or is invalid.</p>
-                    <button id="btn-return-login" class="text-gold text-xs tracking-[0.2em] uppercase hover:text-marble border-b border-gold pb-1 mt-4">Return to Gate</button>
+            <!-- PROGRESS BAR -->
+            <div class="relative">
+                <!-- Track -->
+                <div class="w-full h-0.5 bg-shadow relative">
+                    <div id="status-bar-fill" class="absolute top-0 left-0 h-full bg-gold transition-all duration-1000" style="width:0%"></div>
+                </div>
+                <!-- Nodes -->
+                <div class="absolute w-full flex justify-between" style="top:-8px;">
+                    <div class="flex flex-col items-center gap-3" style="width:25%;align-items:flex-start;">
+                        <div class="w-4 h-4 rounded-full node-active"></div>
+                    </div>
+                    <div class="flex flex-col items-center gap-3" style="width:25%;align-items:center;">
+                        <div id="node-2" class="w-4 h-4 rounded-full node-pending transition-all duration-500"></div>
+                    </div>
+                    <div class="flex flex-col items-center gap-3" style="width:25%;align-items:center;">
+                        <div id="node-3" class="w-4 h-4 rounded-full node-pending transition-all duration-500"></div>
+                    </div>
+                    <div class="flex flex-col items-center gap-3" style="width:25%;align-items:flex-end;">
+                        <div id="node-4" class="w-4 h-4 rounded-full node-pending transition-all duration-500"></div>
+                    </div>
+                </div>
+                <!-- Labels -->
+                <div class="flex justify-between mt-5 pt-1">
+                    <span class="font-sans text-[9px] uppercase tracking-widest text-gold text-left" style="width:25%">Intake</span>
+                    <span id="label-2" class="font-sans text-[9px] uppercase tracking-widest text-marble opacity-30 text-center" style="width:25%">Review</span>
+                    <span id="label-3" class="font-sans text-[9px] uppercase tracking-widest text-marble opacity-30 text-center" style="width:25%">Production</span>
+                    <span id="label-4" class="font-sans text-[9px] uppercase tracking-widest text-marble opacity-30 text-right" style="width:25%">Delivered</span>
                 </div>
             </div>
         </div>
 
-        <div id="screen-vault" class="hidden flex-grow flex-col items-center justify-start p-6 w-full absolute inset-0 bg-void z-30 overflow-y-auto pt-12 pb-24">
-            <div class="max-w-2xl w-full">
-                
-                <div class="mb-12 text-center">
-                    <h2 class="font-serif text-3xl md:text-4xl text-gold mb-2">Architecture Intake</h2>
-                    <p class="font-sans text-xs tracking-widest text-marble opacity-50 uppercase">Phase <span id="vault-step-indicator">1</span> of 4</p>
-                </div>
-
-                <div id="vault-form" class="space-y-8">
-                    
-                    <div id="vault-phase-1" class="vault-phase fade-in block">
-                        <h3 class="font-serif text-xl border-b border-shadow pb-2 mb-6 text-marble">The Baseline</h3>
-                        <div class="space-y-6">
-                            <div>
-                                <label class="block text-xs uppercase tracking-widest text-marble opacity-70 mb-2">1. Company Legal Name</label>
-                                <input type="text" id="v-company" class="w-full px-4 py-3 text-sm" placeholder="e.g., Acme AI, Inc.">
-                            </div>
-                            <div>
-                                <label class="block text-xs uppercase tracking-widest text-marble opacity-70 mb-2">2. HQ Location</label>
-                                <input type="text" id="v-hq" class="w-full px-4 py-3 text-sm" placeholder="State or Country">
-                            </div>
-                            <div class="bg-shadow bg-opacity-30 p-4 border border-shadow">
-                                <label class="flex items-center justify-between cursor-pointer">
-                                    <span class="text-sm">3. Do you have (or plan to have) EU/UK users?</span>
-                                    <input type="checkbox" id="v-eu" class="w-5 h-5 accent-gold">
-                                </label>
-                                <p class="text-[10px] text-marble opacity-40 mt-3 leading-relaxed">🌍 <strong>Why we ask:</strong> If you have EU users, you are legally required to comply with GDPR and the EU AI Act. Checking this injects the heavy EU data transfer agreements into your contracts.</p>
-                            </div>
-                            <div class="bg-shadow bg-opacity-30 p-4 border border-shadow">
-                                <label class="flex items-center justify-between cursor-pointer">
-                                    <span class="text-sm">4. Do you have (or plan to have) California users?</span>
-                                    <input type="checkbox" id="v-ca" class="w-5 h-5 accent-gold">
-                                </label>
-                                <p class="text-[10px] text-marble opacity-40 mt-3 leading-relaxed">🐻 <strong>Why we ask:</strong> California has the strictest privacy laws in the US (CCPA). This injects specific 'Service Provider' shields into your Privacy Policy to prevent you from being sued for 'selling' data.</p>
-                            </div>
-                        </div>
-                        <div class="mt-8 flex justify-end">
-                            <button id="btn-vault-next-1" class="bg-gold text-void px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-marble transition-colors">Next Phase &rarr;</button>
-                        </div>
-                    </div>
-
-                    <div id="vault-phase-2" class="vault-phase hidden">
-                        <h3 class="font-serif text-xl border-b border-shadow pb-2 mb-6 text-marble">Data & Technical Footprint</h3>
-                        <div class="space-y-6">
-                            <div class="bg-shadow bg-opacity-30 p-4 border border-shadow">
-                                <label class="flex items-center justify-between cursor-pointer">
-                                    <span class="text-sm font-semibold text-marble">5. Does your service process personal data?</span>
-                                    <input type="checkbox" id="v-pii" class="w-5 h-5 accent-gold">
-                                </label>
-                                <p class="text-[10px] text-marble opacity-40 mt-2">Even just emails or user-uploaded docs. Activates the core Data Processing Agreement.</p>
-                            </div>
-                            <div class="bg-shadow bg-opacity-30 p-4 border border-shadow">
-                                <label class="block text-sm font-semibold mb-3">6. Does your service process highly sensitive data?</label>
-                                <div class="space-y-3 text-sm">
-                                    <label class="flex items-center gap-3 cursor-pointer hover:text-gold transition-colors"><input type="checkbox" id="v-sens-health" class="accent-gold w-4 h-4"> Health/Medical Data</label>
-                                    <label class="flex items-center gap-3 cursor-pointer hover:text-gold transition-colors"><input type="checkbox" id="v-sens-bio" class="accent-gold w-4 h-4"> Voice/Biometrics</label>
-                                    <label class="flex items-center gap-3 cursor-pointer hover:text-gold transition-colors"><input type="checkbox" id="v-sens-fin" class="accent-gold w-4 h-4"> Financial/Trading Data</label>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs uppercase tracking-widest text-marble opacity-70 mb-2">7. How do you process AI Memory?</label>
-                                <select id="v-memory" class="w-full px-4 py-3 text-sm appearance-none cursor-pointer">
-                                    <option value="" disabled selected>Select Architecture...</option>
-                                    <option value="rag">RAG (External Vector Database)</option>
-                                    <option value="finetuning">Fine-Tuning (Modifying Model Weights)</option>
-                                </select>
-                                <p class="text-[10px] text-marble opacity-40 mt-3 leading-relaxed">🧠 <strong>Why we ask:</strong> This is the biggest legal trap in AI. If you Fine-Tune your model using customer data, that data gets baked into the math of the network. You can't easily delete it. We highly recommend RAG.</p>
-                            </div>
-                            <div>
-                                <label class="block text-xs uppercase tracking-widest text-marble opacity-70 mb-2">8. Model Infrastructure</label>
-                                <select id="v-models" class="w-full px-4 py-3 text-sm appearance-none cursor-pointer">
-                                    <option value="" disabled selected>Select Provider...</option>
-                                    <option value="thirdparty">3rd-Party APIs (OpenAI, Anthropic, etc.)</option>
-                                    <option value="selfhosted">Self-Hosted / Open Source</option>
-                                </select>
-                                <p class="text-[10px] text-marble opacity-40 mt-3 leading-relaxed">🔥 <strong>Why we ask:</strong> If you use 3rd-party APIs, we inject a firewall clause that shifts copyright and training-data liability back to OpenAI/Anthropic.</p>
-                            </div>
-                        </div>
-                        <div class="mt-8 flex justify-between items-center">
-                            <button id="btn-vault-back-2" class="text-marble opacity-50 px-4 py-2 text-xs uppercase tracking-widest hover:opacity-100 hover:text-gold transition-colors">&larr; Back</button>
-                            <button id="btn-vault-next-2" class="bg-gold text-void px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-marble transition-colors">Next Phase &rarr;</button>
-                        </div>
-                    </div>
-
-                    <div id="vault-phase-3" class="vault-phase hidden">
-                        <h3 class="font-serif text-xl border-b border-shadow pb-2 mb-6 text-marble">Action Scopes</h3>
-                        <div class="space-y-6">
-                            <div class="bg-shadow bg-opacity-30 p-4 border border-shadow border-l-4 border-l-gold">
-                                <label class="flex items-center justify-between cursor-pointer">
-                                    <span class="text-sm font-bold text-gold">9. THE DOER: Can your AI take autonomous actions?</span>
-                                    <input type="checkbox" id="v-doer" class="w-5 h-5 accent-gold">
-                                </label>
-                                <p class="text-[10px] text-marble opacity-40 mt-3 leading-relaxed">🤖 <strong>Why we ask:</strong> Under the law (UETA §14), any action your autonomous agent takes is legally binding on your company. This injects the 'Agentic Addendum' to install legal Circuit Breakers and Kill Switches.</p>
-                                
-                                <div id="v-agent-fields" class="hidden mt-4 space-y-4 pl-4 border-l border-gold pt-2">
-                                    <div>
-                                        <label class="block text-xs text-marble opacity-70 mb-1">Max $ spend per session (Circuit Breaker):</label>
-                                        <input type="text" id="v-spend-session" class="w-full px-3 py-2 text-sm" placeholder="e.g., $50">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs text-marble opacity-70 mb-1">Max API requests per minute (Rate Limit):</label>
-                                        <input type="text" id="v-rate-limit" class="w-full px-3 py-2 text-sm" placeholder="e.g., 100">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bg-shadow bg-opacity-30 p-4 border border-shadow">
-                                <label class="block text-sm font-bold mb-3 text-gold">10. THE JUDGE: Does your AI output affect high-stakes decisions?</label>
-                                <div class="space-y-3 text-sm">
-                                    <label class="flex items-center gap-3 cursor-pointer hover:text-gold transition-colors"><input type="checkbox" id="v-judge-hr" class="accent-gold w-4 h-4"> Employment/HR Screening</label>
-                                    <label class="flex items-center gap-3 cursor-pointer hover:text-gold transition-colors"><input type="checkbox" id="v-judge-legal" class="accent-gold w-4 h-4"> Legal/Contract Drafting</label>
-                                    <label class="flex items-center gap-3 cursor-pointer hover:text-gold transition-colors"><input type="checkbox" id="v-judge-fin" class="accent-gold w-4 h-4"> Credit/Housing Approvals</label>
-                                </div>
-                                <p class="text-[10px] text-marble opacity-40 mt-3 leading-relaxed">⚖️ <strong>Why we ask:</strong> These are 'High-Risk' categories. We must inject surgical disclaimers forcing your users to put a 'Human in the Loop' before relying on your AI.</p>
-                            </div>
-                            <div class="bg-shadow bg-opacity-30 p-4 border border-shadow">
-                                <label class="flex items-center justify-between cursor-pointer">
-                                    <span class="text-sm font-bold text-gold">11. THE COMPANION: Is it a conversational bot?</span>
-                                    <input type="checkbox" id="v-companion" class="w-5 h-5 accent-gold">
-                                </label>
-                            </div>
-                            <div class="bg-shadow bg-opacity-30 p-4 border border-shadow">
-                                <label class="flex items-center justify-between cursor-pointer">
-                                    <span class="text-sm font-bold text-gold">12. THE ORCHESTRATOR: Do you use a Multi-Agent Swarm?</span>
-                                    <input type="checkbox" id="v-orchestrator" class="w-5 h-5 accent-gold">
-                                </label>
-                            </div>
-                        </div>
-                        <div class="mt-8 flex justify-between items-center">
-                            <button id="btn-vault-back-3" class="text-marble opacity-50 px-4 py-2 text-xs uppercase tracking-widest hover:opacity-100 hover:text-gold transition-colors">&larr; Back</button>
-                            <button id="btn-vault-next-3" class="bg-gold text-void px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-marble transition-colors">Next Phase &rarr;</button>
-                        </div>
-                    </div>
-
-                    <div id="vault-phase-4" class="vault-phase hidden">
-                        <h3 class="font-serif text-xl border-b border-shadow pb-2 mb-6 text-marble">Service Level Agreements</h3>
-                        <div class="space-y-6">
-                            <div>
-                                <label class="block text-xs uppercase tracking-widest text-marble opacity-70 mb-2">13a. Guaranteed Uptime</label>
-                                <select id="v-uptime" class="w-full px-4 py-3 text-sm appearance-none cursor-pointer">
-                                    <option value="99.9">99.9% (Standard SaaS)</option>
-                                    <option value="99.99">99.99% (Enterprise SLA)</option>
-                                    <option value="none">No Uptime Guarantee</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs uppercase tracking-widest text-marble opacity-70 mb-2">13b. Time-to-First-Token (TTFT) Target</label>
-                                <select id="v-ttft" class="w-full px-4 py-3 text-sm appearance-none cursor-pointer">
-                                    <option value="3s">< 3 Seconds (Standard)</option>
-                                    <option value="2s">< 2 Seconds</option>
-                                    <option value="none">No TTFT Guarantee</option>
-                                </select>
-                                <p class="text-[10px] text-marble opacity-40 mt-3 leading-relaxed">⏱️ <strong>Why we ask:</strong> Never promise a 'Total Completion Time' for an AI prompt. A 5-word answer takes 1s; a 5,000-word essay takes 30s. We write your SLA to only guarantee the 'Time to First Token' to prevent refund demands.</p>
-                            </div>
-                        </div>
-                        <div class="mt-12 flex justify-between items-center border-t border-shadow pt-8">
-                            <button id="btn-vault-back-4" class="text-marble opacity-50 px-4 py-2 text-xs uppercase tracking-widest hover:opacity-100 hover:text-gold transition-colors">&larr; Back</button>
-                            <button id="btn-submit-vault" class="bg-gold text-void px-8 py-4 text-xs font-bold uppercase tracking-widest hover:bg-marble transition-colors shadow-[0_0_20px_rgba(197,160,89,0.3)]">
-                                Submit to The Architect &rarr;
-                            </button>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
+        <!-- ── TAB BAR ── -->
+        <div class="flex gap-0 border-b border-shadow mb-8 overflow-x-auto no-scrollbar">
+            <button id="tab-btn-radar"
+                class="tab-btn tab-active font-sans text-[10px] font-bold uppercase tracking-[.2em] text-marble opacity-50 pb-3 pr-6 hover:opacity-100 transition-opacity whitespace-nowrap border-b-2 border-transparent">
+                Radar
+            </button>
+            <button id="tab-btn-vault"
+                class="tab-btn font-sans text-[10px] font-bold uppercase tracking-[.2em] text-marble opacity-50 pb-3 px-6 hover:opacity-100 transition-opacity whitespace-nowrap border-b-2 border-transparent">
+                The Vault
+            </button>
+            <button id="tab-btn-shields"
+                class="tab-btn font-sans text-[10px] font-bold uppercase tracking-[.2em] text-marble opacity-50 pb-3 px-6 hover:opacity-100 transition-opacity whitespace-nowrap border-b-2 border-transparent">
+                The Shields
+            </button>
+            <button id="tab-btn-checklist"
+                class="tab-btn font-sans text-[10px] font-bold uppercase tracking-[.2em] text-marble opacity-50 pb-3 px-6 hover:opacity-100 transition-opacity whitespace-nowrap border-b-2 border-transparent">
+                Execution
+            </button>
+            <button id="tab-btn-syndicate"
+                class="tab-btn font-sans text-[10px] font-bold uppercase tracking-[.2em] text-gold opacity-70 pb-3 pl-6 hover:opacity-100 transition-opacity whitespace-nowrap border-b-2 border-transparent">
+                The Syndicate
+            </button>
         </div>
 
-        <div id="screen-dashboard" class="hidden flex-grow w-full max-w-6xl mx-auto px-4 md:px-8 py-8 absolute inset-0 bg-void z-20 overflow-y-auto">
-            
-            <div class="mb-10 border-b border-shadow pb-8">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-                    <div>
-                        <h1 class="font-serif text-3xl md:text-5xl text-marble tracking-wide">Welcome, <span id="dash-client-name" class="text-gold">Founder</span>.</h1>
-                        <p class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase mt-3">Active Engagement: <span id="dash-plan-name" class="text-gold opacity-100">Loading...</span></p>
-                    </div>
-                    <div id="maintenance-badge" class="hidden border border-safe bg-safe bg-opacity-10 px-4 py-2 text-safe text-[9px] font-bold uppercase tracking-widest">
-                        ✓ Liability Maintenance Active
-                    </div>
-                </div>
+        <!-- ══════════════════════════════════════════════════════ -->
+        <!-- ══ TAB CONTENT AREAS ══════════════════════════════════ -->
+        <!-- ══════════════════════════════════════════════════════ -->
 
-                <div class="w-full bg-shadow h-1 relative mt-8">
-                    <div id="status-bar-fill" class="absolute top-0 left-0 h-full bg-gold transition-all duration-1000 w-0"></div>
-                    <div class="absolute w-full top-[-4px] flex justify-between">
-                        <div class="w-3 h-3 rounded-full bg-gold shadow-[0_0_10px_rgba(197,160,89,0.8)]"></div>
-                        <div id="node-2" class="w-3 h-3 rounded-full bg-shadow transition-colors duration-500"></div>
-                        <div id="node-3" class="w-3 h-3 rounded-full bg-shadow transition-colors duration-500"></div>
-                        <div id="node-4" class="w-3 h-3 rounded-full bg-shadow transition-colors duration-500"></div>
-                    </div>
-                </div>
-                <div class="flex justify-between mt-3 px-1">
-                    <span class="text-[9px] uppercase tracking-widest text-gold text-left">Intake Received</span>
-                    <span id="label-2" class="text-[9px] uppercase tracking-widest text-marble opacity-30 text-center">Under Review</span>
-                    <span id="label-3" class="text-[9px] uppercase tracking-widest text-marble opacity-30 text-center">In Production</span>
-                    <span id="label-4" class="text-[9px] uppercase tracking-widest text-marble opacity-30 text-right">Delivered</span>
-                </div>
-            </div>
+        <!-- TAB 1: RADAR -->
+        <div id="tab-radar" class="tab-content"></div>
 
-            <div class="flex gap-6 mb-8 border-b border-shadow overflow-x-auto no-scrollbar">
-                <button id="tab-btn-heatmap" class="tab-btn tab-active pb-3 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-marble opacity-50 hover:opacity-100 transition-opacity whitespace-nowrap">Threat Intel</button>
-                <button id="tab-btn-docs" class="tab-btn pb-3 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-marble opacity-50 hover:opacity-100 transition-opacity whitespace-nowrap">Doc Vault</button>
-                <button id="tab-btn-engineering" class="tab-btn pb-3 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-marble opacity-50 hover:opacity-100 transition-opacity whitespace-nowrap">Engineering</button>
-                <button id="tab-btn-network" class="tab-btn pb-3 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-marble opacity-50 hover:opacity-100 transition-opacity whitespace-nowrap text-gold">The Syndicate</button>
-            </div>
+        <!-- TAB 2: VAULT -->
+        <div id="tab-vault" class="tab-content hidden"></div>
 
-            <div id="tab-heatmap" class="tab-content fade-in block">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-                    
-                    <div>
-                        <h2 class="font-serif text-2xl text-marble border-b border-shadow pb-2 mb-4">Current Legal Heat</h2>
-                        <p class="text-[11px] text-marble opacity-50 mb-6 leading-relaxed">Threat vectors actively mitigated by your current Lex Nova architecture footprint.</p>
-                        
-                        <div id="heatmap-list" class="space-y-3">
-                            </div>
-                    </div>
+        <!-- TAB 3: SHIELDS -->
+        <div id="tab-shields" class="tab-content hidden"></div>
 
-                    <div>
-                        <h2 class="font-serif text-2xl text-marble border-b border-shadow pb-2 mb-4">Regulatory Radar</h2>
-                        <p class="text-[11px] text-marble opacity-50 mb-6 leading-relaxed">Upcoming legislation affecting your architecture. Sourced directly from Lex Nova HQ Intelligence.</p>
-                        
-                        <div id="radar-upsell-box" class="hidden mb-6 bg-danger bg-opacity-10 border border-danger p-5">
-                            <div class="flex items-start gap-4">
-                                <span class="text-danger text-2xl mt-1">⚠️</span>
-                                <div>
-                                    <h4 class="text-danger text-sm font-bold tracking-widest uppercase mb-2">Coverage Gap Detected</h4>
-                                    <p class="text-[11px] text-marble opacity-80 mb-4 leading-relaxed">Your architecture will fall out of compliance due to upcoming regulations listed below. Liability Maintenance is required to push patch updates to your Vault.</p>
-                                    <div id="paypal-maintenance-container">
-                                        <button class="bg-gold text-void text-[10px] px-6 py-3 uppercase tracking-widest font-bold hover:bg-marble transition-colors w-full sm:w-auto text-center">Activate Maintenance — $297/mo</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        <!-- TAB 4: EXECUTION CHECKLIST -->
+        <div id="tab-checklist" class="tab-content hidden"></div>
 
-                        <div id="radar-safe-box" class="hidden mb-6 bg-safe bg-opacity-10 border border-safe p-5">
-                            <p class="text-safe text-xs font-bold tracking-widest uppercase mb-1">✓ Maintenance Active</p>
-                            <p class="text-[11px] text-marble opacity-80 leading-relaxed">Patch updates for the upcoming legislation below are in development and will be pushed automatically.</p>
-                        </div>
+        <!-- TAB 5: SYNDICATE -->
+        <div id="tab-syndicate" class="tab-content hidden"></div>
 
-                        <div id="radar-list" class="space-y-3">
-                            </div>
-                    </div>
-                </div>
-            </div>
+    </div>
 
-            <div id="tab-docs" class="tab-content hidden fade-in">
-                
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4 border-b border-shadow pb-4">
-                    <div>
-                        <h2 class="font-serif text-2xl text-marble mb-1">Your Architecture.</h2>
-                        <p class="text-[11px] text-marble opacity-50 leading-relaxed">Review-Ready drafts. Each document requires local counsel review before execution.</p>
-                    </div>
-                    <div id="counsel-handoff-container" class="hidden">
-                        <button id="btn-download-zip" class="bg-marble text-void px-6 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-colors shadow-lg flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            Generate Counsel Handoff .ZIP
-                        </button>
-                    </div>
-                </div>
-
-                <div id="docs-locked-notice" class="block bg-[#0a0a0a] border border-shadow p-8 text-center mb-6">
-                    <p class="font-sans text-xs text-marble opacity-40 uppercase tracking-widest">Vault Locked. Architecture in Production.</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12" id="docs-grid">
-                    </div>
-
-                <div id="video-container" class="hidden border border-shadow p-6 md:p-8 bg-[#0a0a0a]">
-                    <h3 class="font-serif text-xl text-gold mb-2">The Architect's Walkthrough</h3>
-                    <p class="text-[11px] text-marble opacity-50 mb-6">A personalized breakdown of your engineered clauses.</p>
-                    <div id="video-embed" class="aspect-video bg-void flex items-center justify-center border border-shadow w-full">
-                        <span class="text-marble opacity-30 text-xs tracking-widest uppercase">Video Placeholder</span>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab-engineering" class="tab-content hidden fade-in">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    
-                    <div>
-                        <h2 class="font-serif text-2xl text-marble border-b border-shadow pb-2 mb-4">Product Safeguards</h2>
-                        <p class="text-[11px] text-marble opacity-50 mb-6 leading-relaxed">Action items for your CTO to align the codebase and UI with your legal architecture.</p>
-                        
-                        <div class="space-y-4" id="eng-checklist">
-                            </div>
-                    </div>
-
-                    <div class="relative upsell-group group border border-shadow bg-[#0a0a0a] overflow-hidden">
-                        
-                        <div class="blur-target p-6 md:p-8 space-y-6 opacity-60">
-                            <h2 class="font-serif text-2xl text-danger border-b border-danger pb-2">Internal AI Risks (Shadow AI)</h2>
-                            <div class="space-y-5">
-                                <div class="flex items-start gap-4 opacity-70">
-                                    <span class="text-danger mt-1 text-lg">❌</span>
-                                    <div>
-                                        <span class="block text-sm font-bold text-marble">Public Model Data Leaks</span>
-                                        <span class="block text-[11px] mt-1 text-marble opacity-70 leading-relaxed">Developers pasting proprietary source code into public ChatGPT instances.</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-start gap-4 opacity-70">
-                                    <span class="text-danger mt-1 text-lg">❌</span>
-                                    <div>
-                                        <span class="block text-sm font-bold text-marble">Customer PII Violations</span>
-                                        <span class="block text-[11px] mt-1 text-marble opacity-70 leading-relaxed">Sales teams uploading user spreadsheets to Claude, breaching your DPA.</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-start gap-4 opacity-70">
-                                    <span class="text-danger mt-1 text-lg">❌</span>
-                                    <div>
-                                        <span class="block text-sm font-bold text-marble">Open-Source Copyleft Risk</span>
-                                        <span class="block text-[11px] mt-1 text-marble opacity-70 leading-relaxed">Unlicensed GitHub Copilot usage poisoning proprietary software repos.</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="border-trigger absolute inset-0 border-2 border-transparent transition-all duration-300 pointer-events-none"></div>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center bg-void bg-opacity-70 transition-all duration-300 px-6">
-                            
-                            <span class="lock-icon text-5xl mb-4 transition-all duration-300 filter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">🔒</span>
-                            <p class="lock-icon text-[10px] tracking-[0.3em] uppercase font-bold text-marble transition-all duration-300">Workplace Shield Locked</p>
-                            
-                            <div class="gold-btn absolute flex flex-col items-center opacity-0 transform translate-y-4 scale-95 transition-all duration-400 text-center pointer-events-auto w-full max-w-sm">
-                                <p class="text-[13px] font-serif text-marble italic mb-6 leading-relaxed">
-                                    "Your product is secure. Your workplace is not.<br><br>A single employee pasting customer data into an unauthorized AI tool voids your entire legal architecture."
-                                </p>
-                                <button id="btn-upsell-workplace" class="bg-gold text-void px-6 py-4 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-marble transition-colors shadow-[0_0_20px_rgba(197,160,89,0.4)] w-full">
-                                    Unlock Workplace Shield — $1,000
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <div id="tab-network" class="tab-content hidden fade-in">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    
-                    <div>
-                        <h2 class="font-serif text-3xl text-gold mb-2">The Syndicate</h2>
-                        <p class="font-sans text-[11px] leading-relaxed text-marble opacity-60 mb-8 border-b border-shadow pb-6">
-                            Founders operate in networks. Register a target founder building an AI product. If they engage Lex Nova HQ for their legal architecture, your operation is credited immediately.
-                        </p>
-                        
-                        <div class="bg-[#0a0a0a] border border-shadow p-6 md:p-8">
-                            <p id="syndicate-reward" class="text-[10px] uppercase tracking-[0.2em] text-gold font-bold mb-6 flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-gold animate-pulse"></span>
-                                Reward: 3 Months Free Maintenance
-                            </p>
-                            
-                            <div class="space-y-4 mb-6">
-                                <div>
-                                    <label class="block text-[9px] uppercase tracking-widest text-marble opacity-50 mb-1">Target Name</label>
-                                    <input type="text" id="ref-name" class="w-full px-4 py-3 text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-[9px] uppercase tracking-widest text-marble opacity-50 mb-1">Target Company</label>
-                                    <input type="text" id="ref-company" class="w-full px-4 py-3 text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-[9px] uppercase tracking-widest text-marble opacity-50 mb-1">Target Work Email</label>
-                                    <input type="email" id="ref-email" class="w-full px-4 py-3 text-sm">
-                                </div>
-                            </div>
-                            
-                            <button id="btn-submit-referral" class="bg-gold text-void w-full px-6 py-4 text-[10px] font-bold uppercase tracking-widest hover:bg-marble transition-colors">Register Target</button>
-                            <p id="ref-msg" class="hidden text-xs mt-4 text-center"></p>
-                        </div>
-                    </div>
-
-                    <div class="lg:pl-8 lg:border-l lg:border-shadow">
-                        <h3 class="font-sans text-[10px] tracking-[0.2em] uppercase text-marble opacity-50 mb-6">Registered Targets</h3>
-                        <div id="ref-list" class="space-y-3">
-                            <p class="text-xs text-marble opacity-30 italic">No targets registered.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <footer class="border-t border-shadow py-8 px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-4 z-50 bg-void">
-        <p class="font-sans text-[9px] tracking-[0.2em] text-marble opacity-20 uppercase text-center md:text-left">
+    <!-- ── FOOTER ── -->
+    <footer class="border-t border-shadow py-8 px-6 md:px-10 flex flex-col md:flex-row justify-between items-center gap-3 bg-void">
+        <p class="font-sans text-[9px] tracking-[.2em] uppercase text-marble opacity-20 text-center md:text-left">
             Lex Nova HQ — Legal Architecture
         </p>
-        <p class="font-sans text-[9px] tracking-[0.2em] text-marble opacity-20 uppercase text-center md:text-right">
+        <p class="font-sans text-[9px] tracking-[.2em] uppercase text-marble opacity-20 text-center md:text-right">
             Not a law firm. Review-Ready standard applies.
         </p>
     </footer>
 
-    <div id="modal-debrief" class="hidden fixed inset-0 bg-void bg-opacity-95 z-[100] flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-[#0a0a0a] border border-gold p-6 md:p-10 max-w-xl w-full relative my-8 fade-in shadow-[0_0_30px_rgba(197,160,89,0.15)]">
-            
-            <h2 class="font-serif text-3xl text-gold mb-1">Mission Post-Mortem.</h2>
-            <p class="text-[10px] text-marble opacity-50 mb-8 uppercase tracking-[0.2em]">Required before Document Vault unlocks</p>
-            
-            <div class="space-y-6">
-                <div>
-                    <label class="block text-sm font-bold mb-1 text-marble">1. The Verdict</label>
-                    <p class="text-[11px] opacity-50 mb-3 text-marble">How would you rate your overall experience with Lex Nova?</p>
-                    <select id="db-rating" class="w-full px-4 py-3 text-sm text-gold font-bold appearance-none bg-void border border-shadow">
-                        <option value="5">⭐⭐⭐⭐⭐ Outstanding</option>
-                        <option value="4">⭐⭐⭐⭐ Solid</option>
-                        <option value="3">⭐⭐⭐ Acceptable</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-bold mb-1 text-marble">2. The Catalyst</label>
-                    <p class="text-[11px] opacity-50 mb-3 text-marble">What exact moment made you realize generic templates wouldn't work for your AI?</p>
-                    <input type="text" id="db-catalyst" class="w-full px-4 py-3 text-sm bg-void border border-shadow focus:border-gold">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-bold mb-1 text-marble">3. The Portal</label>
-                    <p class="text-[11px] opacity-50 mb-3 text-marble">Which feature of this Client Portal gave you the most clarity or peace of mind?</p>
-                    <input type="text" id="db-portal" class="w-full px-4 py-3 text-sm bg-void border border-shadow focus:border-gold">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-bold mb-1 text-marble">4. The Result</label>
-                    <p class="text-[11px] opacity-50 mb-3 text-marble">How much time, runway, or legal anxiety did this engagement save you?</p>
-                    <input type="text" id="db-result" class="w-full px-4 py-3 text-sm bg-void border border-shadow focus:border-gold">
-                </div>
-                
-                <label class="flex items-start gap-4 cursor-pointer mt-6 border-t border-shadow pt-6 group">
-                    <input type="checkbox" id="db-consent" class="mt-1 accent-gold w-4 h-4 cursor-pointer">
-                    <span class="text-[10px] text-marble opacity-50 leading-relaxed group-hover:opacity-80 transition-opacity">
-                        Lex Nova HQ has permission to use my first name, company, and this post-mortem to help educate other founders on the risks of unprotected AI.
-                    </span>
-                </label>
+</div><!-- /screen-portal -->
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ═════════ DEBRIEF MODAL ══════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="modal-debrief"
+    class="hidden fixed inset-0 bg-void bg-opacity-96 flex items-start justify-center p-4 overflow-y-auto"
+    style="z-index:200; backdrop-filter:blur(4px);">
+
+    <div class="bg-[#080808] border border-gold border-opacity-40 w-full max-w-xl my-10 p-8 md:p-12 fade-in shadow-[0_0_40px_rgba(197,160,89,.1)]">
+
+        <!-- Header -->
+        <div class="mb-8 pb-6 border-b border-shadow">
+            <div class="inline-block border border-gold border-opacity-30 bg-gold bg-opacity-5 px-4 py-1 mb-4">
+                <span class="font-sans text-[9px] tracking-[.25em] uppercase text-gold">Required Before Vault Unlocks</span>
             </div>
-            
-            <button id="btn-submit-debrief" class="mt-10 w-full bg-gold text-void py-4 font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-marble transition-colors">
-                Submit & Unlock Vault
-            </button>
+            <h2 class="font-serif text-3xl md:text-4xl text-marble mb-2">Mission Post-Mortem.</h2>
+            <p class="font-sans text-[10px] text-marble opacity-40 leading-relaxed tracking-wide">Complete this debrief to unlock your documents. Your feedback directly shapes how Lex Nova serves the next founder.</p>
         </div>
+
+        <!-- Q1: The Verdict -->
+        <div class="mb-6">
+            <label class="block font-sans text-[10px] uppercase tracking-[.2em] text-gold font-bold mb-1">1. The Verdict</label>
+            <p class="font-sans text-[10px] text-marble opacity-45 mb-3 leading-relaxed">How would you rate your overall experience with Lex Nova HQ?</p>
+            <select id="db-rating" class="w-full bg-void border border-shadow text-marble font-sans text-sm px-4 py-3 outline-none focus:border-gold transition-colors appearance-none cursor-pointer">
+                <option value="5">⭐⭐⭐⭐⭐ Outstanding — exceeded expectations</option>
+                <option value="4">⭐⭐⭐⭐ Solid — delivered what was promised</option>
+                <option value="3">⭐⭐⭐ Acceptable — met the baseline</option>
+            </select>
+        </div>
+
+        <!-- Q2: The Catalyst -->
+        <div class="mb-6">
+            <label class="block font-sans text-[10px] uppercase tracking-[.2em] text-gold font-bold mb-1">2. The Catalyst</label>
+            <p class="font-sans text-[10px] text-marble opacity-45 mb-3 leading-relaxed">What exact moment made you realize generic templates wouldn't work for your AI company?</p>
+            <input type="text" id="db-catalyst"
+                class="w-full bg-void border border-shadow text-marble font-sans text-sm px-4 py-3 outline-none focus:border-gold transition-colors"
+                placeholder="e.g. When I read about the Moffatt case and realised our ToS was useless...">
+        </div>
+
+        <!-- Q3: The Portal -->
+        <div class="mb-6">
+            <label class="block font-sans text-[10px] uppercase tracking-[.2em] text-gold font-bold mb-1">3. The Portal</label>
+            <p class="font-sans text-[10px] text-marble opacity-45 mb-3 leading-relaxed">Which feature of this Client Portal gave you the most clarity or peace of mind?</p>
+            <input type="text" id="db-portal"
+                class="w-full bg-void border border-shadow text-marble font-sans text-sm px-4 py-3 outline-none focus:border-gold transition-colors"
+                placeholder="e.g. The Regulatory Radar showing my coverage score...">
+        </div>
+
+        <!-- Q4: The Result -->
+        <div class="mb-6">
+            <label class="block font-sans text-[10px] uppercase tracking-[.2em] text-gold font-bold mb-1">4. The Result</label>
+            <p class="font-sans text-[10px] text-marble opacity-45 mb-3 leading-relaxed">How much time, runway, or legal anxiety did this engagement save you?</p>
+            <input type="text" id="db-result"
+                class="w-full bg-void border border-shadow text-marble font-sans text-sm px-4 py-3 outline-none focus:border-gold transition-colors"
+                placeholder="e.g. Saved us 3 weeks and roughly $8,000 in legal fees...">
+        </div>
+
+        <!-- Q5: Consent -->
+        <div class="mb-8 pt-6 border-t border-shadow">
+            <label class="flex items-start gap-4 cursor-pointer group">
+                <input type="checkbox" id="db-consent"
+                    class="mt-1 w-5 h-5 flex-shrink-0 cursor-pointer accent-gold">
+                <span class="font-sans text-[10px] text-marble opacity-50 leading-relaxed group-hover:opacity-80 transition-opacity">
+                    Lex Nova HQ has permission to use my first name, company name, and responses above (anonymised where requested) to educate other founders on AI legal risk. No private business details will be disclosed.
+                </span>
+            </label>
+        </div>
+
+        <!-- Error message -->
+        <p id="db-msg" class="hidden font-sans text-[10px] text-danger tracking-widest uppercase mb-4 text-center"></p>
+
+        <!-- Submit -->
+        <button id="btn-submit-debrief"
+            class="w-full bg-gold text-void font-sans font-bold text-[10px] uppercase tracking-[.22em] py-5 hover:bg-marble transition-colors">
+            Submit & Unlock Vault →
+        </button>
+
+        <p class="font-sans text-[9px] text-marble opacity-25 text-center mt-5 leading-relaxed">
+            Your debrief is stored securely and never shared with third parties.<br>
+            Lex Nova HQ · Legal Architecture Practice · Not a Law Firm.
+        </p>
+
     </div>
+</div>
 
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ═════════ PORTAL TOAST ═══════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="portal-toast"></div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ═════════ FIREBASE INIT ══════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth }       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // Keep your exact config
-        const firebaseConfig = {
-            apiKey:            "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
-            authDomain:        "lexnova-hq.firebaseapp.com",
-            projectId:         "lexnova-hq",
-            storageBucket:     "lexnova-hq.firebasestorage.app",
-            messagingSenderId: "539475214055",
-            appId:             "1:539475214055:web:c01a99ec94ff073a9b6c42"
-        };
+    const app = initializeApp({
+        apiKey:            "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
+        authDomain:        "lexnova-hq.firebaseapp.com",
+        projectId:         "lexnova-hq",
+        storageBucket:     "lexnova-hq.firebasestorage.app",
+        messagingSenderId: "539475214055",
+        appId:             "1:539475214055:web:c01a99ec94ff073a9b6c42"
+    });
 
-        // Initialize Firebase and expose safely to the window for the modules
-        const app = initializeApp(firebaseConfig);
-        window.firebaseAuth = getAuth(app);
-        window.firebaseDb = getFirestore(app);
-    </script>
+    window.firebaseAuth = getAuth(app);
+    window.firebaseDb   = getFirestore(app);
+</script>
 
-    <script type="module" src="js/auth.js"></script>
-    <script type="module" src="js/vault.js"></script>
-    <script type="module" src="js/dashboard.js"></script>
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ═════════ MODULE IMPORTS ═════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<script type="module" src="js/auth.js"></script>
+<script type="module" src="js/vault.js"></script>
+<script type="module" src="js/dashboard.js"></script>
 
 </body>
 </html>
