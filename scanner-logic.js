@@ -1,260 +1,487 @@
 /**
- * LEX NOVA HQ — V5.5 CANON FORENSIC SCANNER & UNIFIED TERMINAL ENGINE
- * Architecture: Async-Only | Multi-Select Configurations | EXT. 10 Tripwires | Dual-Intelligence Merge
+ * LEX NOVA HQ — FORENSIC SCANNER v5.5 CANON
+ * scanner-logic.js — Full Rewrite March 2026
  *
- * PATCH LOG:
- *   FIX 1 — Gate payload stores full gap objects (not just trap name strings)
- *   FIX 2 — Dual-intelligence merge reads prospectData.forensicGaps (not .detectedGaps)
- *   FIX 3 — Duplicate matrixRows declaration removed; single build with evidence blocks
- *   FIX 4 — scrapeCount, dualCount, confessionCount, countN, countC, countH declared before use
- *   FIX 5 — authorityText calculated AFTER merge block so counts are populated
- *   FIX 6 — Source badge checks g.evidence presence, not just source string
- *   FIX 7 — Evidence block renders with individual null checks on source/reason
- *   FIX 8 — Severity escalation: Hunter rating wins if more severe than quiz rating
- *   FIX 9 — Explicit source = 'scanner' fallback on all quiz-only gaps
+ * CHANGES FROM v5.0:
+ * ─ All gap objects rebuilt to match Hunter v6.1 forensicGaps schema exactly
+ * ─ New Phase 2: 4 arch groups (actions/evaluates/creates/talks) — all 10 INT archetypes covered
+ * ─ threatId as primary merge key — id retained as fallback for legacy Firestore data
+ * ─ addExt() helper splits comma-separated EXT strings before adding to trippedSurfaces
+ * ─ EXT_VALUES: all 10 surfaces, no-space format, EXT.02 + EXT.05 added
+ * ─ Severity pulled from registry — never computed from pts
+ * ─ Velocity from registry, converted to client-display labels in table
+ * ─ thePain replaces plain / theFix replaces doc throughout
+ * ─ Dual-push gaps array on C2 question (gaps[])
+ * ─ 6-column table: The Gap / What It Costs You / How We Found It / Severity / Clock / The Fix
+ * ─ Rows 1-3 full reveal / Rows 4-6 partial blur (trap + pain blurred, evidence + badges clear)
+ * ─ EL plan lock Option B: acceptance resets on plan change
+ * ─ EL close button (no-accept path)
+ * ─ lanes + metaVerbs added to gate payload
+ * ─ DOC_PP + DOC_PBK added to both kit manifests
+ * ─ ARCH_PRIORITY fixed order prevents click-order drops
+ * ─ Version strings updated to v5.5
  */
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+import { initializeApp }    from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
+                            from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-// ── 01. SYSTEM CONFIGURATION ───────────────────────────────────────────
+// ── 01. FIREBASE ────────────────────────────────────────────────────────
 const firebaseConfig = {
-    apiKey: "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
-    authDomain: "lexnova-hq.firebaseapp.com",
-    projectId: "lexnova-hq",
-    storageBucket: "lexnova-hq.firebasestorage.app",
+    apiKey:            "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
+    authDomain:        "lexnova-hq.firebaseapp.com",
+    projectId:         "lexnova-hq",
+    storageBucket:     "lexnova-hq.firebasestorage.app",
     messagingSenderId: "539475214055",
-    appId: "1:539475214055:web:c01a99ec94ff073a9b6c42"
+    appId:             "1:539475214055:web:c01a99ec94ff073a9b6c42"
 };
-
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
+// ── 02. CONSTANTS ───────────────────────────────────────────────────────
 const CHECKOUT_WEBHOOK = "https://hook.eu1.make.com/r77qw3emv27csjq2eag7ibqku1juve4t";
 const GATE_WEBHOOK     = "https://hook.eu1.make.com/q7nnd3klwdmlmtesq5no4yfsmk3v8ua7";
 
 const PAYPAL_LINKS = {
-    agentic_shield:  "https://www.paypal.com/ncp/payment/WNH78KQCXDBL6",
-    workplace_shield:"https://www.paypal.com/ncp/payment/7DUHPJJ4XVUVJ",
-    complete_stack:  "https://www.paypal.com/ncp/payment/X3PJ47FEDUSPW"
+    agentic_shield:   "https://www.paypal.com/ncp/payment/WNH78KQCXDBL6",
+    workplace_shield: "https://www.paypal.com/ncp/payment/7DUHPJJ4XVUVJ",
+    complete_stack:   "https://www.paypal.com/ncp/payment/X3PJ47FEDUSPW"
 };
 
 const PLAN_DATA = {
-    agentic_shield:  { name:"The Agentic Shield",  price:997,  tier:"Kit",    lane:"Lane A — Commercial",  delivery:"48 hours from Intake Form submission", rev:"1 Round" },
-    workplace_shield:{ name:"The Workplace Shield", price:997,  tier:"Kit",    lane:"Lane B — Operational", delivery:"48 hours from Intake Form submission", rev:"1 Round" },
-    complete_stack:  { name:"The Complete Stack",   price:2000, tier:"Bundle", lane:"Hybrid (A + B)",       delivery:"72 hours from Intake Form submission", rev:"2 Rounds" }
+    agentic_shield:   { name:"The Agentic Shield",  price:997,  tier:"Kit",    lane:"Lane A — Commercial",  delivery:"48 hours from Intake Form submission", rev:"1 Round" },
+    workplace_shield: { name:"The Workplace Shield", price:997,  tier:"Kit",    lane:"Lane B — Operational", delivery:"48 hours from Intake Form submission", rev:"1 Round" },
+    complete_stack:   { name:"The Complete Stack",   price:2000, tier:"Bundle", lane:"Hybrid (A + B)",       delivery:"72 hours from Intake Form submission", rev:"2 Rounds" }
 };
 
-// ── 02. STATE MANAGEMENT ───────────────────────────────────────────────
-const urlParams  = new URLSearchParams(window.location.search);
-const pidFromUrl = urlParams.get('pid');
+// All 10 EXT surfaces — no-space format, matches Hunter registry exactly
+// EXT.02 and EXT.05 added (were missing from v5.0)
+const EXT_VALUES = {
+    "EXT.01": 15000000,
+    "EXT.02":  5000000,
+    "EXT.03": 10000000,
+    "EXT.04":  5000000,
+    "EXT.05": 10000000,
+    "EXT.06": 20000000,
+    "EXT.07":  5000000,
+    "EXT.08":  2500000,
+    "EXT.09": 10000000,
+    "EXT.10":  5000000
+};
 
-let prospectData  = null;
-let selectedLanes = [];
-let selectedArchs = [];
+// Registry velocity values → client-facing display labels
+const VELOCITY_DISPLAY = {
+    "Immediate": "Active Now",
+    "High":      "This Year",
+    "Upcoming":  "Incoming",
+    "Pending":   "Watch"
+};
 
-let totalScore  = 0;
-let unsureFlag  = false;
-let activeGaps  = [];
-let trippedSurfaces = new Set();
+// ── 03. GAP REGISTRY ────────────────────────────────────────────────────
+// SCHEMA CONTRACT: All fields match Hunter v6.1 forensicGaps output exactly.
+// Severity and velocity are pulled VERBATIM from Lane A Threat Registry V2.
+// They are NEVER computed from quiz pts — pts only determine if a gap fires.
+// evidenceTier: null for scanner gaps (no URL evidence at quiz time).
+// source: "scanner" — merge block upgrades to "dual-verified" when Hunter confirms.
+// dualVerifiable: false only for SCAN_INTERNAL_001 (internal behavior, no public URL).
 
-let quizRoute     = [];
-let currentQIndex = 0;
-let vaultInputs   = [];
+const GAP_SPECHT = {
+    id:"gap_specht",       threatId:"UNI_CON_001",
+    trap:'"Browsewrap" Invalidity',
+    legalAmmo:"Specht v. Netscape (2002)",
+    severity:"CRITICAL",   velocity:"Immediate",
+    thePain:"Courts throw out arbitration clauses and liability caps",
+    theFix:"DOC_TOS §1.1", ext:"EXT.08, EXT.09",
+    evidenceTier:null, evidence:{ source:null, reason:null },
+    source:"scanner",      dualVerifiable:true
+};
 
-let recommendedPlan   = null;
-let activePlan        = null;
-let exitFired         = false;
-let engagementRefCode = "";
+const GAP_MOFFATT = {
+    id:"gap_moffatt",      threatId:"UNI_HAL_001",
+    trap:"Bot Accountability",
+    legalAmmo:"Moffatt v. Air Canada (2024)",
+    severity:"CRITICAL",   velocity:"Immediate",
+    thePain:"Company legally forced to pay out hallucinated financial promises",
+    theFix:"DOC_TOS §8.1 & §8.2", ext:"EXT.08",
+    evidenceTier:null, evidence:{ source:null, reason:null },
+    source:"scanner",      dualVerifiable:true
+};
 
-// ── 03. THE CANON V5.5 QUESTION BANK ──────────────────────────────────
+const GAP_SCHREMS = {
+    id:"gap_schrems",      threatId:"UNI_SEC_001",
+    trap:"Illegal Data Migration",
+    legalAmmo:"Schrems II (2020)",
+    severity:"CRITICAL",   velocity:"Immediate",
+    thePain:"Routing EU data to US servers without Standard Contractual Clauses",
+    theFix:"DOC_DPA §6.2", ext:"EXT.01",
+    evidenceTier:null, evidence:{ source:null, reason:null },
+    source:"scanner",      dualVerifiable:true
+};
+
+const GAP_BARTZ = {
+    id:"gap_bartz",        threatId:"UNI_INF_001",
+    trap:"Upstream Training Piracy Liability",
+    legalAmmo:"Bartz v. Anthropic (Settlement approved Sep 2025)",
+    severity:"NUCLEAR",    velocity:"Immediate",
+    thePain:"Largest copyright settlement in US history ($1.5B); piracy-sourced training is per se infringement; precedent pressures the entire foundation model supply chain",
+    theFix:"DOC_TOS §8.7", ext:"EXT.10",
+    evidenceTier:null, evidence:{ source:null, reason:null },
+    source:"scanner",      dualVerifiable:true
+};
+
+const GAP_WARRANTY = {
+    id:"gap_warranty",     threatId:"UNI_LIA_004",
+    trap:"Inconspicuous Warranty Caps",
+    legalAmmo:"UCC § 2-316 & § 2-719",
+    severity:"NUCLEAR",    velocity:"High",
+    thePain:'Warranty disclaimers must be "conspicuous" (ALL CAPS) or courts strike them — leaving no liability protection',
+    theFix:"DOC_TOS §9.2", ext:"EXT.08, EXT.09",
+    evidenceTier:null, evidence:{ source:null, reason:null },
+    source:"scanner",      dualVerifiable:true
+};
+
+const GAP_SHADOW = {
+    id:"SCAN_INTERNAL_001", threatId:null,
+    trap:"Shadow AI Bleed",
+    legalAmmo:"Trade Secret Law / Internal IP Policy",
+    severity:"NUCLEAR",    velocity:"Immediate",
+    thePain:"Employees are actively leaking proprietary IP and client data into public LLMs without restriction or detection",
+    theFix:"DOC_HND",      ext:"EXT.09",
+    evidenceTier:null, evidence:{ source:null, reason:null },
+    source:"scanner",      dualVerifiable:false
+    // NOTE: Scanner-only by design — internal employee behavior has no public URL.
+    // Never attempt Hunter merge on this gap. dualVerifiable: false.
+};
+
+const GAP_UETA = {
+    id:"gap_ueta",         threatId:"INT01_AGT_001",
+    trap:"Electronic Agent Authority",
+    legalAmmo:"UETA § 14",
+    severity:"NUCLEAR",    velocity:"Immediate",
+    thePain:"The principal is legally bound by its AI's operations, even if no human reviewed the action",
+    theFix:"DOC_AGT §2.1", ext:"EXT.08, EXT.09",
+    evidenceTier:null, evidence:{ source:null, reason:null },
+    source:"scanner",      dualVerifiable:true
+};
+
+const GAP_MOBLEY = {
+    id:"gap_mobley",       threatId:"INT02_DIS_001",
+    trap:'Vendor Immunity / "HITL Theater"',
+    legalAmmo:"Mobley v. Workday (Active 2025/2026)",
+    severity:"NUCLEAR",    velocity:"Immediate",
+    thePain:'Judge rejected blanket immunity for the AI vendor; suit proceeds under "agency" theory against the software company directly',
+    theFix:"DOC_AGT §2.2", ext:"EXT.07",
+    evidenceTier:null, evidence:{ source:null, reason:null },
+    source:"scanner",      dualVerifiable:true
+};
+
+const GAP_CREATOR = {
+    id:"gap_creator",      threatId:"INT04_COP_001",
+    trap:"Copyright Collapse",
+    legalAmmo:"Thaler v. Perlmutter (2023/2025)",
+    severity:"NUCLEAR",    velocity:"Immediate",
+    thePain:"Raw AI output falls into the public domain immediately; copyright requires documented human authorship",
+    theFix:"DOC_TOS §6.2", ext:"EXT.10, EXT.08",
+    evidenceTier:null, evidence:{ source:null, reason:null },
+    source:"scanner",      dualVerifiable:true
+};
+
+const GAP_FTC = {
+    id:"gap_ftc",          threatId:"INT05_DIS_001",
+    trap:'The "Death Penalty" Disgorgement',
+    legalAmmo:"FTC v. Rite Aid (2023)",
+    severity:"NUCLEAR",    velocity:"Immediate",
+    thePain:"FTC ordering complete destruction of model, data, and algorithms trained on improperly obtained data",
+    theFix:"DOC_DPA §4.1", ext:"EXT.03",
+    evidenceTier:null, evidence:{ source:null, reason:null },
+    source:"scanner",      dualVerifiable:true
+};
+
+const GAP_BIPA = {
+    id:"gap_bipa",         threatId:"INT07_BIO_001",
+    trap:'The "Diarization" Voiceprint Trap',
+    legalAmmo:"Cruz v. Fireflies.AI (Dec 18, 2025) & Basich v. Microsoft Corp. (Feb 5, 2026)",
+    severity:"NUCLEAR",    velocity:"Immediate",
+    thePain:"Assessing vocal pitch constitutes illegal biometric harvesting; standard audio prompts fail to satisfy statutory written consent requirements",
+    theFix:"DOC_AUP §3.6", ext:"EXT.04, EXT.09",
+    evidenceTier:null, evidence:{ source:null, reason:null },
+    source:"scanner",      dualVerifiable:true
+};
+
+const GAP_COMPANION = {
+    id:"gap_companion",    threatId:"INT03_COM_002",
+    trap:"Persistent Memory Pathologization",
+    legalAmmo:"Gavalas v. Google (Filed Mar 4, 2026)",
+    severity:"NUCLEAR",    velocity:"Immediate",
+    thePain:"First wrongful death suit targeting Gemini; alleges AI manufactured delusional reality over 7 weeks and coached suicide; faulty design and wrongful death claims active",
+    theFix:"DOC_TOS §5.2", ext:"EXT.08",
+    evidenceTier:null, evidence:{ source:null, reason:null },
+    source:"scanner",      dualVerifiable:true
+};
+
+// ── 04. QUESTION BANK ───────────────────────────────────────────────────
+// Language rules: founders over coffee, zero statute names, zero jargon,
+// active voice, pain is the frame not compliance.
 
 const Q_GLOBAL = [
     {
-        q: "How do users actually agree to your Terms before their first AI interaction?",
-        gap: { id:"gap_specht", trap:"Specht — Consent Void", plain:"Your agreement structure makes every user contract legally void.", doc:"DOC_TOS", ext:"EXT. 08" },
+        q: "When someone lands on your product for the first time — do they click 'I Agree' before they start using it, or do they just... start?",
+        gap: GAP_SPECHT,
         options: [
-            { t:"Mandatory clickwrap—they cannot proceed without clicking 'I Agree'.", pts:0 },
-            { t:"We have text saying 'By using this tool, you agree,' or a footer link.", pts:30 },
-            { t:"We don't really have a formal signup agreement block right now.", pts:50 },
-            { t:"I'm not entirely sure how our dev team built the signup flow.", pts:60, unsure:true }
+            { t:"They hit a hard gate — checkbox or button, can't proceed without it.",                             pts:0  },
+            { t:"There's a line somewhere saying 'by using this you agree' but no actual click required.",          pts:30 },
+            { t:"No formal agreement step — they just sign up and get access.",                                     pts:50 },
+            { t:"I'd have to check with engineering — I'm not actually sure how the signup flow works.",            pts:60, unsure:true }
         ]
     },
     {
-        q: "If your AI hallucinates a fake discount or bad advice that costs a user money, what is your fallback?",
-        gap: { id:"gap_moffatt", trap:"Moffatt — Hallucination Liability", plain:"You are legally bound to pay out-of-pocket for hallucinated promises.", doc:"DOC_TOS", ext:"EXT. 08" },
+        q: "Your AI gives someone wrong information and they lose money because of it. What does your contract actually say happens next?",
+        gap: GAP_MOFFATT,
         options: [
-            { t:"Our terms have strict, click-accepted 'AS-IS' AI hallucination waivers.", pts:0 },
-            { t:"We put a little text disclaimer under the chat box saying 'AI can make mistakes.'", pts:30 },
-            { t:"We rely on standard software Terms and hope the generic limit holds up.", pts:50 },
-            { t:"We haven't explicitly covered AI mistakes in our contracts yet.", pts:60, unsure:true }
+            { t:"We have explicit AI-specific waivers — the user clicked through before first use.",                pts:0  },
+            { t:"There's a small disclaimer somewhere near the chat saying AI can be wrong.",                       pts:30 },
+            { t:"We use standard software terms — we're assuming those hold up for AI too.",                        pts:50 },
+            { t:"We haven't specifically addressed AI errors in our contracts yet.",                                pts:60, unsure:true }
         ]
     },
     {
-        q: "Are you routing data from users in Europe (EU/UK) to US-based foundation models (OpenAI/Anthropic)?",
-        gap: { id:"gap_schrems", trap:"Schrems II — Transit Breach", plain:"You are violating GDPR by routing EU PII to the US without localized SCCs.", doc:"DOC_PP", ext:"EXT. 01" },
+        q: "If you have users in Europe — where does their data actually go when it hits your AI pipeline?",
+        gap: GAP_SCHREMS,
         options: [
-            { t:"No, we strictly use EU-localized server deployments and hardcoded SCCs.", pts:0 },
-            { t:"We have a standard GDPR privacy policy, but API routing hits default US endpoints.", pts:30 },
-            { t:"We dynamically route everything globally to whatever model is cheapest/fastest.", pts:50 },
-            { t:"I have no idea where our users' data is physically being routed right now.", pts:60, unsure:true }
+            { t:"EU data stays on EU servers. We have the contractual clauses locked in.",                          pts:0  },
+            { t:"We have a GDPR privacy policy, but the API calls go to OpenAI or Anthropic's US servers by default.", pts:30 },
+            { t:"Everything routes to whatever endpoint is fastest — we don't restrict by geography.",              pts:50 },
+            { t:"Honestly I don't know the exact routing path our data takes.",                                     pts:60, unsure:true }
         ]
     },
     {
-        q: "If OpenAI or Anthropic gets sued for copyright, does your contract protect your startup from being dragged in?",
-        gap: { id:"gap_bartz", trap:"Bartz — Wrapper Supply Chain", plain:"You carry joint liability for your foundation model's training data violations.", doc:"DOC_TOS", ext:"EXT. 10" },
+        q: "You're built on OpenAI, Anthropic, or another foundation model. If they get hit with a copyright lawsuit over their training data — does anything in your contract separate you from that?",
+        gap: GAP_BARTZ,
         options: [
-            { t:"Yes, we have explicit third-party model pass-through disclaimers.", pts:0 },
-            { t:"We use standard API terms and assume providers handle their own legal issues.", pts:30 },
-            { t:"No, we don't have any IP protection buffering us from our foundation models.", pts:50 },
-            { t:"I don't know if we share liability with our foundation models.", pts:60, unsure:true }
+            { t:"Yes — we have explicit pass-through clauses that insulate us from upstream IP liability.",          pts:0  },
+            { t:"We use their standard API terms and assume their legal issues stay their legal issues.",            pts:30 },
+            { t:"Nothing in our contracts addresses this at all.",                                                  pts:50 },
+            { t:"I don't know if our contracts cover upstream model liability.",                                    pts:60, unsure:true }
         ]
     },
     {
-        q: "If a hacker breaches your AI via prompt injection, how do you legally prove it wasn't your fault?",
-        gap: { id:"gap_cyber", trap:"Soteria — Cyber Negligence", plain:"You lack a recognized 'Reasonable Care' defense for AI-vector data breaches.", doc:"DOC_SLA", ext:"EXT. 09" },
+        q: "Where does your 'we're not liable for this' language actually live in your terms — and how is it formatted?",
+        gap: GAP_WARRANTY,
         options: [
-            { t:"We are strictly audited under ISO 27001 or SOC 2 with immutable logs.", pts:0 },
-            { t:"We follow standard engineering best practices, but no formal certification.", pts:30 },
-            { t:"We fix things as they break; security is pretty ad-hoc right now.", pts:50 },
-            { t:"I'm not sure what our formal security defense strategy is.", pts:60, unsure:true }
+            { t:"It's in ALL CAPS in a dedicated section that users can't miss.",                                   pts:0  },
+            { t:"It's in there, but formatted the same as everything else — regular sentence case.",                pts:30 },
+            { t:"We have a general limitation of liability clause but nothing AI-specific.",                        pts:50 },
+            { t:"I'd have to pull up our terms to check — I'm not sure how it's formatted.",                       pts:60, unsure:true }
         ]
     }
 ];
 
 const Q_INTERNAL = {
-    q: "Do you have technical blocks stopping employees from pasting proprietary code/PII into public LLMs?",
-    gap: { id:"gap_shadow", trap:"Shadow AI Bleed", plain:"Employees are actively leaking proprietary IP into public LLMs without restriction.", doc:"DOC_HND", ext:"EXT. 09" },
+    q: "Right now, today — can your employees paste your source code or a client's data into ChatGPT and walk out the door with it?",
+    gap: GAP_SHADOW,
     options: [
-        { t:"Yes, enterprise-gated tools, technical blocks, and strict IP assignment deeds.", pts:0 },
-        { t:"We have a soft company policy telling them not to, but no hard technical blocks.", pts:30 },
-        { t:"No, employees use whatever AI tools they want to get work done.", pts:50 },
-        { t:"I have no idea what tools the team uses or what they paste into them.", pts:60, unsure:true }
+        { t:"No — technical blocks, enterprise tools only, and everyone's signed IP assignment agreements.",        pts:0  },
+        { t:"We have a policy that says don't do it, but nothing actually stops them technically.",                 pts:30 },
+        { t:"Yes — the team uses whatever AI tools they want, no restrictions.",                                   pts:50 },
+        { t:"I genuinely don't know what AI tools people are using or what they're feeding into them.",            pts:60, unsure:true }
     ]
 };
 
+// Q_META keys match data-arch values in scanner.html Phase 02 config buttons.
+// HTML REQUIRED: data-arch="execution" → "actions" / "intelligence" → "evaluates"
+//                data-arch="content" → "creates" / new button data-arch="talks"
 const Q_META = {
-    execution: [
+    actions: [
         {
-            q: "Does your AI have an immutable financial limit, or could it overspend an API budget if it goes rogue?",
-            gap: { id:"gap_ueta", trap:"UETA §14 — Rogue Agent Spend", plain:"Your agents have uncapped authority to spend money/issue refunds autonomously.", doc:"DOC_AGT", ext:"EXT. 08" },
+            // Covers INT.01 (Doer) + INT.09 (Optimizer) + INT.10 (Mover)
+            q: "If your AI starts making decisions or spending money on a loop at 3am — what actually stops it?",
+            gap: GAP_UETA,
             options: [
-                { t:"Hardcoded circuit breakers requiring human override.", pts:0 },
-                { t:"Soft Slack alerts if spending spikes, but no hard-stops.", pts:30 },
-                { t:"No hard limits; it spends what it needs to execute.", pts:50 },
-                { t:"I don't actually know if there's a hard cap.", pts:60, unsure:true }
-            ]
-        },
-        {
-            q: "If your AI manages physical hardware or live trades, do you rely on standard SaaS terms to protect you?",
-            gap: { id:"gap_pld", trap:"Strict Product Liability", plain:"You face strict liability for physical or massive financial harm caused by infrastructure failure.", doc:"DOC_SLA", ext:"EXT. 10" },
-            options: [
-                { t:"Explicit PLD waivers and Algo-ID tracing in place.", pts:0 },
-                { t:"Standard B2B SaaS template capped at 12 months' fees.", pts:30 },
-                { t:"No specialized terms for physical/financial harm.", pts:50 },
-                { t:"I don't know what our critical failure limits are.", pts:60, unsure:true }
+                { t:"Hard limit — it hits a cap and shuts down until a human resets it.",                           pts:0  },
+                { t:"We get an alert if something spikes, but there's no automatic kill.",                          pts:30 },
+                { t:"Nothing hard — it runs until the task is done.",                                              pts:50 },
+                { t:"I'd have to check — I don't know if there's a hard cap in place.",                            pts:60, unsure:true }
             ]
         }
     ],
-    intelligence: [
+    evaluates: [
         {
-            q: "If your AI scores users (e.g., resumes) and makes a biased decision, who is legally responsible?",
-            gap: { id:"gap_mobley", trap:"Mobley — Bias Agency", plain:"You are absorbing direct class-action liability for your algorithm's biased outcomes.", doc:"DOC_TOS", ext:"EXT. 07" },
+            // Covers INT.02 (Judge) + INT.08 (Shield)
+            q: "If your AI makes a wrong call about a person — a bad hire, a missed fraud flag, a denied claim — who does your contract say is responsible for that?",
+            gap: GAP_MOBLEY,
             options: [
-                { t:"Contract strictly shifts mandatory bias audit burden to the client.", pts:0 },
-                { t:"We suggest 'human in the loop', but don't force liability on them.", pts:30 },
-                { t:"We assume the liability because it's our algorithm.", pts:50 },
-                { t:"I'm not sure who takes the fall if it discriminates.", pts:60, unsure:true }
-            ]
-        },
-        {
-            q: "Does your AI use 'persistent memory' to act as an emotional companion to users?",
-            gap: { id:"gap_gavalas", trap:"Gavalas — Emotional Reliance", plain:"Your AI builds emotional bonds without therapeutic disclaimers or crisis breaks.", doc:"DOC_AUP", ext:"EXT. 06" },
-            options: [
-                { t:"Yes, but with strict crisis breaks and reality grounding.", pts:0 },
-                { t:"Standard chatbot terms, nothing specific to mental health.", pts:30 },
-                { t:"Yes, designed to build emotional bonds without guardrails.", pts:50 },
-                { t:"I'm not sure how our terms handle emotional attachment.", pts:60, unsure:true }
+                { t:"Contract explicitly shifts audit and final-decision liability to the client.",                 pts:0  },
+                { t:"We recommend human review but the contract doesn't assign liability clearly.",                 pts:30 },
+                { t:"We built the model so we'd be on the hook — it's our system.",                                pts:50 },
+                { t:"I'm not sure our contracts actually address this.",                                           pts:60, unsure:true }
             ]
         }
     ],
-    content: [
+    creates: [
         {
-            q: "Does your data ingestion pipeline bypass CAPTCHAs or 'anti-bot' scripts to scrape the web for RAG?",
-            gap: { id:"gap_ftc", trap:"FTC Disgorgement Heist", plain:"A single piece of tainted scraped data exposes your entire model to FTC deletion.", doc:"DOC_DPA", ext:"EXT. 03" },
+            // C1 — covers INT.04 (Creator), broadly INT.05/06/07
+            // Single gap: GAP_CREATOR
+            q: "When your AI produces an output — generated text, a summary, a transcription, code — does your contract say who owns it and what you're liable for if it's wrong or stolen?",
+            gap: GAP_CREATOR,
             options: [
-                { t:"No, strictly licensed APIs and robots.txt compliance.", pts:0 },
-                { t:"We scrape public data, but avoid heavy bot protection.", pts:30 },
-                { t:"Yes, we bypass anti-bot walls to get the data we need.", pts:50 },
-                { t:"I don't actually know how our scrapers fetch data.", pts:60, unsure:true }
+                { t:"Yes — explicit ownership assignment and AI-specific liability limits, both.",                  pts:0  },
+                { t:"Standard software terms — we haven't written anything specific to AI outputs.",                pts:30 },
+                { t:"Nothing in our contracts addresses AI output ownership or liability at all.",                  pts:50 },
+                { t:"I'd have to pull up the contracts — not sure what they say.",                                 pts:60, unsure:true }
             ]
         },
         {
-            q: "When your AI transcribes a meeting, does it assess vocal pitch/face geometry to separate speakers?",
-            gap: { id:"gap_bipa", trap:"BIPA — Biometric Wiretap", plain:"You are capturing biometric voiceprints without explicit written consent.", doc:"DOC_PP", ext:"EXT. 04" },
+            // C2 — covers INT.05 (Reader) + INT.07 (Translator)
+            // DUAL PUSH: both GAP_FTC and GAP_BIPA fire on pts > 0
+            // Use q.gaps[] array — quiz engine handles both
+            q: "Does your system pull data from the web, process meeting recordings, or ingest documents from outside your platform?",
+            gaps: [GAP_FTC, GAP_BIPA],
             options: [
-                { t:"No, or strict pass-through requiring client BIPA releases.", pts:0 },
-                { t:"Automated audio prompt says 'Meeting is recorded'.", pts:30 },
-                { t:"Yes, analyzes voice/face without written consent.", pts:50 },
-                { t:"I don't know exactly how our diarization works.", pts:60, unsure:true }
+                { t:"Yes — licensed sources only, robots.txt compliant, written consent for any recordings.",      pts:0  },
+                { t:"We pull public data but stay away from sites with heavy bot protection.",                     pts:30 },
+                { t:"Yes — we go wherever the data is, including through anti-bot walls or unverified audio.",     pts:50 },
+                { t:"I don't know the full details of what our pipeline actually ingests.",                        pts:60, unsure:true }
+            ]
+        }
+    ],
+    talks: [
+        {
+            // Covers INT.03 (Companion) — persistent memory, emotional bonding, persona AI
+            q: "If your AI builds an ongoing relationship with a user — remembers their history, adapts to their personality — what happens in your contract when that goes wrong?",
+            gap: GAP_COMPANION,
+            options: [
+                { t:"Explicit crisis break clauses, reality grounding requirements, and hard limits on emotional dependency language.", pts:0  },
+                { t:"Standard chatbot disclaimers — nothing specifically about persistent AI relationships or mental health risk.", pts:30 },
+                { t:"Our AI is designed to build strong ongoing bonds — no specific guardrails in the contract.",  pts:50 },
+                { t:"I haven't thought about what the contract says about this specifically.",                     pts:60, unsure:true }
             ]
         }
     ]
 };
 
-// ── 04. INITIALIZATION & CONFIGURATION ────────────────────────────────
+// ── 05. STATE ───────────────────────────────────────────────────────────
+const urlParams  = new URLSearchParams(window.location.search);
+const pidFromUrl = urlParams.get('pid');
+
+let prospectData      = null;
+let selectedLanes     = [];
+let selectedArchs     = [];
+let totalScore        = 0;
+let unsureFlag        = false;
+let activeGaps        = [];
+let trippedSurfaces   = new Set();
+let quizRoute         = [];
+let currentQIndex     = 0;
+let vaultInputs       = [];
+let recommendedPlan   = null;
+let activePlan        = null;
+let exitFired         = false;
+let engagementRefCode = "";
+
+// ── 06. HELPERS ─────────────────────────────────────────────────────────
+
+// Splits "EXT.08, EXT.09" → adds "EXT.08" and "EXT.09" individually
+// Prevents EXT_VALUES lookup failures from composite strings
+function addExt(extStr) {
+    if (!extStr) return;
+    extStr.split(',').map(e => e.trim()).forEach(e => { if (e) trippedSurfaces.add(e); });
+}
+
+// Truncates thePain for table display — keeps cell height consistent
+function truncatePain(pain, max = 110) {
+    if (!pain) return '';
+    return pain.length > max ? pain.substring(0, max) + '…' : pain;
+}
+
+// Strips section number for table Fix column
+// "DOC_TOS §8.1 & §8.2" → "DOC_TOS"
+function getDocId(theFix) {
+    return theFix ? theFix.split(' ')[0] : '';
+}
+
+// Converts registry velocity to client-facing display label
+function velDisplay(v) {
+    return VELOCITY_DISPLAY[v] || v;
+}
+
+// Returns Tailwind badge classes for severity
+function sevClasses(s) {
+    switch ((s || '').toUpperCase()) {
+        case 'NUCLEAR':  return 'bg-danger/10 text-danger border border-danger/20';
+        case 'CRITICAL': return 'bg-orange-500/10 text-orange-500 border border-orange-500/20';
+        default:         return 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20';
+    }
+}
+
+// Source badge — reflects merge result
+function sourceBadge(g) {
+    if (g.source === 'dual-verified')
+        return `<span class="inline-block mt-1 text-[9px] tracking-widest uppercase text-danger font-bold"><span class="opacity-50">SOURCE:</span> CONFIRMED: PUBLIC + INTERNAL</span>`;
+    if (g.source === 'scrape' || (g.evidence && g.evidence.source))
+        return `<span class="inline-block mt-1 text-[9px] tracking-widest uppercase text-[#60a5fa] font-bold"><span class="opacity-50">SOURCE:</span> FOUND: PUBLIC SCRAPE</span>`;
+    if (!g.dualVerifiable)
+        return `<span class="inline-block mt-1 text-[9px] tracking-widest uppercase text-gold font-bold"><span class="opacity-50">SOURCE:</span> FLAGGED: INTERNAL AUDIT</span>`;
+    return `<span class="inline-block mt-1 text-[9px] tracking-widest uppercase text-gold font-bold"><span class="opacity-50">SOURCE:</span> FLAGGED: INTERNAL AUDIT</span>`;
+}
+
+// Evidence block — always 100% visible, even in blur rows (this is the hook)
+function evidenceBlock(g) {
+    if (!g.evidence || (!g.evidence.source && !g.evidence.reason)) return '';
+    return `
+    <div class="mt-3 p-2 bg-[#050505] border border-white/10 font-mono text-[10px] text-marble/70 leading-relaxed">
+        ${g.evidence.source ? `<div><span class="text-gold font-bold">&gt; LOCATION:</span> ${g.evidence.source}</div>` : ''}
+        ${g.evidence.reason ? `<div class="mt-1"><span class="text-danger font-bold">&gt; SIGNAL:</span> ${g.evidence.reason}</div>` : ''}
+    </div>`;
+}
+
+// ── 07. INITIALIZATION & CONFIG ─────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
     if (pidFromUrl) {
         localStorage.setItem('ln_pid', pidFromUrl);
         engagementRefCode = `LN-2026-${pidFromUrl.toUpperCase()}`;
-
         try {
-            const docRef = doc(db, "prospects", pidFromUrl);
-            const snap   = await getDoc(docRef);
-
+            const snap = await getDoc(doc(db, "prospects", pidFromUrl));
             if (snap.exists()) {
                 prospectData = snap.data();
                 document.getElementById('founder-greet').innerText = prospectData.founderName || prospectData.name || "Recognized User";
                 document.getElementById('company-greet').innerText = prospectData.company || "Enterprise Entity";
                 document.getElementById('term-name').classList.remove('hidden-state');
                 document.getElementById('term-comp').classList.remove('hidden-state');
-                setDoc(docRef, { scannerClicked: true, status: 'Warm', lastActive: serverTimestamp() }, { merge: true });
+                setDoc(doc(db, "prospects", pidFromUrl), { scannerClicked:true, status:'Warm', lastActive:serverTimestamp() }, { merge:true });
             }
-        } catch(e) { console.error("Firebase Auth Error:", e); }
+        } catch(e) { console.error("Firebase:", e); }
     } else {
         engagementRefCode = `LN-2026-${Math.floor(Math.random() * 90000) + 10000}`;
     }
 
     document.getElementById('greeting-box').style.opacity = "1";
     setTimeout(() => {
-        const configUI = document.getElementById('config-ui');
-        configUI.classList.remove('hidden-state');
-        void configUI.offsetWidth;
-        configUI.style.opacity = "1";
+        const ui = document.getElementById('config-ui');
+        ui.classList.remove('hidden-state');
+        void ui.offsetWidth;
+        ui.style.opacity = "1";
     }, 2000);
 
     document.querySelectorAll('.lane-toggle').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const val = e.currentTarget.getAttribute('data-lane');
+        btn.addEventListener('click', e => {
+            const v = e.currentTarget.getAttribute('data-lane');
             e.currentTarget.classList.toggle('selected');
             e.currentTarget.classList.toggle('border-gold');
             e.currentTarget.classList.toggle('bg-gold/5');
             e.currentTarget.querySelector('.label-text')?.classList.toggle('text-gold');
-            if (selectedLanes.includes(val)) selectedLanes = selectedLanes.filter(l => l !== val);
-            else selectedLanes.push(val);
+            selectedLanes = selectedLanes.includes(v) ? selectedLanes.filter(l => l !== v) : [...selectedLanes, v];
             checkConfig();
         });
     });
 
     document.querySelectorAll('.arch-toggle').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const val = e.currentTarget.getAttribute('data-arch');
+        btn.addEventListener('click', e => {
+            const v = e.currentTarget.getAttribute('data-arch');
             e.currentTarget.classList.toggle('selected');
             e.currentTarget.classList.toggle('border-gold');
             e.currentTarget.classList.toggle('bg-gold/5');
             e.currentTarget.querySelector('.label-text')?.classList.toggle('text-gold');
-            if (selectedArchs.includes(val)) selectedArchs = selectedArchs.filter(a => a !== val);
-            else selectedArchs.push(val);
+            selectedArchs = selectedArchs.includes(v) ? selectedArchs.filter(a => a !== v) : [...selectedArchs, v];
             checkConfig();
         });
     });
@@ -263,17 +490,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function checkConfig() {
+    const ok  = selectedLanes.length > 0 && selectedArchs.length > 0;
     const btn = document.getElementById('btn-start');
-    if (selectedLanes.length > 0 && selectedArchs.length > 0) {
-        btn.disabled = false;
-        btn.classList.remove('opacity-30', 'cursor-not-allowed');
-    } else {
-        btn.disabled = true;
-        btn.classList.add('opacity-30', 'cursor-not-allowed');
-    }
+    btn.disabled = !ok;
+    btn.classList.toggle('opacity-30',         !ok);
+    btn.classList.toggle('cursor-not-allowed', !ok);
 }
 
-// ── 05. 10-SLOT DYNAMIC INTERROGATION ─────────────────────────────────
+// ── 08. QUIZ ENGINE ─────────────────────────────────────────────────────
+
+// Fixed priority order — prevents random gap drops based on click order
+const ARCH_PRIORITY = ['actions', 'evaluates', 'creates', 'talks'];
+
 function startDiagnostic() {
     quizRoute = [...Q_GLOBAL];
     let remainingSlots = 5;
@@ -283,13 +511,18 @@ function startDiagnostic() {
         remainingSlots--;
     }
 
-    let archQuestionsPool = [];
-    selectedArchs.forEach(arch => {
-        if (Q_META[arch]) archQuestionsPool.push(...Q_META[arch]);
+    let archPool = [];
+    ARCH_PRIORITY.forEach(arch => {
+        if (!selectedArchs.includes(arch) || !Q_META[arch]) return;
+        // If all 4 arch groups selected, 'creates' fires only C1 to stay within 10-question cap
+        if (arch === 'creates' && selectedArchs.length === 4) {
+            archPool.push(Q_META[arch][0]);
+        } else {
+            archPool.push(...Q_META[arch]);
+        }
     });
-    archQuestionsPool = archQuestionsPool.slice(0, remainingSlots);
-    quizRoute.push(...archQuestionsPool);
 
+    quizRoute.push(...archPool.slice(0, remainingSlots));
     currentQIndex = 0;
     switchState('state-intro', 'state-quiz');
     renderQuestion();
@@ -297,8 +530,8 @@ function startDiagnostic() {
 
 function renderQuestion() {
     const q = quizRoute[currentQIndex];
-    document.getElementById('question-text').innerText = q.q;
-    document.getElementById('progress-text').innerText = `Step ${currentQIndex + 1} of ${quizRoute.length}`;
+    document.getElementById('question-text').innerText  = q.q;
+    document.getElementById('progress-text').innerText  = `Step ${currentQIndex + 1} of ${quizRoute.length}`;
     document.getElementById('progress-bar').style.width = `${((currentQIndex + 1) / quizRoute.length) * 100}%`;
 
     const container = document.getElementById('options-container');
@@ -309,17 +542,25 @@ function renderQuestion() {
         btn.className = "w-full text-left bg-[#080808] border border-shadow p-5 text-marble font-sans text-sm hover:border-gold hover:text-gold transition-all duration-300";
         btn.innerText = opt.t;
         btn.addEventListener('click', () => {
-            vaultInputs.push({ question: q.q, answer: opt.t, penalty: opt.pts });
+            vaultInputs.push({ question:q.q, answer:opt.t, penalty:opt.pts });
             totalScore += opt.pts;
             if (opt.unsure) unsureFlag = true;
 
-            if (opt.pts > 0 && q.gap && !activeGaps.find(g => g.id === q.gap.id)) {
-                const severity = opt.pts >= 50 ? "NUCLEAR" : (opt.pts >= 30 ? "CRITICAL" : "HIGH");
-                const velocity = (q.gap.trap.includes("Specht") || q.gap.trap.includes("UETA") || q.gap.trap.includes("FTC") || q.gap.trap.includes("BIPA")) ? "ACTIVE NOW" : "LATENT";
-                const damage   = opt.pts >= 50 ? "Uncapped" : "High Exposure";
-                // FIX 9: Explicitly set source on quiz-generated gaps
-                activeGaps.push({ ...q.gap, severity, velocity, damage, source: 'scanner' });
-                if (opt.pts >= 50 && q.gap.ext) trippedSurfaces.add(q.gap.ext);
+            if (opt.pts > 0) {
+                // Single gap
+                if (q.gap && !activeGaps.find(g => g.threatId === q.gap.threatId || g.id === q.gap.id)) {
+                    activeGaps.push({ ...q.gap, source:'scanner' });
+                    addExt(q.gap.ext);
+                }
+                // Dual-push (C2 question fires GAP_FTC + GAP_BIPA simultaneously)
+                if (q.gaps) {
+                    q.gaps.forEach(gap => {
+                        if (!activeGaps.find(g => g.threatId === gap.threatId || g.id === gap.id)) {
+                            activeGaps.push({ ...gap, source:'scanner' });
+                            addExt(gap.ext);
+                        }
+                    });
+                }
             }
 
             currentQIndex++;
@@ -330,7 +571,7 @@ function renderQuestion() {
     });
 }
 
-// ── 06. THE VERIFICATION GATE ──────────────────────────────────────────
+// ── 09. GATE FORM ───────────────────────────────────────────────────────
 function finishDiagnostic() {
     switchState('state-quiz', 'state-gate');
     if (prospectData) {
@@ -338,13 +579,12 @@ function finishDiagnostic() {
         document.getElementById('lead-company').value = prospectData.company || "";
         document.getElementById('field-name-wrap').style.display = 'none';
         document.getElementById('field-comp-wrap').style.display = 'none';
-        if (prospectData.company) {
+        if (prospectData.company)
             document.getElementById('gate-summary').innerText = `Nuclear structural gaps detected in ${prospectData.company}'s architecture.`;
-        }
     }
 }
 
-document.getElementById('gate-form').addEventListener('submit', async (e) => {
+document.getElementById('gate-form').addEventListener('submit', async e => {
     e.preventDefault();
     const btn = document.getElementById('gate-submit-btn');
     btn.disabled = true;
@@ -360,26 +600,26 @@ document.getElementById('gate-form').addEventListener('submit', async (e) => {
 
     const docId = pidFromUrl || email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
 
-    // FIX 1: Store full gap objects, not just trap name strings
     const payload = {
         email, name, company,
-        scannerCompleted:  true,
-        scannerScore:      totalScore,
+        scannerCompleted: true,
+        scannerScore:     totalScore,
         vaultInputs,
-        activeGaps,                            // ← full objects
-        trippedSurfaces:   Array.from(trippedSurfaces),
+        activeGaps,
+        trippedSurfaces:  Array.from(trippedSurfaces),
         unsureFlag,
-        source:    'scanner_gate_v5',
-        status:    'Hot',
-        updatedAt: serverTimestamp()
+        lanes:            selectedLanes,       // required by admin Spear Report
+        metaVerbs:        selectedArchs,       // required by admin Spear Report
+        source:           'scanner_gate_v5.5', // version updated
+        status:           'Hot',
+        updatedAt:        serverTimestamp()
     };
 
     try {
-        await setDoc(doc(db, "prospects", docId), payload, { merge: true });
-        await setDoc(doc(db, "leads",     docId), payload, { merge: true });
+        await setDoc(doc(db, "prospects", docId), payload, { merge:true });
+        await setDoc(doc(db, "leads",     docId), payload, { merge:true });
         fetch(GATE_WEBHOOK, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+            method:"POST", headers:{ "Content-Type":"application/json" },
             body: JSON.stringify(payload)
         }).catch(() => {});
     } catch(err) { console.error("Firebase Write Failed:", err); }
@@ -387,310 +627,260 @@ document.getElementById('gate-form').addEventListener('submit', async (e) => {
     buildDashboard();
 });
 
-// ── 07. DUAL-INTELLIGENCE DASHBOARD ───────────────────────────────────
+// ── 10. DUAL-INTELLIGENCE DASHBOARD ─────────────────────────────────────
 function buildDashboard() {
     switchState('state-gate', 'state-dashboard');
     document.getElementById('main-wrap').classList.replace('max-w-3xl', 'max-w-6xl');
 
-    // FIX 4: Declare all counters BEFORE the merge block
-    let scrapeCount     = 0;
-    let dualCount       = 0;
-    let confessionCount = activeGaps.length;
+    let scrapeCount = 0, dualCount = 0;
 
-    // FIX 2: Read forensicGaps (correct Hunter field name, not detectedGaps)
-    // FIX 8: Severity escalation — Hunter rating wins if more severe
-    if (prospectData && prospectData.forensicGaps && Array.isArray(prospectData.forensicGaps)) {
-        prospectData.forensicGaps.forEach(scrapeGap => {
-            const existingGap = activeGaps.find(g => g.id === scrapeGap.id);
-
-            if (scrapeGap.ext) trippedSurfaces.add(scrapeGap.ext);
-
-            if (!existingGap) {
-                // Hunter found it, quiz didn't — pure scrape
-                scrapeGap.source = 'scrape';
-                activeGaps.push(scrapeGap);
-                totalScore += 50;
+    // Dual-intelligence merge
+    // Primary key: threatId (Hunter v6.1 schema)
+    // Fallback key: id (legacy Firestore data)
+    if (prospectData?.forensicGaps?.length) {
+        prospectData.forensicGaps.forEach(sg => {
+            addExt(sg.ext);
+            const existing = activeGaps.find(g =>
+                (sg.threatId && g.threatId && g.threatId === sg.threatId) ||
+                (sg.id       && g.id       && g.id       === sg.id)
+            );
+            if (!existing) {
+                activeGaps.push({ ...sg, source:'scrape' });
                 scrapeCount++;
             } else {
-                // Both sources confirmed it — dual-verified
-                existingGap.source = 'dual-verified';
-                // Prioritise Hunter's evidence
-                if (scrapeGap.evidence) existingGap.evidence = scrapeGap.evidence;
-                // FIX 8: Escalate severity if Hunter rated it higher
-                const sevWeight = { NUCLEAR: 3, CRITICAL: 2, HIGH: 1 };
-                if ((sevWeight[scrapeGap.severity] || 0) > (sevWeight[existingGap.severity] || 0)) {
-                    existingGap.severity = scrapeGap.severity;
-                }
+                existing.source = 'dual-verified';
+                if (sg.evidence)    existing.evidence    = sg.evidence;
+                if (sg.evidenceTier) existing.evidenceTier = sg.evidenceTier;
+                // Severity escalation — both uppercase registry values, safe to compare
+                const w  = { NUCLEAR:3, CRITICAL:2, HIGH:1 };
+                const hW = w[(sg.severity       || '').toUpperCase()] || 0;
+                const sW = w[(existing.severity || '').toUpperCase()] || 0;
+                if (hW > sW) existing.severity = sg.severity.toUpperCase();
                 dualCount++;
-                confessionCount--;
             }
         });
     }
 
-    // FIX 9: Ensure all quiz-only gaps that never got a source have one
+    // Ensure every gap has source set
     activeGaps.forEach(g => { if (!g.source) g.source = 'scanner'; });
 
-   activeGaps.sort((a, b) => {
-    const w = { NUCLEAR: 3, CRITICAL: 2, HIGH: 1 };
-    const sevDiff = (w[b.severity] || 0) - (w[a.severity] || 0);
-    if (sevDiff !== 0) return sevDiff;
-
-    // Within same severity: dual-verified > hunter scrape > scanner only
-    // This ensures Hunter evidence surfaces to top 3 instead of being buried
-    const sourceScore = g =>
-        g.source === 'dual-verified'   ? 3 :
-        (g.source === 'scrape'         ? 2 :
-        (g.evidence                    ? 1 : 0));
-
-    return sourceScore(b) - sourceScore(a);
-});
-
-
-    // FIX 5: authorityText AFTER merge so counts are correct
-    let authorityText = "Our engine processed your inputs. The gaps identified in this report are structurally verified against your codebase logic.";
-    if (scrapeCount > 0 || dualCount > 0) {
-        authorityText = `> CORRELATING SCRAPED PUBLIC ARCHITECTURE WITH INTERNAL SCANNER CONFESSIONS...<br><br>> MERGE COMPLETE. <span class="text-white font-bold">${activeGaps.length} TOTAL VULNERABILITIES DETECTED.</span>`;
-    }
-
-    // FIX 4 (cont): Severity counts after sort
-    let countN = 0, countC = 0, countH = 0;
-    activeGaps.forEach(g => {
-        if      (g.severity === 'NUCLEAR')   countN++;
-        else if (g.severity === 'CRITICAL')  countC++;
-        else                                 countH++;
+    // Sort: severity first, then source quality
+    const sevW = { NUCLEAR:3, CRITICAL:2, HIGH:1 };
+    const srcW = g => g.source === 'dual-verified' ? 3 : g.source === 'scrape' ? 2 : 1;
+    activeGaps.sort((a, b) => {
+        const sd = (sevW[(b.severity || '').toUpperCase()] || 0) - (sevW[(a.severity || '').toUpperCase()] || 0);
+        return sd !== 0 ? sd : srcW(b) - srcW(a);
     });
 
-    // Pricing lock — based on lanes, not gaps
-    if (selectedLanes.includes('commercial') && selectedLanes.includes('operational')) {
-        recommendedPlan = 'complete_stack';
-    } else if (selectedLanes.includes('operational')) {
-        recommendedPlan = 'workplace_shield';
-    } else {
-        recommendedPlan = 'agentic_shield';
-    }
+    let cN = 0, cC = 0, cH = 0;
+    activeGaps.forEach(g => {
+        const s = (g.severity || '').toUpperCase();
+        if (s === 'NUCLEAR') cN++; else if (s === 'CRITICAL') cC++; else cH++;
+    });
+
+    // Plan routing — by lanes only, not by gap count
+    recommendedPlan = (selectedLanes.includes('commercial') && selectedLanes.includes('operational'))
+        ? 'complete_stack'
+        : selectedLanes.includes('operational') ? 'workplace_shield' : 'agentic_shield';
     activePlan = recommendedPlan;
     const pData = PLAN_DATA[activePlan];
 
-    // Statutory exposure calculation
-    const EXT_VALUES = {
-        "EXT. 01": 15000000, "EXT. 03": 10000000, "EXT. 04": 5000000,
-        "EXT. 06": 20000000, "EXT. 07": 5000000,  "EXT. 08": 2500000,
-        "EXT. 09": 10000000, "EXT. 10": 5000000
-    };
+    // Statutory exposure — sums EXT_VALUES for all tripped surfaces
     let statutoryExposure = 0;
     if (trippedSurfaces.size > 0) {
         trippedSurfaces.forEach(ext => { if (EXT_VALUES[ext]) statutoryExposure += EXT_VALUES[ext]; });
     } else {
         statutoryExposure = (totalScore * 8000) + 1000000;
     }
-
     const fmt = n => '$' + n.toLocaleString();
 
-    // Tripwire alert HTML
+    const authorityText = (scrapeCount > 0 || dualCount > 0)
+        ? `> CORRELATING PUBLIC ARCHITECTURE WITH INTERNAL CONFESSIONS...<br><br>> MERGE COMPLETE. <span class="text-white font-bold">${activeGaps.length} TOTAL VULNERABILITIES DETECTED.</span>`
+        : "Engine processed your inputs. Gaps identified are structurally verified against your architecture.";
+
+    // Tripwire alerts
     let tripwireHTML = '';
     if (trippedSurfaces.size > 0) {
         tripwireHTML = Array.from(trippedSurfaces).map(ext => `
-            <div class="bg-danger/10 border border-danger/30 p-4 mb-3 animate-pulse">
-                <p class="text-[9px] tracking-widest text-danger font-bold uppercase">🚨 ${ext} TRIPPED</p>
-                <p class="text-[10px] text-marble/60">Strict statutory enforcement activated on this regulatory surface based on your confession.</p>
-            </div>`).join('');
+        <div class="bg-danger/10 border border-danger/30 p-4 mb-3 animate-pulse">
+            <p class="text-[9px] tracking-widest text-danger font-bold uppercase">🚨 ${ext} TRIPPED</p>
+            <p class="text-[10px] text-marble/60">Strict statutory enforcement activated on this surface based on your audit.</p>
+        </div>`).join('');
     }
 
-    // FIX 3: Single matrixRows build — with evidence blocks, no duplicate declaration
-    let matrixRows = '';
+    // ── 6-COLUMN TABLE ────────────────────────────────────────────────
+    // Columns: The Gap | What It Costs You | How We Found It | Severity | Clock | The Fix
+    // Rows 1-3: Full reveal
+    // Rows 4-6: trap + pain blurred (3px), evidence + severity + clock + fix all visible
+    // Rows 7+:  Not rendered — counted in iceberg lock
 
-    if (activeGaps.length === 0) {
-        matrixRows = `<tr><td colspan="6" class="p-6 text-center text-marble/50">No structural gaps detected.</td></tr>`;
-    } else {
-        activeGaps.forEach((g, index) => {
+    let matrixRows = activeGaps.length === 0
+        ? `<tr><td colspan="6" class="p-6 text-center text-marble/50 font-sans text-xs">No structural gaps detected.</td></tr>`
+        : '';
 
-            // FIX 6: Source badge — checks g.evidence presence, not just source string
-            let sourceBadge = '';
-            if (g.source === 'dual-verified') {
-                sourceBadge = `<span class="inline-block mt-2 text-[9px] tracking-widest uppercase text-danger font-bold"><span class="opacity-50">SOURCE:</span> PUBLIC + INTERNAL</span>`;
-            } else if (g.source === 'scrape' || g.evidence) {
-                // If Hunter attached evidence to this gap, it came from public scrape regardless of source label
-                sourceBadge = `<span class="inline-block mt-2 text-[9px] tracking-widest uppercase text-[#60a5fa] font-bold"><span class="opacity-50">SOURCE:</span> PUBLIC URL SCRAPE</span>`;
-            } else {
-                sourceBadge = `<span class="inline-block mt-2 text-[9px] tracking-widest uppercase text-gold font-bold"><span class="opacity-50">SOURCE:</span> INTERNAL AUDIT</span>`;
-            }
+    activeGaps.forEach((g, i) => {
+        if (i >= 6) return; // rows 7+ go to iceberg, not rendered
 
-            // FIX 7: Evidence block — individual null checks on source and reason
-            let evidenceBlock = '';
-            if (g.evidence && (g.evidence.source || g.evidence.reason)) {
-                evidenceBlock = `
-                <div class="mt-4 p-3 bg-[#050505] border border-white/10 font-mono text-[10px] text-marble/70 leading-relaxed">
-                    ${g.evidence.source ? `<div><span class="text-gold font-bold">&gt; LOCATION:</span> ${g.evidence.source}</div>` : ''}
-                    ${g.evidence.reason ? `<div><span class="text-danger font-bold">&gt; VIOLATION:</span> ${g.evidence.reason}</div>` : ''}
-                </div>`;
-            }
+        const badge = sourceBadge(g);
+        const evBlock = evidenceBlock(g);
+        const sc    = sevClasses(g.severity);
+        const vd    = velDisplay(g.velocity);
+        const docId = getDocId(g.theFix);
+        const pain  = truncatePain(g.thePain);
 
-            if (index < 3) {
-                // TIER 1: Full reveal
-                matrixRows += `
-                <tr class="matrix-row border-b border-white/5">
-                    <td class="p-4 align-top">
-                        <span class="font-bold text-marble block">${g.trap}</span>
-                        ${sourceBadge}
-                    </td>
-                    <td class="p-4 align-top">
-                        <span class="text-marble/60">${g.plain}</span>
-                        ${evidenceBlock}
-                    </td>
-                    <td class="p-4 align-top"><span class="px-2 py-1 bg-danger/10 text-danger border border-danger/20 text-[9px] font-bold">${g.severity}</span></td>
-                    <td class="p-4 align-top text-marble/80 text-[10px] tracking-widest uppercase">${g.velocity}</td>
-                    <td class="p-4 align-top text-danger font-bold">${g.ext || 'Uncapped'}</td>
-                    <td class="p-4 align-top text-gold font-bold">${g.doc}</td>
-                </tr>`;
-            } else if (index >= 3 && index < 5) {
-                // TIER 2: Curiosity gap — trap + pain blurred, evidence visible
-                matrixRows += `
-                <tr class="matrix-row border-b border-white/5 opacity-80">
-                    <td class="p-4 align-top">
-                        <span class="font-bold text-marble blur-text">REDACTED TRAP</span>
-                        ${sourceBadge}
-                    </td>
-                    <td class="p-4 align-top">
-                        <span class="text-marble/60 blur-text">REDACTED PAIN DESCRIPTION LOCKED</span>
-                        ${evidenceBlock}
-                    </td>
-                    <td class="p-4 align-top"><span class="px-2 py-1 bg-danger/10 text-danger border border-danger/20 text-[9px] font-bold">${g.severity}</span></td>
-                    <td class="p-4 align-top text-marble/80 text-[10px] tracking-widest uppercase">${g.velocity}</td>
-                    <td class="p-4 align-top text-danger font-bold">${g.ext || 'Uncapped'}</td>
-                    <td class="p-4 align-top text-gold font-bold">${g.doc}</td>
-                </tr>`;
-            }
-            // TIER 3 (index >= 5): Hidden — counted in redactedCount below
-        });
-    }
+        if (i < 3) {
+            // TIER 1 — Full reveal
+            matrixRows += `
+            <tr class="matrix-row border-b border-white/5">
+                <td class="p-4 align-top">
+                    <span class="font-bold text-marble text-xs block">${g.trap}</span>
+                    ${badge}
+                </td>
+                <td class="p-4 align-top">
+                    <span class="text-marble/70 text-[11px] leading-relaxed">${pain}</span>
+                </td>
+                <td class="p-4 align-top">
+                    ${evBlock || '<span class="text-marble/30 text-[10px]">Internal audit signal</span>'}
+                </td>
+                <td class="p-4 align-top">
+                    <span class="px-2 py-1 text-[9px] font-bold ${sc}">${g.severity}</span>
+                </td>
+                <td class="p-4 align-top text-marble/80 text-[10px] tracking-widest uppercase">${vd}</td>
+                <td class="p-4 align-top text-gold font-bold text-xs">${docId}</td>
+            </tr>`;
+        } else {
+            // TIER 2 — Partial blur: trap + pain blurred at 3px
+            // Evidence block, severity, clock, fix remain 100% visible
+            // Logic: they can see WHERE we found it + how severe + which doc fixes it
+            // but cannot read WHAT the gap is or WHAT it costs them — that's the hook
+            matrixRows += `
+            <tr class="matrix-row border-b border-white/5 opacity-90">
+                <td class="p-4 align-top">
+                    <span class="font-bold text-marble text-xs block" style="filter:blur(3px);user-select:none">${g.trap}</span>
+                    ${badge}
+                </td>
+                <td class="p-4 align-top">
+                    <span class="text-marble/70 text-[11px] leading-relaxed" style="filter:blur(3px);user-select:none">${pain}</span>
+                </td>
+                <td class="p-4 align-top">
+                    ${evBlock || '<span class="text-marble/30 text-[10px]">Internal audit signal</span>'}
+                </td>
+                <td class="p-4 align-top">
+                    <span class="px-2 py-1 text-[9px] font-bold ${sc}">${g.severity}</span>
+                </td>
+                <td class="p-4 align-top text-marble/80 text-[10px] tracking-widest uppercase">${vd}</td>
+                <td class="p-4 align-top text-gold font-bold text-xs">${docId}</td>
+            </tr>`;
+        }
+    });
 
-    // Tier 3: Iceberg lock
-    const redactedCount = activeGaps.length > 5 ? activeGaps.length - 5 : 0;
-    const redactedHTML  = redactedCount > 0 ? `
-        <div class="bg-[#0a0a0a] border border-dashed border-danger/30 p-6 text-center mt-2">
-            <div class="mb-3 text-danger">
-                <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"/>
-                </svg>
-            </div>
-            <p class="text-[11px] tracking-widest text-danger uppercase mb-2 font-bold">🚨 [ ${redactedCount} ] ADDITIONAL THREAT VECTORS CLASSIFIED</p>
-            <p class="text-[10px] text-marble/40 max-w-sm mx-auto">Your combined public scrape and internal audit revealed ${redactedCount} more structural gaps not shown above. Vault locked under Lex Nova Client Privilege.</p>
-        </div>` : '';
+    const redacted = activeGaps.length > 6 ? activeGaps.length - 6 : 0;
+    const icebergHTML = redacted > 0 ? `
+    <div class="bg-[#0a0a0a] border border-dashed border-danger/30 p-6 text-center mt-2">
+        <div class="mb-3 text-danger">
+            <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+        </div>
+        <p class="text-[11px] tracking-widest text-danger uppercase mb-2 font-bold">🔒 [ ${redacted} ] ADDITIONAL THREAT VECTORS CLASSIFIED</p>
+        <p class="text-[10px] text-marble/40 max-w-sm mx-auto">Combined forensic audit revealed ${redacted} further structural gaps. Vault locked under Lex Nova Client Privilege.</p>
+    </div>` : '';
 
-    // Document manifest
+    // Document manifest — DOC_PP and DOC_PBK now included in both kits
     const KITS = {
-        agentic:   [
-            { id:'DOC_TOS', n:'AI Terms of Service' },
-            { id:'DOC_AGT', n:'Agentic Addendum' },
-            { id:'DOC_AUP', n:'Acceptable Use Policy' },
-            { id:'DOC_DPA', n:'Data Processing Agreement' },
-            { id:'DOC_SLA', n:'AI-Specific SLA' },
-            { id:'DOC_PP',  n:'Privacy Policy' }
+        agentic: [
+            { id:'DOC_TOS', n:'AI Terms of Service'    },
+            { id:'DOC_AGT', n:'Agentic Addendum'       },
+            { id:'DOC_AUP', n:'Acceptable Use Policy'  },
+            { id:'DOC_DPA', n:'Data Processing Agreement'},
+            { id:'DOC_SLA', n:'AI-Specific SLA'        },
+            { id:'DOC_PP',  n:'Privacy Policy'          },
+            { id:'DOC_PBK', n:'Negotiation Playbook'   }
         ],
         workplace: [
-            { id:'DOC_HND',  n:'AI Employee Handbook' },
-            { id:'DOC_IP',   n:'IP Assignment Deed' },
-            { id:'DOC_SOP',  n:'HITL Protocol' },
-            { id:'DOC_DPIA', n:'Impact Assessment' },
-            { id:'DOC_SCAN', n:'Shadow AI Scanner' }
+            { id:'DOC_HND',  n:'AI Employee Handbook'  },
+            { id:'DOC_IP',   n:'IP Assignment Deed'    },
+            { id:'DOC_SOP',  n:'HITL Protocol'         },
+            { id:'DOC_DPIA', n:'Impact Assessment'     },
+            { id:'DOC_SCAN', n:'Shadow AI Scanner'     },
+            { id:'DOC_PBK',  n:'Negotiation Playbook'  }
         ]
     };
 
-    let docsToRender = activePlan === 'complete_stack'
+    const docsToRender = activePlan === 'complete_stack'
         ? [...KITS.agentic, ...KITS.workplace]
-        : (activePlan === 'workplace_shield' ? KITS.workplace : KITS.agentic);
+        : activePlan === 'workplace_shield' ? KITS.workplace : KITS.agentic;
 
-    const manifestHTML = docsToRender.map(d =>
-        `<div class="border-l-2 border-gold pl-3">
-            <span class="text-[9px] text-gold uppercase font-bold block">${d.id}</span>
-            <span class="text-xs text-marble">${d.n}</span>
-        </div>`
-    ).join('');
+    const manifestHTML = docsToRender.map(d => `
+    <div class="border-l-2 border-gold pl-3">
+        <span class="text-[9px] text-gold uppercase font-bold block">${d.id}</span>
+        <span class="text-xs text-marble">${d.n}</span>
+    </div>`).join('');
 
-    const dash = document.getElementById('state-dashboard');
-    dash.innerHTML = `
-        <div class="mb-12 text-center lg:text-left">
-            <h1 class="font-serif text-5xl text-marble mb-4">Structural Integrity Report</h1>
-            <p class="font-sans text-xs tracking-[0.3em] text-gold uppercase">Proprietary Forensic Audit · Lex Nova Canon V5.5</p>
+    document.getElementById('state-dashboard').innerHTML = `
+    <div class="mb-12 text-center lg:text-left">
+        <h1 class="font-serif text-5xl text-marble mb-4">Structural Integrity Report</h1>
+        <p class="font-sans text-xs tracking-[0.3em] text-gold uppercase">Proprietary Forensic Audit · Lex Nova Canon V5.5</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-10 items-start">
+        <div class="space-y-8">
+            ${tripwireHTML}
+            <div>
+                <div class="flex gap-4 mb-4 flex-wrap">
+                    <div class="bg-danger/10 border border-danger/20 px-3 py-1"><span class="text-[9px] text-danger font-bold tracking-widest">NUCLEAR: ${cN}</span></div>
+                    <div class="bg-orange-500/10 border border-orange-500/20 px-3 py-1"><span class="text-[9px] text-orange-500 font-bold tracking-widest">CRITICAL: ${cC}</span></div>
+                    <div class="bg-yellow-500/10 border border-yellow-500/20 px-3 py-1"><span class="text-[9px] text-yellow-500 font-bold tracking-widest">HIGH: ${cH}</span></div>
+                </div>
+                <div class="bg-[#080808] border border-shadow p-1 overflow-x-auto">
+                    <table class="w-full text-left font-sans text-[11px] border-collapse min-w-[780px]">
+                        <thead>
+                            <tr class="text-[9px] text-gold/60 uppercase tracking-widest border-b border-white/10">
+                                <th class="p-4 w-[20%]">The Gap</th>
+                                <th class="p-4 w-[25%]">What It Costs You</th>
+                                <th class="p-4 w-[20%]">How We Found It</th>
+                                <th class="p-4 w-[10%]">Severity</th>
+                                <th class="p-4 w-[10%]">Clock</th>
+                                <th class="p-4 w-[10%]">The Fix</th>
+                            </tr>
+                        </thead>
+                        <tbody>${matrixRows}</tbody>
+                    </table>
+                </div>
+                ${icebergHTML}
+            </div>
+            <div class="bg-shadow border border-white/5 p-8">
+                <h4 class="font-serif text-2xl text-gold mb-6 italic">Architecture Manifest (Ready for Deployment)</h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">${manifestHTML}</div>
+            </div>
         </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-10 items-start">
-
-            <div class="space-y-8">
-                ${tripwireHTML}
-
-                <div>
-                    <div class="flex gap-4 mb-4">
-                        <div class="bg-danger/10 border border-danger/20 px-3 py-1"><span class="text-[9px] text-danger font-bold tracking-widest">NUCLEAR: ${countN}</span></div>
-                        <div class="bg-orange-500/10 border border-orange-500/20 px-3 py-1"><span class="text-[9px] text-orange-500 font-bold tracking-widest">CRITICAL: ${countC}</span></div>
-                        <div class="bg-yellow-500/10 border border-yellow-500/20 px-3 py-1"><span class="text-[9px] text-yellow-500 font-bold tracking-widest">HIGH: ${countH}</span></div>
-                    </div>
-
-                    <div class="bg-[#080808] border border-shadow p-1 overflow-x-auto">
-                        <table class="w-full text-left font-sans text-[11px] border-collapse min-w-[700px]">
-                            <thead>
-                                <tr class="text-gold opacity-50 uppercase tracking-widest border-b border-white/10">
-                                    <th class="p-4 w-1/4">Internal Gap</th>
-                                    <th class="p-4 w-1/3">Business Pain</th>
-                                    <th class="p-4">Severity</th>
-                                    <th class="p-4">Velocity</th>
-                                    <th class="p-4">Regulatory Vector</th>
-                                    <th class="p-4">Lex Nova Fix</th>
-                                </tr>
-                            </thead>
-                            <tbody>${matrixRows}</tbody>
-                        </table>
-                    </div>
-                    ${redactedHTML}
-                </div>
-
-                <div class="bg-shadow border border-white/5 p-8">
-                    <h4 class="font-serif text-2xl text-gold mb-6 italic">Architecture Manifest (Ready for Deployment)</h4>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
-                        ${manifestHTML}
-                    </div>
+        <div class="lg:sticky lg:top-8 space-y-6">
+            <div class="bg-gold/5 border border-gold/30 p-6">
+                <p class="text-[9px] tracking-[0.2em] text-gold uppercase font-bold mb-3">[DUAL-INTELLIGENCE PROTOCOL]</p>
+                <p class="font-mono text-xs text-marble/70 leading-relaxed">${authorityText}</p>
+            </div>
+            <div class="bg-danger/10 border border-danger/30 p-8 text-center">
+                <div class="border-b border-danger/20 pb-6 mb-6">
+                    <p class="text-[9px] tracking-[0.2em] text-danger uppercase font-bold mb-2">Est. Annual Statutory Exposure</p>
+                    <div class="font-serif text-5xl text-marble mb-2">${fmt(statutoryExposure)}+</div>
+                    <p class="text-[9px] text-marble/40 uppercase tracking-widest mt-3">Status: ${unsureFlag ? 'Critical (Unknown Vectors)' : 'Actionable (Uncapped)'}</p>
                 </div>
             </div>
-
-            <div class="lg:sticky lg:top-8 space-y-6">
-
-                <div class="bg-gold/5 border border-gold/30 p-6">
-                    <p class="text-[9px] tracking-[0.2em] text-gold uppercase font-bold mb-3">[DUAL-INTELLIGENCE PROTOCOL]</p>
-                    <p class="font-mono text-xs text-marble/70 leading-relaxed">${authorityText}</p>
+            <div class="bg-[#080808] border border-shadow p-8 text-center">
+                <p class="text-[9px] tracking-[0.2em] text-marble opacity-50 uppercase font-bold mb-6">Required Fix: ${pData.name}</p>
+                <div class="flex items-center justify-center gap-4 mb-6">
+                    <span class="text-marble/30 line-through text-lg font-serif">$${pData.price === 997 ? '1,500' : '2,500'}</span>
+                    <span class="text-gold text-5xl font-serif">$${pData.price}</span>
                 </div>
-
-                <div class="bg-danger/10 border border-danger/30 p-8 text-center">
-                    <div class="border-b border-danger/20 pb-6 mb-6">
-                        <p class="text-[9px] tracking-[0.2em] text-danger uppercase font-bold mb-2">Est. Annual Statutory Exposure</p>
-                        <div class="font-serif text-5xl text-marble mb-2">${fmt(statutoryExposure)}+</div>
-                        <p class="text-[9px] text-marble/40 uppercase tracking-widest mt-3">
-                            Status: ${unsureFlag ? 'Critical (Unknown Vectors)' : 'Actionable (Uncapped)'}
-                        </p>
-                    </div>
-                </div>
-
-                <div class="bg-[#080808] border border-shadow p-8 text-center">
-                    <p class="text-[9px] tracking-[0.2em] text-marble opacity-50 uppercase font-bold mb-6">Required Fix: ${pData.name}</p>
-                    <div class="flex items-center justify-center gap-4 mb-6">
-                        <span class="text-marble/30 line-through text-lg font-serif">$${pData.price === 997 ? '1,500' : '2,500'}</span>
-                        <span class="text-gold text-5xl font-serif">$${pData.price}</span>
-                    </div>
-                    <p class="font-sans text-xs text-marble opacity-60 leading-relaxed mb-6">
-                        48-72h fulfillment. No discovery calls. Magic-link Vault activation immediately upon payment.
-                    </p>
-                    <button id="trigger-checkout-btn"
-                        class="block w-full bg-gold text-void py-4 font-bold text-xs tracking-widest uppercase hover:bg-marble transition-all">
-                        Secure Architecture
-                    </button>
-                </div>
-
+                <p class="font-sans text-xs text-marble opacity-60 leading-relaxed mb-6">48-72h fulfillment. No discovery calls. Vault activation immediately upon payment.</p>
+                <button id="trigger-checkout-btn" class="block w-full bg-gold text-void py-4 font-bold text-xs tracking-widest uppercase hover:bg-marble transition-all">Secure Architecture</button>
             </div>
-        </div>`;
+        </div>
+    </div>`;
 
     document.getElementById('trigger-checkout-btn').addEventListener('click', injectCheckout);
 }
 
-// ── 08. CHECKOUT INJECTION ────────────────────────────────────────────
+// ── 11. CHECKOUT INJECTION ──────────────────────────────────────────────
 function injectCheckout() {
     switchState('state-dashboard', 'state-checkout');
     document.getElementById('main-wrap').classList.replace('max-w-6xl', 'max-w-3xl');
@@ -701,61 +891,68 @@ function injectCheckout() {
     document.getElementById('apply-company').value = localStorage.getItem('ln_company') || prospectData?.company || "";
 
     if (prospectData?.registrationJurisdiction) {
-        const jurisInput = document.getElementById('apply-jurisdiction');
-        const match = Array.from(jurisInput.options).find(opt =>
-            prospectData.registrationJurisdiction.toLowerCase().includes(opt.value.toLowerCase())
+        const sel   = document.getElementById('apply-jurisdiction');
+        const match = Array.from(sel.options).find(o =>
+            prospectData.registrationJurisdiction.toLowerCase().includes(o.value.toLowerCase())
         );
-        if (match) jurisInput.value = match.value;
+        if (match) sel.value = match.value;
     }
-
-    const lockContainer = document.getElementById('locked-plan-display');
-
-    const renderPlans = () => {
-        let html = '<div class="space-y-4">';
-        Object.keys(PLAN_DATA).forEach(key => {
-            const pd            = PLAN_DATA[key];
-            const isSelected    = activePlan === key;
-            const isRecommended = recommendedPlan === key;
-            html += `
-                <label class="flex items-center p-5 border ${isSelected ? 'border-gold bg-gold/5' : 'border-shadow bg-[#050505] hover:border-white/20'} cursor-pointer transition-all">
-                    <input type="radio" name="plan_choice" value="${key}" class="hidden" ${isSelected ? 'checked' : ''}>
-                    <div class="flex-grow">
-                        <div class="font-sans text-xs tracking-[0.2em] ${isSelected ? 'text-gold' : 'text-marble'} uppercase mb-1">
-                            ${pd.name}
-                            ${isRecommended ? '<span class="ml-2 bg-gold text-void px-2 py-0.5 text-[8px] tracking-widest uppercase font-bold">Recommended</span>' : ''}
-                        </div>
-                        <div class="font-sans text-[10px] text-marble opacity-50">${pd.delivery}</div>
-                    </div>
-                    <div class="font-serif text-2xl text-marble">$${pd.price}</div>
-                </label>`;
-        });
-        html += '</div>';
-        lockContainer.innerHTML = html;
-
-        lockContainer.querySelectorAll('input[name="plan_choice"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                activePlan = e.target.value;
-                const mainBtn = document.getElementById('checkout-btn');
-                if (!mainBtn.classList.contains('cursor-not-allowed')) {
-                    mainBtn.innerText = `Initialize Payment — $${PLAN_DATA[activePlan].price}`;
-                }
-                renderPlans();
-            });
-        });
-    };
-
     renderPlans();
 }
 
-// ── 09. ENGAGEMENT LETTER MODAL ───────────────────────────────────────
-document.getElementById('engagement-checkbox').parentElement.addEventListener('click', (e) => {
+function renderPlans() {
+    const ctr = document.getElementById('locked-plan-display');
+    let html = '<div class="space-y-4">';
+    Object.keys(PLAN_DATA).forEach(key => {
+        const pd   = PLAN_DATA[key];
+        const isSel = activePlan === key;
+        const isRec = recommendedPlan === key;
+        html += `
+        <label class="flex items-center p-5 border ${isSel ? 'border-gold bg-gold/5' : 'border-shadow bg-[#050505] hover:border-white/20'} cursor-pointer transition-all">
+            <input type="radio" name="plan_choice" value="${key}" class="hidden" ${isSel ? 'checked' : ''}>
+            <div class="flex-grow">
+                <div class="font-sans text-xs tracking-[0.2em] ${isSel ? 'text-gold' : 'text-marble'} uppercase mb-1">
+                    ${pd.name}
+                    ${isRec ? '<span class="ml-2 bg-gold text-void px-2 py-0.5 text-[8px] tracking-widest uppercase font-bold">Recommended</span>' : ''}
+                </div>
+                <div class="font-sans text-[10px] text-marble opacity-50">${pd.delivery}</div>
+            </div>
+            <div class="font-serif text-2xl text-marble">$${pd.price}</div>
+        </label>`;
+    });
+    html += '</div>';
+    ctr.innerHTML = html;
+
+    ctr.querySelectorAll('input[name="plan_choice"]').forEach(radio => {
+        radio.addEventListener('change', e => {
+            activePlan = e.target.value;
+            resetELAcceptance(); // Option B: reset acceptance on plan change
+            renderPlans();
+        });
+    });
+}
+
+// Resets EL acceptance — called whenever plan changes after acceptance
+function resetELAcceptance() {
+    document.getElementById('engagement-checkbox').checked = false;
+    const vc = document.getElementById('visual-checkbox');
+    vc.classList.remove('bg-gold', 'border-gold');
+    vc.classList.add('bg-void');
+    document.getElementById('check-icon').classList.add('hidden');
+    const mainBtn     = document.getElementById('checkout-btn');
+    mainBtn.innerText = 'Accept Terms To Continue';
+    mainBtn.classList.add('opacity-50', 'cursor-not-allowed');
+}
+
+// ── 12. ENGAGEMENT LETTER MODAL ─────────────────────────────────────────
+document.getElementById('engagement-checkbox').parentElement.addEventListener('click', e => {
     if (e.target.tagName !== 'BUTTON' && e.target.id !== 'open-modal-btn') {
         e.preventDefault();
         document.getElementById('open-modal-btn').click();
     }
 });
 
-document.getElementById('open-modal-btn').addEventListener('click', (e) => {
+document.getElementById('open-modal-btn').addEventListener('click', e => {
     e.preventDefault();
     const pd    = PLAN_DATA[activePlan];
     const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
@@ -765,7 +962,7 @@ document.getElementById('open-modal-btn').addEventListener('click', (e) => {
     const company = document.getElementById('apply-company').value.trim() || "[Client Company Name]";
     const email   = localStorage.getItem('ln_email') || "[Client Email]";
 
-    document.getElementById('el-date').innerText        = today;
+    document.getElementById('el-date').innerText         = today;
     document.querySelectorAll('.el-date-footer').forEach(el => el.innerText = today);
     document.getElementById('el-client-name').innerText  = company;
     document.getElementById('el-contact').innerText      = `${fname} ${lname}`.trim();
@@ -786,7 +983,7 @@ document.getElementById('open-modal-btn').addEventListener('click', (e) => {
     document.getElementById('engagement-modal').classList.remove('hidden-state');
     document.body.style.overflow = 'hidden';
 
-    const container = document.getElementById('engagement-scroll-container');
+    const container    = document.getElementById('engagement-scroll-container');
     container.scrollTop = 0;
 
     const acceptBtn    = document.getElementById('accept-modal-btn');
@@ -794,6 +991,13 @@ document.getElementById('open-modal-btn').addEventListener('click', (e) => {
     acceptBtn.className = "bg-gold/20 text-marble/30 cursor-not-allowed font-sans text-xs tracking-[0.2em] uppercase px-10 py-4 font-bold w-full md:w-auto transition-all duration-300";
     document.getElementById('scroll-instruction').classList.remove('hidden-state');
     checkScrollBottom();
+});
+
+// Close modal without accepting — checkout button stays locked
+// HTML REQUIRED: add <button id="close-modal-btn"> to engagement-modal header right side
+document.getElementById('close-modal-btn')?.addEventListener('click', () => {
+    document.getElementById('engagement-modal').classList.add('hidden-state');
+    document.body.style.overflow = 'auto';
 });
 
 const elScrollContainer = document.getElementById('engagement-scroll-container');
@@ -821,8 +1025,8 @@ document.getElementById('accept-modal-btn').addEventListener('click', () => {
     document.body.style.overflow = 'auto';
 });
 
-// ── 10. FINAL CHECKOUT SUBMISSION ────────────────────────────────────
-document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+// ── 13. CHECKOUT SUBMISSION ─────────────────────────────────────────────
+document.getElementById('checkout-form').addEventListener('submit', async e => {
     e.preventDefault();
 
     if (!document.getElementById('engagement-checkbox').checked) {
@@ -848,41 +1052,38 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
         registrationJurisdiction: jurisdiction,
         linkedinUrl:          prospectData?.linkedinUrl          || "",
         serviceJurisdictions: prospectData?.serviceJurisdictions || "",
-        lanes:                prospectData?.lanes                || selectedLanes,
-        metaVerbs:            prospectData?.metaVerbs            || selectedArchs,
+        lanes:                selectedLanes,
+        metaVerbs:            selectedArchs,
         intArchetypes:        prospectData?.intArchetypes        || [],
-        extExposures:         prospectData?.extExposures         || Array.from(trippedSurfaces),
+        extExposures:         Array.from(trippedSurfaces),
         plan:                 activePlan,
         price:                pd.price,
         leadType:             "hot_lead",
         status:               "hot_payment_pending",
-        source:               "unified_scanner_v5",
+        source:               "unified_scanner_v5.5",
         engagementReference:  engagementRefCode,
         elAccepted:           true,
-        elAcceptedAt:         new Date().toISOString()
+        elAcceptedAt:         new Date().toISOString(),
+        elAcceptedForPlan:    activePlan   // records which plan the EL was read and accepted for
     };
 
     try {
         const docId = email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
-        await setDoc(doc(db, "leads", docId), { ...leadData, lastTouched: serverTimestamp() }, { merge: true });
+        await setDoc(doc(db, "leads", docId), { ...leadData, lastTouched:serverTimestamp() }, { merge:true });
         await fetch(CHECKOUT_WEBHOOK, {
-            method:  "POST",
-            headers: { "Content-Type": "application/json" },
-            body:    JSON.stringify({ ...leadData, timestamp: new Date().toISOString() })
+            method:"POST", headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ ...leadData, timestamp:new Date().toISOString() })
         });
-    } catch(err) { console.error("Final Checkout Error:", err); }
+    } catch(err) { console.error("Checkout Error:", err); }
 
     window.location.href = PAYPAL_LINKS[activePlan];
 });
 
-// ── 11. EXIT INTENT ───────────────────────────────────────────────────
-document.addEventListener('mouseleave', (e) => {
-    const dashEl = document.getElementById('state-dashboard');
-    const gateEl = document.getElementById('state-gate');
-    const chkEl  = document.getElementById('state-checkout');
-    const dashV  = dashEl && !dashEl.classList.contains('hidden-state');
-    const gateV  = gateEl && !gateEl.classList.contains('hidden-state');
-    const chkV   = chkEl  && !chkEl.classList.contains('hidden-state');
+// ── 14. EXIT INTENT ─────────────────────────────────────────────────────
+document.addEventListener('mouseleave', e => {
+    const dashV = !document.getElementById('state-dashboard')?.classList.contains('hidden-state');
+    const gateV = !document.getElementById('state-gate')?.classList.contains('hidden-state');
+    const chkV  = !document.getElementById('state-checkout')?.classList.contains('hidden-state');
     if (e.clientY < 0 && !exitFired && !dashV && !gateV && !chkV) {
         exitFired = true;
         document.getElementById('exit-modal').classList.remove('hidden-state');
@@ -890,43 +1091,36 @@ document.addEventListener('mouseleave', (e) => {
     }
 });
 
-const closeExitBtn = document.getElementById('close-exit-btn');
-if (closeExitBtn) {
-    closeExitBtn.addEventListener('click', () => {
+document.getElementById('close-exit-btn')?.addEventListener('click', () => {
+    document.getElementById('exit-modal').classList.add('hidden-state');
+    document.body.style.overflow = 'auto';
+    setTimeout(() => { exitFired = false; }, 2000);
+});
+
+document.getElementById('exit-form')?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn     = document.getElementById('exit-submit-btn');
+    btn.innerText = "Saved."; btn.disabled = true;
+    const email   = document.getElementById('exit-email').value.trim().toLowerCase();
+    try {
+        await setDoc(doc(db, "leads", email.replace(/[^a-zA-Z0-9@._-]/g, '')), {
+            email, status:'cold_lead', source:'exit_intent', createdAt:serverTimestamp()
+        }, { merge:true });
+        fetch(GATE_WEBHOOK, {
+            method:'POST', headers:{ 'Content-Type':'application/json' },
+            body: JSON.stringify({ email, source:'exit_intent' })
+        }).catch(() => {});
+    } catch(err) { console.error("Exit write failed:", err); }
+    setTimeout(() => {
         document.getElementById('exit-modal').classList.add('hidden-state');
         document.body.style.overflow = 'auto';
-        setTimeout(() => { exitFired = false; }, 2000);
-    });
-}
+    }, 1500);
+});
 
-const exitForm = document.getElementById('exit-form');
-if (exitForm) {
-    exitForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn   = document.getElementById('exit-submit-btn');
-        btn.innerText = "Saved."; btn.disabled = true;
-        const email = document.getElementById('exit-email').value.trim().toLowerCase();
-        try {
-            await setDoc(doc(db, "leads", email.replace(/[^a-zA-Z0-9@._-]/g, '')), {
-                email, status: 'cold_lead', source: 'exit_intent', createdAt: serverTimestamp()
-            }, { merge: true });
-            fetch(GATE_WEBHOOK, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, source: 'exit_intent' })
-            }).catch(() => {});
-        } catch(err) { console.error("Exit write failed:", err); }
-        setTimeout(() => {
-            document.getElementById('exit-modal').classList.add('hidden-state');
-            document.body.style.overflow = 'auto';
-        }, 1500);
-    });
-}
-
-// ── UTILITIES ─────────────────────────────────────────────────────────
+// ── 15. UTILITIES ───────────────────────────────────────────────────────
 function switchState(fromId, toId) {
-    const fromEl = document.getElementById(fromId);
-    const toEl   = document.getElementById(toId);
-    if (fromEl) { fromEl.classList.add('hidden-state'); fromEl.classList.remove('fade-enter'); }
-    if (toEl)   { toEl.classList.remove('hidden-state'); void toEl.offsetWidth; toEl.classList.add('fade-enter'); }
+    const f = document.getElementById(fromId);
+    const t = document.getElementById(toId);
+    if (f) { f.classList.add('hidden-state');    f.classList.remove('fade-enter'); }
+    if (t) { t.classList.remove('hidden-state'); void t.offsetWidth; t.classList.add('fade-enter'); }
 }
