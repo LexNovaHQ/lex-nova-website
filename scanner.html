@@ -26,18 +26,13 @@
         .hidden-state { display: none !important; }
         .fade-enter { animation: fadeIn 0.5s ease forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .blur-text { filter: blur(5px); user-select: none; pointer-events: none; }
-        .redacted { background: #111; color: transparent; border-radius: 2px; }
         .matrix-row:hover { background: rgba(197, 160, 89, 0.02); }
         .typewriter { overflow: hidden; white-space: nowrap; animation: typing 1.5s steps(40, end); }
         @keyframes typing { from { width: 0 } to { width: 100% } }
-        /* Custom Scrollbar for EL Modal */
         #engagement-scroll-container::-webkit-scrollbar { width: 6px; }
         #engagement-scroll-container::-webkit-scrollbar-track { background: #080808; }
         #engagement-scroll-container::-webkit-scrollbar-thumb { background: #1A1A1A; border-radius: 3px; }
         #engagement-scroll-container::-webkit-scrollbar-thumb:hover { background: #C5A059; }
-        
-        /* Custom Checkbox visual state for multi-select buttons */
         .config-btn.selected .check-indicator { border-color: #C5A059; background-color: rgba(197, 160, 89, 0.1); }
         .config-btn.selected .check-dot { opacity: 1; }
     </style>
@@ -45,6 +40,7 @@
 
 <body class="bg-void text-marble font-sans antialiased selection:bg-gold selection:text-void min-h-screen flex flex-col">
 
+    <!-- EXIT INTENT MODAL -->
     <div id="exit-modal" class="hidden-state fixed inset-0 bg-void/95 z-[200] flex items-center justify-center p-6">
         <div class="max-w-lg w-full border border-shadow bg-[#080808] p-10 text-center shadow-2xl">
             <h3 class="font-serif text-3xl text-marble mb-4">Before you go.</h3>
@@ -57,6 +53,7 @@
         </div>
     </div>
 
+    <!-- NAV -->
     <nav class="w-full py-8 px-6 md:px-12 flex justify-center md:justify-between items-center z-50 relative border-b border-shadow">
         <a href="index.html" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
             <span class="font-serif text-xl tracking-widest text-gold uppercase mt-1">Lex Nova <span class="text-marble opacity-50 text-sm ml-1">HQ</span></span>
@@ -68,20 +65,25 @@
 
     <main class="flex-grow w-full max-w-3xl mx-auto px-6 py-16 md:py-24 flex flex-col items-center transition-all duration-700" id="main-wrap">
 
+        <!-- STATE: INTRO + CONFIG -->
         <div id="state-intro" class="w-full text-center fade-enter">
+
+            <!-- Terminal greeting -->
             <div id="greeting-box" class="mb-12 text-left bg-[#080808] border border-shadow p-6 font-mono text-xs text-gold/80 opacity-0 transition-opacity duration-1000">
                 <div class="typewriter mb-2">> INITIALIZING PID RECOGNITION...</div>
                 <div id="term-name" class="typewriter hidden-state">> TARGET ACQUIRED: <span class="text-marble font-bold" id="founder-greet">GUEST</span></div>
                 <div id="term-comp" class="typewriter hidden-state">> ENTITY: <span class="text-marble font-bold" id="company-greet">UNKNOWN</span></div>
                 <div class="typewriter mt-4 text-danger">> WARNING: BASELINE FORENSIC SCRAPE COMPLETE. AWAITING STRUCTURAL PARAMETERS.</div>
             </div>
-            
+
+            <!-- Config UI -->
             <div id="config-ui" class="w-full text-left hidden-state opacity-0 transition-opacity duration-1000">
                 <div class="mb-10 text-center md:text-left">
                     <h3 class="font-serif text-3xl md:text-4xl text-marble mb-2">Configure Your Audit</h3>
                     <p class="font-sans text-xs text-marble/50 uppercase tracking-widest">Select all parameters that apply to dynamically build your scan.</p>
                 </div>
-                
+
+                <!-- PHASE 01 — Operational Environment -->
                 <div class="mb-10">
                     <div class="flex items-center justify-between mb-4 border-b border-shadow pb-2">
                         <div class="flex items-center gap-3">
@@ -91,24 +93,27 @@
                         <span class="font-sans text-[9px] text-marble/30 tracking-widest uppercase">Select all that apply</span>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
                         <button type="button" data-lane="commercial" class="config-btn lane-toggle group relative text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
                             <div class="absolute top-5 right-5 w-4 h-4 border border-shadow flex items-center justify-center check-indicator transition-colors">
                                 <div class="w-2 h-2 bg-gold opacity-0 check-dot transition-opacity"></div>
                             </div>
-                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text pr-6">Commercial Architecture</div>
-                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed pr-6">We build and sell AI products directly to external markets (B2B/B2C).</div>
+                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text pr-6">We sell AI to the outside world.</div>
+                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed pr-6">Our AI is a product — customers pay to use it.</div>
                         </button>
-                        
+
                         <button type="button" data-lane="operational" class="config-btn lane-toggle group relative text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
                             <div class="absolute top-5 right-5 w-4 h-4 border border-shadow flex items-center justify-center check-indicator transition-colors">
                                 <div class="w-2 h-2 bg-gold opacity-0 check-dot transition-opacity"></div>
                             </div>
-                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text pr-6">Operational Architecture</div>
-                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed pr-6">We utilize AI internally to automate our own workforce and operations.</div>
+                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text pr-6">We use AI inside our own company.</div>
+                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed pr-6">AI runs our internal workflows, our team, our operations.</div>
                         </button>
+
                     </div>
                 </div>
 
+                <!-- PHASE 02 — Architecture (4 options, all 10 INT archetypes covered) -->
                 <div class="mb-10">
                     <div class="flex items-center justify-between mb-4 border-b border-shadow pb-2">
                         <div class="flex items-center gap-3">
@@ -118,29 +123,43 @@
                         <span class="font-sans text-[9px] text-marble/30 tracking-widest uppercase">Select all that apply</span>
                     </div>
                     <div class="grid grid-cols-1 gap-4">
-                        <button type="button" data-arch="execution" class="config-btn arch-toggle group relative text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
+
+                        <!-- OPTION A: actions — covers INT.01 (Doer) + INT.09 (Optimizer) + INT.10 (Mover) -->
+                        <button type="button" data-arch="actions" class="config-btn arch-toggle group relative text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
                             <div class="absolute top-5 right-5 w-4 h-4 border border-shadow flex items-center justify-center check-indicator transition-colors">
                                 <div class="w-2 h-2 bg-gold opacity-0 check-dot transition-opacity"></div>
                             </div>
-                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text pr-6">Execution & Operations</div>
-                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed pr-6">Our AI takes action: it executes workflows, routes API data, moves hardware, or manages infrastructure.</div>
+                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text pr-6">It acts on its own.</div>
+                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed pr-6">Books things, spends money, moves data, runs workflows — without asking a human every time.</div>
                         </button>
 
-                        <button type="button" data-arch="intelligence" class="config-btn arch-toggle group relative text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
+                        <!-- OPTION B: evaluates — covers INT.02 (Judge) + INT.08 (Shield) -->
+                        <button type="button" data-arch="evaluates" class="config-btn arch-toggle group relative text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
                             <div class="absolute top-5 right-5 w-4 h-4 border border-shadow flex items-center justify-center check-indicator transition-colors">
                                 <div class="w-2 h-2 bg-gold opacity-0 check-dot transition-opacity"></div>
                             </div>
-                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text pr-6">Intelligence & Decisioning</div>
-                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed pr-6">Our AI evaluates: it scores candidates, makes health/credit decisions, bonds with users, or audits security.</div>
+                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text pr-6">It evaluates or monitors.</div>
+                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed pr-6">Scores people, flags risk, detects fraud, makes recommendations that affect real outcomes.</div>
                         </button>
 
-                        <button type="button" data-arch="content" class="config-btn arch-toggle group relative text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
+                        <!-- OPTION C: creates — covers INT.04 (Creator) + INT.05 (Reader) + INT.06 (Orchestrator) + INT.07 (Translator) -->
+                        <button type="button" data-arch="creates" class="config-btn arch-toggle group relative text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
                             <div class="absolute top-5 right-5 w-4 h-4 border border-shadow flex items-center justify-center check-indicator transition-colors">
                                 <div class="w-2 h-2 bg-gold opacity-0 check-dot transition-opacity"></div>
                             </div>
-                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text pr-6">Content & Knowledge</div>
-                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed pr-6">Our AI synthesizes: it generates media/code, bypasses bot-walls to scrape data, or transcribes meetings.</div>
+                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text pr-6">It creates, reads, or listens.</div>
+                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed pr-6">Generates content or code, pulls from documents or the web, transcribes meetings, or routes between AI models.</div>
                         </button>
+
+                        <!-- OPTION D: talks — covers INT.03 (Companion) -->
+                        <button type="button" data-arch="talks" class="config-btn arch-toggle group relative text-left bg-[#080808] border border-shadow p-5 hover:border-gold transition-all cursor-pointer">
+                            <div class="absolute top-5 right-5 w-4 h-4 border border-shadow flex items-center justify-center check-indicator transition-colors">
+                                <div class="w-2 h-2 bg-gold opacity-0 check-dot transition-opacity"></div>
+                            </div>
+                            <div class="font-sans text-xs text-marble font-bold uppercase tracking-widest mb-1 group-hover:text-gold transition-colors label-text pr-6">It talks to people.</div>
+                            <div class="font-sans text-[10px] text-marble/50 leading-relaxed pr-6">Engages users in ongoing conversation — as a coach, companion, advisor, customer service agent, or persona-based assistant.</div>
+                        </button>
+
                     </div>
                 </div>
 
@@ -148,18 +167,22 @@
             </div>
         </div>
 
+        <!-- STATE: QUIZ -->
         <div id="state-quiz" class="hidden-state fade-enter w-full max-w-2xl">
             <div class="mb-6 flex justify-between items-center text-[10px] font-sans tracking-[0.2em] text-marble/50 uppercase">
                 <span id="progress-text">Step 1</span>
                 <span class="text-gold font-bold">V5.5 Canon Engine</span>
             </div>
-            <div class="w-full h-1 bg-shadow mb-12"><div id="progress-bar" class="h-full bg-gold transition-all duration-500" style="width:0%"></div></div>
+            <div class="w-full h-1 bg-shadow mb-12">
+                <div id="progress-bar" class="h-full bg-gold transition-all duration-500" style="width:0%"></div>
+            </div>
             <div id="question-container">
                 <h3 id="question-text" class="font-serif text-3xl md:text-4xl leading-snug text-marble mb-10">...</h3>
                 <div id="options-container" class="flex flex-col gap-4"></div>
             </div>
         </div>
 
+        <!-- STATE: GATE FORM -->
         <div id="state-gate" class="hidden-state fade-enter w-full max-w-xl">
             <div class="mb-8 p-6 border-2 border-danger/40 bg-danger/10 text-center">
                 <h4 class="font-sans text-[11px] tracking-[0.2em] text-danger uppercase mb-2 font-bold animate-pulse">System Alert</h4>
@@ -184,8 +207,10 @@
             </form>
         </div>
 
+        <!-- STATE: DASHBOARD (built by JS) -->
         <div id="state-dashboard" class="hidden-state fade-enter w-full"></div>
 
+        <!-- STATE: CHECKOUT -->
         <div id="state-checkout" class="hidden-state fade-enter w-full max-w-3xl mx-auto pt-10">
             <div class="text-center mb-16">
                 <div class="inline-block border border-gold/40 bg-gold/5 px-5 py-2 mb-8">
@@ -196,13 +221,15 @@
             </div>
 
             <form id="checkout-form" class="space-y-8">
+
+                <!-- 01. Plan selection -->
                 <div class="bg-[#080808] border border-gold p-8 relative overflow-hidden">
                     <div class="absolute top-0 right-0 bg-gold text-void font-sans text-[9px] font-bold uppercase tracking-widest px-3 py-1">Forensic Match</div>
                     <h3 class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase mb-6 border-b border-shadow pb-4">01. Verified Architecture Plan</h3>
-                    <div id="locked-plan-display" class="mb-2">
-                        </div>
+                    <div id="locked-plan-display" class="mb-2"></div>
                 </div>
 
+                <!-- 02. Entity details -->
                 <div class="bg-[#080808] border border-shadow p-8">
                     <h3 class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase mb-6 border-b border-shadow pb-4">02. Entity Details</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -237,6 +264,7 @@
                     </div>
                 </div>
 
+                <!-- 03. Engagement Letter -->
                 <div class="bg-[#080808] border border-shadow p-8">
                     <h3 class="font-sans text-xs tracking-[0.2em] text-marble opacity-50 uppercase mb-6 border-b border-shadow pb-4">03. Engagement Letter</h3>
                     <p class="font-sans text-xs text-marble opacity-50 leading-relaxed mb-6">You must read and accept the full Engagement Letter before proceeding to payment. Click below to open the document. The acceptance button activates only after you have scrolled to the bottom.</p>
@@ -257,30 +285,37 @@
 
                 <button type="submit" id="checkout-btn" class="w-full bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 font-bold opacity-50 cursor-not-allowed">Accept Terms To Continue</button>
                 <p class="text-center font-sans text-[10px] tracking-widest text-marble opacity-40 uppercase mt-4">Payments processed via PayPal. SSL Encrypted.</p>
+
             </form>
         </div>
 
     </main>
 
+    <!-- FOOTER -->
     <footer class="flex flex-col items-center py-12 bg-[#050505] border-t border-shadow w-full mt-auto">
         <div class="font-serif text-xl tracking-widest text-gold uppercase mb-6">Lex Nova HQ</div>
         <p class="font-sans text-xs text-marble opacity-40 uppercase tracking-widest max-w-2xl leading-relaxed text-center mb-4">Commercial Architecture Practice, Not a Law Firm.<br>Review-Ready Drafts Only. No Attorney-Client Relationship.</p>
         <p class="font-sans text-xs text-marble opacity-30">&copy; 2026 Lex Nova HQ. All rights reserved.</p>
     </footer>
 
+    <!-- ENGAGEMENT LETTER MODAL -->
     <div id="engagement-modal" class="fixed inset-0 z-[100] hidden-state flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-void/95 backdrop-blur-md"></div>
         <div class="relative bg-[#080808] border border-shadow w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl">
-            
+
+            <!-- Modal header — close button added right side -->
             <div class="p-6 md:p-8 border-b border-shadow shrink-0 flex items-center justify-between">
                 <div>
                     <h2 class="font-serif text-2xl md:text-3xl text-marble">Lex Nova HQ — Engagement Letter</h2>
                     <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mt-1">Scroll to the bottom to unlock acceptance</p>
                 </div>
+                <!-- Close without accepting — checkout remains locked -->
+                <button type="button" id="close-modal-btn" class="text-marble/30 hover:text-marble/70 transition-colors font-sans text-[10px] uppercase tracking-widest border border-shadow hover:border-marble/30 px-4 py-2 ml-6 shrink-0">Close</button>
             </div>
 
+            <!-- Scrollable EL body -->
             <div id="engagement-scroll-container" class="flex-1 overflow-y-auto p-6 md:p-10 font-sans text-xs text-marble leading-relaxed space-y-1">
-                
+
                 <div class="border border-shadow bg-[#050505] p-6 mb-8 space-y-1">
                     <p class="font-sans text-[10px] tracking-[0.2em] text-gold uppercase mb-3">LEX NOVA HQ ENGAGEMENT LETTER — LEGAL ARCHITECTURE MANDATE</p>
                     <p>Date: <span id="el-date">[DATE]</span></p>
@@ -294,16 +329,16 @@
                     </div>
                     <div class="mt-3 pt-3 border-t border-shadow">
                         <p class="text-marble opacity-50 text-[10px] uppercase tracking-widest mb-2">From:</p>
-                        <p>Lex Nova HQ  Shwetabh Singh, Principal Architect</p>
+                        <p>Lex Nova HQ — Shwetabh Singh, Principal Architect</p>
                         <p>Primary Email: shwetabh.singh@lexnovahq.com</p>
                     </div>
                     <p class="mt-3 pt-3 border-t border-shadow text-marble opacity-60">Lex Nova HQ is the trading name of [YOUR FULL LEGAL NAME], sole proprietor. Entity registration (LLC/C-Corp) is pending and will be updated upon completion. All obligations under this Letter are personally undertaken by the undersigned Principal Architect until such time as a registered entity assumes this agreement.</p>
                 </div>
-                
+
                 <p class="mb-4">Dear <span id="el-dear">[CLIENT CONTACT NAME]</span>,</p>
                 <p class="mb-6">Thank you for choosing Lex Nova HQ. This Engagement Letter ("Letter"), together with Schedule A attached hereto, sets out the complete terms under which Lex Nova HQ ("Lex Nova," "we," "us," or "our") will provide services to <span id="el-client-body">[CLIENT NAME]</span> ("Client," "you," or "your"). By signing this Letter, replying to the transmitting email with the words "I accept," or checking the acceptance box on the Configuration Intake Form, you agree to be bound by all terms contained herein.</p>
                 <p class="mb-8">This Letter is effective as of the date of acceptance ("Effective Date").</p>
-                
+
                 <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">THE LEGAL ARCHITECTURE MANDATE</p>
                 <p class="mb-2">Lex Nova HQ is a business consultancy and commercial structure architecture.</p>
                 <p class="mb-2">We provide legal architecture, commercial structuring, deal architecture, negotiation leverage design, and operational logic.</p>
@@ -312,21 +347,21 @@
                 <p class="mb-2">Nothing in this Letter, in any communication between the parties, or in any Deliverable produced under this engagement constitutes legal advice or establishes an attorney-client relationship.</p>
                 <p class="mb-2">We are Legal Architects. We design the structure. We do not stamp the compliance.</p>
                 <p class="mb-4">The distinction between Legal Architecture and Legal Practice is not a formality — it defines the nature, scope, and limitations of every service we provide.</p>
-                
+
                 <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">THE REVIEW-READY STANDARD</p>
                 <p class="mb-2">All documents delivered under this engagement ("Deliverables") are delivered as "Review-Ready Drafts" — meaning they are approximately 95% complete structural architectures designed to bridge the gap between business intent and legal execution.</p>
                 <p class="mb-2">Deliverables are NOT final legal instruments. They are not ready for execution, filing, or enforcement without independent review by qualified legal counsel admitted to practice in the Client's operating jurisdiction(s).</p>
                 <p class="mb-2">Client's local counsel bears sole responsibility for: (a) confirming jurisdictional compliance; (b) validating enforceability under applicable local law; (c) making any modifications required by local statutory or regulatory requirements; and (d) approving the Deliverables for execution.</p>
                 <p class="mb-2">Each Deliverable is accompanied by Architect Notes addressed to the Client's local counsel or reviewing party, explaining the structural logic, clause rationale, and risk architecture. These notes are for informational purposes only and do not constitute legal guidance.</p>
                 <p class="mb-4">Each Kit and Bundle engagement includes a video walkthrough (delivered via Clipchamp or equivalent) explaining the architecture and key clauses in plain language.</p>
-                
+
                 <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">CLIENT REPRESENTATIONS</p>
                 <p class="mb-2">By entering into this engagement, Client represents and warrants that:</p>
                 <p class="mb-1 pl-4">Client is a duly organized business entity (corporation, limited liability company, partnership, or sole proprietorship operating in a commercial capacity) and is not engaging Lex Nova as a consumer or for personal, family, or household purposes.</p>
                 <p class="mb-1 pl-4">The individual signing or accepting this Letter has full authority to bind Client to its terms.</p>
                 <p class="mb-1 pl-4">Client will use the Deliverables exclusively for Client's own internal business purposes and not for resale, redistribution, sublicensing, or provision to third parties.</p>
                 <p class="mb-4 pl-4">Client understands and accepts that Lex Nova is not a law firm and that the Deliverables require independent legal review before use.</p>
-                
+
                 <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">SCOPE OF ENGAGEMENT</p>
                 <p class="mb-2">The specific scope of this engagement — including the engagement tier, service pillar, lane, product name, deliverables, fee, payment structure, delivery timeline, and included revision rounds — is set out in Schedule A attached to this Letter.</p>
                 <p class="mb-2">Schedule A is incorporated into this Letter by reference and forms part of this agreement.</p>
@@ -501,17 +536,17 @@
 
                 <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">ACCEPTANCE AND SIGNATURE</p>
                 <p class="mb-2">By signing or accepting below, the parties agree to all terms and conditions contained in this Engagement Letter and the attached Schedule A.</p>
-                <p class="mb-2 mt-4">For LexNova</p>
+                <p class="mb-2 mt-4">For Lex Nova HQ</p>
                 <p class="mb-2 mt-4">For Client</p>
                 <p class="mb-2 mt-2">This Letter may also be accepted by replying to the transmitting email with "I accept" or by checking the acceptance box on the Configuration Intake Form. See Section 29.</p>
 
+                <!-- Schedule A -->
                 <div class="border border-gold/30 bg-[#050505] p-6 mt-10 space-y-4">
                     <p class="font-bold text-sm text-gold tracking-widest uppercase mb-4">SCHEDULE A — ENGAGEMENT SCOPE</p>
                     <p>Engagement Reference: <span class="el-ref-number">LN-[YEAR]-[NUMBER]</span></p>
                     <p>Client Name: <span id="el-sa-client">[CLIENT NAME]</span></p>
                     <p>Effective Date: <span id="el-sa-date">[DATE]</span></p>
                     <p>Engagement details</p>
-                    
                     <div class="border border-shadow mt-4 mb-6">
                         <table class="w-full text-xs text-left">
                             <tbody class="divide-y divide-shadow">
@@ -522,13 +557,11 @@
                             </tbody>
                         </table>
                     </div>
-
                     <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">DELIVERABLES</p>
                     <p>Product Name: <span id="el-sa-product"></span></p>
                     <div class="border border-shadow mt-2 mb-6 p-3 text-xs opacity-60">
                         [Specific document IDs will be confirmed and injected into your signed Reference Copy based on your finalized intake matrix.]
                     </div>
-
                     <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">COMMERCIAL TERMS</p>
                     <div class="border border-shadow mt-2 mb-6">
                         <table class="w-full text-xs text-left">
@@ -540,7 +573,6 @@
                             </tbody>
                         </table>
                     </div>
-
                     <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">FIRST CLIENTS PROTOCOL</p>
                     <div class="border border-shadow mt-2 mb-6">
                         <table class="w-full text-xs text-left">
@@ -551,7 +583,6 @@
                             </tbody>
                         </table>
                     </div>
-
                     <p class="font-bold text-marble text-xs tracking-[0.1em] mt-6 mb-2">ADDITIONAL NOTES</p>
                     <p>This Schedule A is incorporated into and forms part of the Engagement Letter dated <span class="el-date-footer">[DATE]</span> between Lex Nova HQ and <span class="el-client-footer">[CLIENT NAME]</span>.</p>
                     <p>Acknowledged by Client: <span class="opacity-30">_________________</span> Date: <span class="opacity-30">_________________</span></p>
@@ -560,11 +591,13 @@
                 <div class="h-10"></div>
             </div>
 
+            <!-- Modal footer — accept button -->
             <div class="p-6 md:p-8 border-t border-shadow shrink-0 bg-[#080808]">
                 <p id="scroll-instruction" class="font-sans text-xs tracking-widest text-gold uppercase mb-4 opacity-80 animate-pulse">↓ Scroll to the bottom to unlock acceptance</p>
                 <button type="button" id="accept-modal-btn" disabled class="bg-gold/20 text-marble/30 cursor-not-allowed font-sans text-xs tracking-[0.2em] uppercase px-10 py-4 font-bold w-full md:w-auto transition-all duration-300">I Accept These Terms</button>
                 <p class="font-sans text-[10px] text-marble opacity-30 mt-3 leading-relaxed">By accepting, you confirm you have read all 30 sections and Schedule A of this Engagement Letter in full, and agree to be bound by its terms. Electronic acceptance is legally binding under E-SIGN, UETA, eIDAS, and the IT Act 2000.</p>
             </div>
+
         </div>
     </div>
 
