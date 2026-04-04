@@ -1,30 +1,22 @@
 /**
- * LEX NOVA HQ — FORENSIC SCANNER v5.5 CANON
- * scanner-logic.js — Full Rewrite March 2026
+ * LEX NOVA HQ — FORENSIC SCANNER v5.6
+ * scanner-logic.js
  *
- * CHANGES FROM v5.0:
- * ─ All gap objects rebuilt to match Hunter v6.1 forensicGaps schema exactly
- * ─ New Phase 2: 4 arch groups (actions/evaluates/creates/talks) — all 10 INT archetypes covered
- * ─ threatId as primary merge key — id retained as fallback for legacy Firestore data
- * ─ addExt() helper splits comma-separated EXT strings before adding to trippedSurfaces
- * ─ EXT_VALUES: all 10 surfaces, no-space format, EXT.02 + EXT.05 added
- * ─ Severity pulled from registry — never computed from pts
- * ─ Velocity from registry, converted to client-display labels in table
- * ─ thePain replaces plain / theFix replaces doc throughout
- * ─ Dual-push gaps array on C2 question (gaps[])
- * ─ 6-column table: The Gap / What It Costs You / How We Found It / Severity / Clock / The Fix
- * ─ Rows 1-3 full reveal / Rows 4-6 partial blur (trap + pain blurred, evidence + badges clear)
- * ─ EL plan lock Option B: acceptance resets on plan change
- * ─ EL close button (no-accept path)
- * ─ lanes + metaVerbs added to gate payload
- * ─ DOC_PP + DOC_PBK added to both kit manifests
- * ─ ARCH_PRIORITY fixed order prevents click-order drops
- * ─ Version strings updated to v5.5
+ * CHANGES FROM v5.5:
+ * ─ Entry gate added: email + company collected before terminal/config
+ * ─ Firestore cross-check on entry: prospects queried by email field
+ * ─ PID pre-fills entry gate email if URL param present
+ * ─ finishDiagnostic() writes full scan payload directly — no gate detour
+ * ─ state-gate removed from flow entirely
+ * ─ Exit intent modal and all exit intent logic removed
+ * ─ query/collection/where/getDocs added to Firebase imports
  */
 
-import { initializeApp }    from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
-                            from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import {
+    getFirestore, doc, getDoc, setDoc, serverTimestamp,
+    query, collection, where, getDocs
+} from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 // ── 01. FIREBASE ────────────────────────────────────────────────────────
 const firebaseConfig = {
@@ -54,224 +46,182 @@ const PLAN_DATA = {
     complete_stack:   { name:"The Complete Stack",   price:2000, tier:"Bundle", lane:"Hybrid (A + B)",       delivery:"72 hours from Intake Form submission", rev:"2 Rounds" }
 };
 
-// All 10 EXT surfaces — no-space format, matches Hunter registry exactly
-// EXT.02 and EXT.05 added (were missing from v5.0)
 const EXT_VALUES = {
-    "EXT.01": 15000000,
-    "EXT.02":  5000000,
-    "EXT.03": 10000000,
-    "EXT.04":  5000000,
-    "EXT.05": 10000000,
-    "EXT.06": 20000000,
-    "EXT.07":  5000000,
-    "EXT.08":  2500000,
-    "EXT.09": 10000000,
+    "EXT.01": 15000000, "EXT.02":  5000000, "EXT.03": 10000000,
+    "EXT.04":  5000000, "EXT.05": 10000000, "EXT.06": 20000000,
+    "EXT.07":  5000000, "EXT.08":  2500000, "EXT.09": 10000000,
     "EXT.10":  5000000
 };
 
-// Registry velocity values → client-facing display labels
 const VELOCITY_DISPLAY = {
-    "Immediate": "Active Now",
-    "High":      "This Year",
-    "Upcoming":  "Incoming",
-    "Pending":   "Watch"
+    "Immediate": "Active Now", "High": "This Year",
+    "Upcoming":  "Incoming",   "Pending": "Watch"
 };
 
 // ── 03. GAP REGISTRY ────────────────────────────────────────────────────
-// SCHEMA CONTRACT: All fields match Hunter v6.1 forensicGaps output exactly.
-// Severity and velocity are pulled VERBATIM from Lane A Threat Registry V2.
-// They are NEVER computed from quiz pts — pts only determine if a gap fires.
-// evidenceTier: null for scanner gaps (no URL evidence at quiz time).
-// source: "scanner" — merge block upgrades to "dual-verified" when Hunter confirms.
-// dualVerifiable: false only for SCAN_INTERNAL_001 (internal behavior, no public URL).
-
 const GAP_SPECHT = {
-    id:"gap_specht",       threatId:"UNI_CON_001",
-    trap:'"Browsewrap" Invalidity',
-    legalAmmo:"Specht v. Netscape (2002)",
-    severity:"CRITICAL",   velocity:"Immediate",
+    id:"gap_specht", threatId:"UNI_CON_001",
+    trap:'"Browsewrap" Invalidity', legalAmmo:"Specht v. Netscape (2002)",
+    severity:"CRITICAL", velocity:"Immediate",
     thePain:"Courts throw out arbitration clauses and liability caps",
     theFix:"DOC_TOS §1.1", ext:"EXT.08, EXT.09",
     evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner",      dualVerifiable:true
+    source:"scanner", dualVerifiable:true
 };
-
 const GAP_MOFFATT = {
-    id:"gap_moffatt",      threatId:"UNI_HAL_001",
-    trap:"Bot Accountability",
-    legalAmmo:"Moffatt v. Air Canada (2024)",
-    severity:"CRITICAL",   velocity:"Immediate",
+    id:"gap_moffatt", threatId:"UNI_HAL_001",
+    trap:"Bot Accountability", legalAmmo:"Moffatt v. Air Canada (2024)",
+    severity:"CRITICAL", velocity:"Immediate",
     thePain:"Company legally forced to pay out hallucinated financial promises",
     theFix:"DOC_TOS §8.1 & §8.2", ext:"EXT.08",
     evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner",      dualVerifiable:true
+    source:"scanner", dualVerifiable:true
 };
-
 const GAP_SCHREMS = {
-    id:"gap_schrems",      threatId:"UNI_SEC_001",
-    trap:"Illegal Data Migration",
-    legalAmmo:"Schrems II (2020)",
-    severity:"CRITICAL",   velocity:"Immediate",
+    id:"gap_schrems", threatId:"UNI_SEC_001",
+    trap:"Illegal Data Migration", legalAmmo:"Schrems II (2020)",
+    severity:"CRITICAL", velocity:"Immediate",
     thePain:"Routing EU data to US servers without Standard Contractual Clauses",
     theFix:"DOC_DPA §6.2", ext:"EXT.01",
     evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner",      dualVerifiable:true
+    source:"scanner", dualVerifiable:true
 };
-
 const GAP_BARTZ = {
-    id:"gap_bartz",        threatId:"UNI_INF_001",
+    id:"gap_bartz", threatId:"UNI_INF_001",
     trap:"Upstream Training Piracy Liability",
     legalAmmo:"Bartz v. Anthropic (Settlement approved Sep 2025)",
-    severity:"NUCLEAR",    velocity:"Immediate",
-    thePain:"Largest copyright settlement in US history ($1.5B); piracy-sourced training is per se infringement; precedent pressures the entire foundation model supply chain",
+    severity:"NUCLEAR", velocity:"Immediate",
+    thePain:"Largest copyright settlement in US history ($1.5B); piracy-sourced training is per se infringement",
     theFix:"DOC_TOS §8.7", ext:"EXT.10",
     evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner",      dualVerifiable:true
+    source:"scanner", dualVerifiable:true
 };
-
 const GAP_WARRANTY = {
-    id:"gap_warranty",     threatId:"UNI_LIA_004",
-    trap:"Inconspicuous Warranty Caps",
-    legalAmmo:"UCC § 2-316 & § 2-719",
-    severity:"NUCLEAR",    velocity:"High",
+    id:"gap_warranty", threatId:"UNI_LIA_004",
+    trap:"Inconspicuous Warranty Caps", legalAmmo:"UCC § 2-316 & § 2-719",
+    severity:"NUCLEAR", velocity:"High",
     thePain:'Warranty disclaimers must be "conspicuous" (ALL CAPS) or courts strike them — leaving no liability protection',
     theFix:"DOC_TOS §9.2", ext:"EXT.08, EXT.09",
     evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner",      dualVerifiable:true
+    source:"scanner", dualVerifiable:true
 };
-
 const GAP_SHADOW = {
     id:"SCAN_INTERNAL_001", threatId:null,
-    trap:"Shadow AI Bleed",
-    legalAmmo:"Trade Secret Law / Internal IP Policy",
-    severity:"NUCLEAR",    velocity:"Immediate",
+    trap:"Shadow AI Bleed", legalAmmo:"Trade Secret Law / Internal IP Policy",
+    severity:"NUCLEAR", velocity:"Immediate",
     thePain:"Employees are actively leaking proprietary IP and client data into public LLMs without restriction or detection",
-    theFix:"DOC_HND",      ext:"EXT.09",
+    theFix:"DOC_HND", ext:"EXT.09",
     evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner",      dualVerifiable:false
-    // NOTE: Scanner-only by design — internal employee behavior has no public URL.
-    // Never attempt Hunter merge on this gap. dualVerifiable: false.
+    source:"scanner", dualVerifiable:false
 };
-
 const GAP_UETA = {
-    id:"gap_ueta",         threatId:"INT01_AGT_001",
-    trap:"Electronic Agent Authority",
-    legalAmmo:"UETA § 14",
-    severity:"NUCLEAR",    velocity:"Immediate",
+    id:"gap_ueta", threatId:"INT01_AGT_001",
+    trap:"Electronic Agent Authority", legalAmmo:"UETA § 14",
+    severity:"NUCLEAR", velocity:"Immediate",
     thePain:"The principal is legally bound by its AI's operations, even if no human reviewed the action",
     theFix:"DOC_AGT §2.1", ext:"EXT.08, EXT.09",
     evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner",      dualVerifiable:true
+    source:"scanner", dualVerifiable:true
 };
-
 const GAP_MOBLEY = {
-    id:"gap_mobley",       threatId:"INT02_DIS_001",
+    id:"gap_mobley", threatId:"INT02_DIS_001",
     trap:'Vendor Immunity / "HITL Theater"',
     legalAmmo:"Mobley v. Workday (Active 2025/2026)",
-    severity:"NUCLEAR",    velocity:"Immediate",
+    severity:"NUCLEAR", velocity:"Immediate",
     thePain:'Judge rejected blanket immunity for the AI vendor; suit proceeds under "agency" theory against the software company directly',
     theFix:"DOC_AGT §2.2", ext:"EXT.07",
     evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner",      dualVerifiable:true
+    source:"scanner", dualVerifiable:true
 };
-
 const GAP_CREATOR = {
-    id:"gap_creator",      threatId:"INT04_COP_001",
-    trap:"Copyright Collapse",
-    legalAmmo:"Thaler v. Perlmutter (2023/2025)",
-    severity:"NUCLEAR",    velocity:"Immediate",
+    id:"gap_creator", threatId:"INT04_COP_001",
+    trap:"Copyright Collapse", legalAmmo:"Thaler v. Perlmutter (2023/2025)",
+    severity:"NUCLEAR", velocity:"Immediate",
     thePain:"Raw AI output falls into the public domain immediately; copyright requires documented human authorship",
     theFix:"DOC_TOS §6.2", ext:"EXT.10, EXT.08",
     evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner",      dualVerifiable:true
+    source:"scanner", dualVerifiable:true
 };
-
 const GAP_FTC = {
-    id:"gap_ftc",          threatId:"INT05_DIS_001",
-    trap:'The "Death Penalty" Disgorgement',
-    legalAmmo:"FTC v. Rite Aid (2023)",
-    severity:"NUCLEAR",    velocity:"Immediate",
+    id:"gap_ftc", threatId:"INT05_DIS_001",
+    trap:'The "Death Penalty" Disgorgement', legalAmmo:"FTC v. Rite Aid (2023)",
+    severity:"NUCLEAR", velocity:"Immediate",
     thePain:"FTC ordering complete destruction of model, data, and algorithms trained on improperly obtained data",
     theFix:"DOC_DPA §4.1", ext:"EXT.03",
     evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner",      dualVerifiable:true
+    source:"scanner", dualVerifiable:true
 };
-
 const GAP_BIPA = {
-    id:"gap_bipa",         threatId:"INT07_BIO_001",
+    id:"gap_bipa", threatId:"INT07_BIO_001",
     trap:'The "Diarization" Voiceprint Trap',
     legalAmmo:"Cruz v. Fireflies.AI (Dec 18, 2025) & Basich v. Microsoft Corp. (Feb 5, 2026)",
-    severity:"NUCLEAR",    velocity:"Immediate",
+    severity:"NUCLEAR", velocity:"Immediate",
     thePain:"Assessing vocal pitch constitutes illegal biometric harvesting; standard audio prompts fail to satisfy statutory written consent requirements",
     theFix:"DOC_AUP §3.6", ext:"EXT.04, EXT.09",
     evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner",      dualVerifiable:true
+    source:"scanner", dualVerifiable:true
 };
-
 const GAP_COMPANION = {
-    id:"gap_companion",    threatId:"INT03_COM_002",
+    id:"gap_companion", threatId:"INT03_COM_002",
     trap:"Persistent Memory Pathologization",
     legalAmmo:"Gavalas v. Google (Filed Mar 4, 2026)",
-    severity:"NUCLEAR",    velocity:"Immediate",
+    severity:"NUCLEAR", velocity:"Immediate",
     thePain:"First wrongful death suit targeting Gemini; alleges AI manufactured delusional reality over 7 weeks and coached suicide; faulty design and wrongful death claims active",
     theFix:"DOC_TOS §5.2", ext:"EXT.08",
     evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner",      dualVerifiable:true
+    source:"scanner", dualVerifiable:true
 };
 
 // ── 04. QUESTION BANK ───────────────────────────────────────────────────
-// Language rules: founders over coffee, zero statute names, zero jargon,
-// active voice, pain is the frame not compliance.
-
 const Q_GLOBAL = [
     {
         q: "When someone lands on your product for the first time — do they click 'I Agree' before they start using it, or do they just... start?",
         gap: GAP_SPECHT,
         options: [
-            { t:"They hit a hard gate — checkbox or button, can't proceed without it.",                             pts:0  },
-            { t:"There's a line somewhere saying 'by using this you agree' but no actual click required.",          pts:30 },
-            { t:"No formal agreement step — they just sign up and get access.",                                     pts:50 },
-            { t:"I'd have to check with engineering — I'm not actually sure how the signup flow works.",            pts:60, unsure:true }
+            { t:"They hit a hard gate — checkbox or button, can't proceed without it.", pts:0 },
+            { t:"There's a line somewhere saying 'by using this you agree' but no actual click required.", pts:30 },
+            { t:"No formal agreement step — they just sign up and get access.", pts:50 },
+            { t:"I'd have to check with engineering — I'm not actually sure how the signup flow works.", pts:60, unsure:true }
         ]
     },
     {
         q: "Your AI gives someone wrong information and they lose money because of it. What does your contract actually say happens next?",
         gap: GAP_MOFFATT,
         options: [
-            { t:"We have explicit AI-specific waivers — the user clicked through before first use.",                pts:0  },
-            { t:"There's a small disclaimer somewhere near the chat saying AI can be wrong.",                       pts:30 },
-            { t:"We use standard software terms — we're assuming those hold up for AI too.",                        pts:50 },
-            { t:"We haven't specifically addressed AI errors in our contracts yet.",                                pts:60, unsure:true }
+            { t:"We have explicit AI-specific waivers — the user clicked through before first use.", pts:0 },
+            { t:"There's a small disclaimer somewhere near the chat saying AI can be wrong.", pts:30 },
+            { t:"We use standard software terms — we're assuming those hold up for AI too.", pts:50 },
+            { t:"We haven't specifically addressed AI errors in our contracts yet.", pts:60, unsure:true }
         ]
     },
     {
         q: "If you have users in Europe — where does their data actually go when it hits your AI pipeline?",
         gap: GAP_SCHREMS,
         options: [
-            { t:"EU data stays on EU servers. We have the contractual clauses locked in.",                          pts:0  },
+            { t:"EU data stays on EU servers. We have the contractual clauses locked in.", pts:0 },
             { t:"We have a GDPR privacy policy, but the API calls go to OpenAI or Anthropic's US servers by default.", pts:30 },
-            { t:"Everything routes to whatever endpoint is fastest — we don't restrict by geography.",              pts:50 },
-            { t:"Honestly I don't know the exact routing path our data takes.",                                     pts:60, unsure:true }
+            { t:"Everything routes to whatever endpoint is fastest — we don't restrict by geography.", pts:50 },
+            { t:"Honestly I don't know the exact routing path our data takes.", pts:60, unsure:true }
         ]
     },
     {
         q: "You're built on OpenAI, Anthropic, or another foundation model. If they get hit with a copyright lawsuit over their training data — does anything in your contract separate you from that?",
         gap: GAP_BARTZ,
         options: [
-            { t:"Yes — we have explicit pass-through clauses that insulate us from upstream IP liability.",          pts:0  },
-            { t:"We use their standard API terms and assume their legal issues stay their legal issues.",            pts:30 },
-            { t:"Nothing in our contracts addresses this at all.",                                                  pts:50 },
-            { t:"I don't know if our contracts cover upstream model liability.",                                    pts:60, unsure:true }
+            { t:"Yes — we have explicit pass-through clauses that insulate us from upstream IP liability.", pts:0 },
+            { t:"We use their standard API terms and assume their legal issues stay their legal issues.", pts:30 },
+            { t:"Nothing in our contracts addresses this at all.", pts:50 },
+            { t:"I don't know if our contracts cover upstream model liability.", pts:60, unsure:true }
         ]
     },
     {
         q: "Where does your 'we're not liable for this' language actually live in your terms — and how is it formatted?",
         gap: GAP_WARRANTY,
         options: [
-            { t:"It's in ALL CAPS in a dedicated section that users can't miss.",                                   pts:0  },
-            { t:"It's in there, but formatted the same as everything else — regular sentence case.",                pts:30 },
-            { t:"We have a general limitation of liability clause but nothing AI-specific.",                        pts:50 },
-            { t:"I'd have to pull up our terms to check — I'm not sure how it's formatted.",                       pts:60, unsure:true }
+            { t:"It's in ALL CAPS in a dedicated section that users can't miss.", pts:0 },
+            { t:"It's in there, but formatted the same as everything else — regular sentence case.", pts:30 },
+            { t:"We have a general limitation of liability clause but nothing AI-specific.", pts:50 },
+            { t:"I'd have to pull up our terms to check — I'm not sure how it's formatted.", pts:60, unsure:true }
         ]
     }
 ];
@@ -280,80 +230,69 @@ const Q_INTERNAL = {
     q: "Right now, today — can your employees paste your source code or a client's data into ChatGPT and walk out the door with it?",
     gap: GAP_SHADOW,
     options: [
-        { t:"No — technical blocks, enterprise tools only, and everyone's signed IP assignment agreements.",        pts:0  },
-        { t:"We have a policy that says don't do it, but nothing actually stops them technically.",                 pts:30 },
-        { t:"Yes — the team uses whatever AI tools they want, no restrictions.",                                   pts:50 },
-        { t:"I genuinely don't know what AI tools people are using or what they're feeding into them.",            pts:60, unsure:true }
+        { t:"No — technical blocks, enterprise tools only, and everyone's signed IP assignment agreements.", pts:0 },
+        { t:"We have a policy that says don't do it, but nothing actually stops them technically.", pts:30 },
+        { t:"Yes — the team uses whatever AI tools they want, no restrictions.", pts:50 },
+        { t:"I genuinely don't know what AI tools people are using or what they're feeding into them.", pts:60, unsure:true }
     ]
 };
 
-// Q_META keys match data-arch values in scanner.html Phase 02 config buttons.
-// HTML REQUIRED: data-arch="execution" → "actions" / "intelligence" → "evaluates"
-//                data-arch="content" → "creates" / new button data-arch="talks"
 const Q_META = {
     actions: [
         {
-            // Covers INT.01 (Doer) + INT.09 (Optimizer) + INT.10 (Mover)
             q: "If your AI starts making decisions or spending money on a loop at 3am — what actually stops it?",
             gap: GAP_UETA,
             options: [
-                { t:"Hard limit — it hits a cap and shuts down until a human resets it.",                           pts:0  },
-                { t:"We get an alert if something spikes, but there's no automatic kill.",                          pts:30 },
-                { t:"Nothing hard — it runs until the task is done.",                                              pts:50 },
-                { t:"I'd have to check — I don't know if there's a hard cap in place.",                            pts:60, unsure:true }
+                { t:"Hard limit — it hits a cap and shuts down until a human resets it.", pts:0 },
+                { t:"We get an alert if something spikes, but there's no automatic kill.", pts:30 },
+                { t:"Nothing hard — it runs until the task is done.", pts:50 },
+                { t:"I'd have to check — I don't know if there's a hard cap in place.", pts:60, unsure:true }
             ]
         }
     ],
     evaluates: [
         {
-            // Covers INT.02 (Judge) + INT.08 (Shield)
             q: "If your AI makes a wrong call about a person — a bad hire, a missed fraud flag, a denied claim — who does your contract say is responsible for that?",
             gap: GAP_MOBLEY,
             options: [
-                { t:"Contract explicitly shifts audit and final-decision liability to the client.",                 pts:0  },
-                { t:"We recommend human review but the contract doesn't assign liability clearly.",                 pts:30 },
-                { t:"We built the model so we'd be on the hook — it's our system.",                                pts:50 },
-                { t:"I'm not sure our contracts actually address this.",                                           pts:60, unsure:true }
+                { t:"Contract explicitly shifts audit and final-decision liability to the client.", pts:0 },
+                { t:"We recommend human review but the contract doesn't assign liability clearly.", pts:30 },
+                { t:"We built the model so we'd be on the hook — it's our system.", pts:50 },
+                { t:"I'm not sure our contracts actually address this.", pts:60, unsure:true }
             ]
         }
     ],
     creates: [
         {
-            // C1 — covers INT.04 (Creator), broadly INT.05/06/07
-            // Single gap: GAP_CREATOR
             q: "When your AI produces an output — generated text, a summary, a transcription, code — does your contract say who owns it and what you're liable for if it's wrong or stolen?",
             gap: GAP_CREATOR,
             options: [
-                { t:"Yes — explicit ownership assignment and AI-specific liability limits, both.",                  pts:0  },
-                { t:"Standard software terms — we haven't written anything specific to AI outputs.",                pts:30 },
-                { t:"Nothing in our contracts addresses AI output ownership or liability at all.",                  pts:50 },
-                { t:"I'd have to pull up the contracts — not sure what they say.",                                 pts:60, unsure:true }
+                { t:"Yes — explicit ownership assignment and AI-specific liability limits, both.", pts:0 },
+                { t:"Standard software terms — we haven't written anything specific to AI outputs.", pts:30 },
+                { t:"Nothing in our contracts addresses AI output ownership or liability at all.", pts:50 },
+                { t:"I'd have to pull up the contracts — not sure what they say.", pts:60, unsure:true }
             ]
         },
         {
-            // C2 — covers INT.05 (Reader) + INT.07 (Translator)
-            // DUAL PUSH: both GAP_FTC and GAP_BIPA fire on pts > 0
-            // Use q.gaps[] array — quiz engine handles both
             q: "Does your system pull data from the web, process meeting recordings, or ingest documents from outside your platform?",
             gaps: [GAP_FTC, GAP_BIPA],
             options: [
-                { t:"Yes — licensed sources only, robots.txt compliant, written consent for any recordings.",      pts:0  },
-                { t:"We pull public data but stay away from sites with heavy bot protection.",                     pts:30 },
-                { t:"Yes — we go wherever the data is, including through anti-bot walls or unverified audio.",     pts:50 },
-                { t:"I don't know the full details of what our pipeline actually ingests.",                        pts:60, unsure:true }
+                { t:"Yes — licensed sources only, robots.txt compliant, written consent for any recordings.", pts:0 },
+                { t:"We pull public data but stay away from sites with heavy bot protection.", pts:30 },
+                { t:"Yes — we go wherever the data is, including through anti-bot walls or unverified audio.", pts:50 },
+                { t:"I don't know the full details of what our pipeline actually ingests.", pts:60, unsure:true }
             ]
         }
     ],
     talks: [
         {
-            // Covers INT.03 (Companion) — persistent memory, emotional bonding, persona AI
             q: "If your AI builds an ongoing relationship with a user — remembers their history, adapts to their personality — what happens in your contract when that goes wrong?",
             gap: GAP_COMPANION,
             options: [
-                { t:"Explicit crisis break clauses, reality grounding requirements, and hard limits on emotional dependency language.", pts:0  },
+                { t:"Explicit crisis break clauses, reality grounding requirements, and hard limits on emotional dependency language.", pts:0 },
                 { t:"Standard chatbot disclaimers — nothing specifically about persistent AI relationships or mental health risk.", pts:30 },
-                { t:"Our AI is designed to build strong ongoing bonds — no specific guardrails in the contract.",  pts:50 },
-                { t:"I haven't thought about what the contract says about this specifically.",                     pts:60, unsure:true }
+                { t:"Our AI is designed to build strong ongoing bonds — no specific guardrails in the contract.", pts:50 },
+                { t:"I haven't thought about what the contract says about this specifically.", pts:60, unsure:true }
             ]
         }
     ]
@@ -375,36 +314,19 @@ let currentQIndex     = 0;
 let vaultInputs       = [];
 let recommendedPlan   = null;
 let activePlan        = null;
-let exitFired         = false;
 let engagementRefCode = "";
 
 // ── 06. HELPERS ─────────────────────────────────────────────────────────
-
-// Splits "EXT.08, EXT.09" → adds "EXT.08" and "EXT.09" individually
-// Prevents EXT_VALUES lookup failures from composite strings
 function addExt(extStr) {
     if (!extStr) return;
     extStr.split(',').map(e => e.trim()).forEach(e => { if (e) trippedSurfaces.add(e); });
 }
-
-// Truncates thePain for table display — keeps cell height consistent
 function truncatePain(pain, max = 110) {
     if (!pain) return '';
     return pain.length > max ? pain.substring(0, max) + '…' : pain;
 }
-
-// Strips section number for table Fix column
-// "DOC_TOS §8.1 & §8.2" → "DOC_TOS"
-function getDocId(theFix) {
-    return theFix ? theFix.split(' ')[0] : '';
-}
-
-// Converts registry velocity to client-facing display label
-function velDisplay(v) {
-    return VELOCITY_DISPLAY[v] || v;
-}
-
-// Returns Tailwind badge classes for severity
+function getDocId(theFix) { return theFix ? theFix.split(' ')[0] : ''; }
+function velDisplay(v) { return VELOCITY_DISPLAY[v] || v; }
 function sevClasses(s) {
     switch ((s || '').toUpperCase()) {
         case 'NUCLEAR':  return 'bg-danger/10 text-danger border border-danger/20';
@@ -412,8 +334,6 @@ function sevClasses(s) {
         default:         return 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20';
     }
 }
-
-// Source badge — reflects merge result
 function sourceBadge(g) {
     if (g.source === 'dual-verified')
         return `<span class="inline-block mt-1 text-[9px] tracking-widest uppercase text-danger font-bold"><span class="opacity-50">SOURCE:</span> CONFIRMED: PUBLIC + INTERNAL</span>`;
@@ -423,8 +343,6 @@ function sourceBadge(g) {
         return `<span class="inline-block mt-1 text-[9px] tracking-widest uppercase text-gold font-bold"><span class="opacity-50">SOURCE:</span> FLAGGED: INTERNAL AUDIT</span>`;
     return `<span class="inline-block mt-1 text-[9px] tracking-widest uppercase text-gold font-bold"><span class="opacity-50">SOURCE:</span> FLAGGED: INTERNAL AUDIT</span>`;
 }
-
-// Evidence block — always 100% visible, even in blur rows (this is the hook)
 function evidenceBlock(g) {
     if (!g.evidence || (!g.evidence.source && !g.evidence.reason)) return '';
     return `
@@ -434,8 +352,11 @@ function evidenceBlock(g) {
     </div>`;
 }
 
-// ── 07. INITIALIZATION & CONFIG ─────────────────────────────────────────
+// ── 07. INITIALIZATION ──────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+
+    // If PID in URL, pre-fill entry gate email
+    // Prospect lookup happens on entry gate submit — not here
     if (pidFromUrl) {
         localStorage.setItem('ln_pid', pidFromUrl);
         engagementRefCode = `LN-2026-${pidFromUrl.toUpperCase()}`;
@@ -443,25 +364,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             const snap = await getDoc(doc(db, "prospects", pidFromUrl));
             if (snap.exists()) {
                 prospectData = snap.data();
-                document.getElementById('founder-greet').innerText = prospectData.founderName || prospectData.name || "Recognized User";
-                document.getElementById('company-greet').innerText = prospectData.company || "Enterprise Entity";
-                document.getElementById('term-name').classList.remove('hidden-state');
-                document.getElementById('term-comp').classList.remove('hidden-state');
-                setDoc(doc(db, "prospects", pidFromUrl), { scannerClicked:true, status:'Warm', lastActive:serverTimestamp() }, { merge:true });
+                // Pre-fill entry gate with known email
+                const emailField = document.getElementById('entry-email');
+                if (emailField && prospectData.email) emailField.value = prospectData.email;
+                const companyField = document.getElementById('entry-company');
+                if (companyField && prospectData.company) companyField.value = prospectData.company;
             }
-        } catch(e) { console.error("Firebase:", e); }
+        } catch(e) { console.error("PID pre-fill:", e); }
     } else {
         engagementRefCode = `LN-2026-${Math.floor(Math.random() * 90000) + 10000}`;
     }
 
-    document.getElementById('greeting-box').style.opacity = "1";
-    setTimeout(() => {
-        const ui = document.getElementById('config-ui');
-        ui.classList.remove('hidden-state');
-        void ui.offsetWidth;
-        ui.style.opacity = "1";
-    }, 2000);
-
+    // Lane toggles
     document.querySelectorAll('.lane-toggle').forEach(btn => {
         btn.addEventListener('click', e => {
             const v = e.currentTarget.getAttribute('data-lane');
@@ -469,11 +383,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.currentTarget.classList.toggle('border-gold');
             e.currentTarget.classList.toggle('bg-gold/5');
             e.currentTarget.querySelector('.label-text')?.classList.toggle('text-gold');
-            selectedLanes = selectedLanes.includes(v) ? selectedLanes.filter(l => l !== v) : [...selectedLanes, v];
+            selectedLanes = selectedLanes.includes(v)
+                ? selectedLanes.filter(l => l !== v)
+                : [...selectedLanes, v];
             checkConfig();
         });
     });
 
+    // Arch toggles
     document.querySelectorAll('.arch-toggle').forEach(btn => {
         btn.addEventListener('click', e => {
             const v = e.currentTarget.getAttribute('data-arch');
@@ -481,7 +398,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.currentTarget.classList.toggle('border-gold');
             e.currentTarget.classList.toggle('bg-gold/5');
             e.currentTarget.querySelector('.label-text')?.classList.toggle('text-gold');
-            selectedArchs = selectedArchs.includes(v) ? selectedArchs.filter(a => a !== v) : [...selectedArchs, v];
+            selectedArchs = selectedArchs.includes(v)
+                ? selectedArchs.filter(a => a !== v)
+                : [...selectedArchs, v];
             checkConfig();
         });
     });
@@ -497,9 +416,87 @@ function checkConfig() {
     btn.classList.toggle('cursor-not-allowed', !ok);
 }
 
-// ── 08. QUIZ ENGINE ─────────────────────────────────────────────────────
+// ── 08. ENTRY GATE ──────────────────────────────────────────────────────
+// Collects email + company before terminal/config shows.
+// Cross-checks email against Firestore prospects collection.
+// If match found: loads prospectData, sets scannerClicked, links scan to outreach thread.
+// If no match: creates fresh record, proceeds as organic lead.
 
-// Fixed priority order — prevents random gap drops based on click order
+document.getElementById('entry-form')?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('entry-submit-btn');
+    btn.disabled   = true;
+    btn.innerText  = "Verifying...";
+
+    const email   = document.getElementById('entry-email').value.trim().toLowerCase();
+    const company = document.getElementById('entry-company').value.trim();
+
+    localStorage.setItem('ln_email',   email);
+    localStorage.setItem('ln_company', company);
+
+    // Cross-check: query prospects collection by email field
+    // Covers organic visitors who received cold email but visited site directly
+    if (!prospectData) {
+        try {
+            const q = query(collection(db, "prospects"), where("email", "==", email));
+            const snap = await getDocs(q);
+            if (!snap.empty) {
+                const matchDoc = snap.docs[0];
+                prospectData = matchDoc.data();
+                const matchId = matchDoc.id;
+                engagementRefCode = `LN-2026-${matchId.toUpperCase()}`;
+                // Link scanner session to outreach thread
+                await setDoc(doc(db, "prospects", matchId), {
+                    scannerClicked: true,
+                    status:         'Warm',
+                    lastActive:     serverTimestamp()
+                }, { merge:true });
+            }
+        } catch(err) { console.error("Entry gate prospect lookup:", err); }
+    } else {
+        // PID match already loaded — just set scannerClicked
+        try {
+            await setDoc(doc(db, "prospects", pidFromUrl), {
+                scannerClicked: true,
+                status:         'Warm',
+                lastActive:     serverTimestamp()
+            }, { merge:true });
+        } catch(err) { console.error("PID scannerClicked write:", err); }
+    }
+
+    // Write initial lead record regardless of match
+    try {
+        const docId = email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
+        await setDoc(doc(db, "leads", docId), {
+            email, company,
+            source:    'scanner_entry_v5.6',
+            status:    'warm_lead',
+            createdAt: serverTimestamp()
+        }, { merge:true });
+    } catch(err) { console.error("Entry lead write:", err); }
+
+    // Hide entry gate
+    document.getElementById('entry-gate').classList.add('hidden-state');
+
+    // Populate and show terminal
+    const greetName = prospectData?.founderName || prospectData?.name || email.split('@')[0] || "Guest";
+    const greetComp = prospectData?.company || company || "Unknown";
+    document.getElementById('founder-greet').innerText = greetName;
+    document.getElementById('company-greet').innerText = greetComp;
+    document.getElementById('term-name').classList.remove('hidden-state');
+    document.getElementById('term-comp').classList.remove('hidden-state');
+    document.getElementById('greeting-box').style.opacity = "1";
+
+    // Show config after terminal animation
+    setTimeout(() => {
+        const ui = document.getElementById('config-ui');
+        ui.classList.remove('hidden-state');
+        void ui.offsetWidth;
+        ui.style.opacity = "1";
+    }, 2000);
+});
+
+// ── 09. QUIZ ENGINE ─────────────────────────────────────────────────────
 const ARCH_PRIORITY = ['actions', 'evaluates', 'creates', 'talks'];
 
 function startDiagnostic() {
@@ -514,7 +511,6 @@ function startDiagnostic() {
     let archPool = [];
     ARCH_PRIORITY.forEach(arch => {
         if (!selectedArchs.includes(arch) || !Q_META[arch]) return;
-        // If all 4 arch groups selected, 'creates' fires only C1 to stay within 10-question cap
         if (arch === 'creates' && selectedArchs.length === 4) {
             archPool.push(Q_META[arch][0]);
         } else {
@@ -538,21 +534,19 @@ function renderQuestion() {
     container.innerHTML = '';
 
     q.options.forEach(opt => {
-        const btn = document.createElement('button');
-        btn.className = "w-full text-left bg-[#080808] border border-shadow p-5 text-marble font-sans text-sm hover:border-gold hover:text-gold transition-all duration-300";
-        btn.innerText = opt.t;
+        const btn       = document.createElement('button');
+        btn.className   = "w-full text-left bg-[#080808] border border-shadow p-5 text-marble font-sans text-sm hover:border-gold hover:text-gold transition-all duration-300";
+        btn.innerText   = opt.t;
         btn.addEventListener('click', () => {
             vaultInputs.push({ question:q.q, answer:opt.t, penalty:opt.pts });
             totalScore += opt.pts;
             if (opt.unsure) unsureFlag = true;
 
             if (opt.pts > 0) {
-                // Single gap
                 if (q.gap && !activeGaps.find(g => g.threatId === q.gap.threatId || g.id === q.gap.id)) {
                     activeGaps.push({ ...q.gap, source:'scanner' });
                     addExt(q.gap.ext);
                 }
-                // Dual-push (C2 question fires GAP_FTC + GAP_BIPA simultaneously)
                 if (q.gaps) {
                     q.gaps.forEach(gap => {
                         if (!activeGaps.find(g => g.threatId === gap.threatId || g.id === gap.id)) {
@@ -571,72 +565,55 @@ function renderQuestion() {
     });
 }
 
-// ── 09. GATE FORM ───────────────────────────────────────────────────────
-function finishDiagnostic() {
-    switchState('state-quiz', 'state-gate');
-    if (prospectData) {
-        document.getElementById('lead-name').value    = prospectData.founderName || prospectData.name || "";
-        document.getElementById('lead-company').value = prospectData.company || "";
-        document.getElementById('field-name-wrap').style.display = 'none';
-        document.getElementById('field-comp-wrap').style.display = 'none';
-        if (prospectData.company)
-            document.getElementById('gate-summary').innerText = `Nuclear structural gaps detected in ${prospectData.company}'s architecture.`;
-    }
-}
+// ── 10. FINISH DIAGNOSTIC ───────────────────────────────────────────────
+// Writes full scan payload to Firestore immediately after quiz.
+// No gate detour — dashboard builds directly from here.
 
-document.getElementById('gate-form').addEventListener('submit', async e => {
-    e.preventDefault();
-    const btn = document.getElementById('gate-submit-btn');
-    btn.disabled = true;
-    btn.innerText = "Verifying Forensic Data...";
+async function finishDiagnostic() {
+    switchState('state-quiz', 'state-dashboard');
 
-    const name    = document.getElementById('lead-name').value.trim();
-    const email   = document.getElementById('lead-email').value.trim().toLowerCase();
-    const company = document.getElementById('lead-company').value.trim();
-
-    localStorage.setItem('ln_name',    name);
-    localStorage.setItem('ln_email',   email);
-    localStorage.setItem('ln_company', company);
-
-    const docId = pidFromUrl || email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
+    const email   = localStorage.getItem('ln_email')   || '';
+    const company = localStorage.getItem('ln_company') || '';
+    const docId   = pidFromUrl
+        ? pidFromUrl
+        : email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
 
     const payload = {
-        email, name, company,
+        email, company,
         scannerCompleted: true,
         scannerScore:     totalScore,
         vaultInputs,
         activeGaps,
         trippedSurfaces:  Array.from(trippedSurfaces),
         unsureFlag,
-        lanes:            selectedLanes,       // required by admin Spear Report
-        metaVerbs:        selectedArchs,       // required by admin Spear Report
-        source:           'scanner_gate_v5.5', // version updated
+        lanes:            selectedLanes,
+        metaVerbs:        selectedArchs,
+        source:           'scanner_gate_v5.6',
         status:           'Hot',
         updatedAt:        serverTimestamp()
     };
 
     try {
-        await setDoc(doc(db, "prospects", docId), payload, { merge:true });
-        await setDoc(doc(db, "leads",     docId), payload, { merge:true });
+        if (docId) {
+            await setDoc(doc(db, "prospects", docId), payload, { merge:true });
+            await setDoc(doc(db, "leads",     docId), payload, { merge:true });
+        }
         fetch(GATE_WEBHOOK, {
-            method:"POST", headers:{ "Content-Type":"application/json" },
-            body: JSON.stringify(payload)
+            method:  'POST',
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify(payload)
         }).catch(() => {});
-    } catch(err) { console.error("Firebase Write Failed:", err); }
+    } catch(err) { console.error("Scan write failed:", err); }
 
     buildDashboard();
-});
+}
 
-// ── 10. DUAL-INTELLIGENCE DASHBOARD ─────────────────────────────────────
+// ── 11. DUAL-INTELLIGENCE DASHBOARD ─────────────────────────────────────
 function buildDashboard() {
-    switchState('state-gate', 'state-dashboard');
     document.getElementById('main-wrap').classList.replace('max-w-3xl', 'max-w-6xl');
 
     let scrapeCount = 0, dualCount = 0;
 
-    // Dual-intelligence merge
-    // Primary key: threatId (Hunter v6.1 schema)
-    // Fallback key: id (legacy Firestore data)
     if (prospectData?.forensicGaps?.length) {
         prospectData.forensicGaps.forEach(sg => {
             addExt(sg.ext);
@@ -649,9 +626,8 @@ function buildDashboard() {
                 scrapeCount++;
             } else {
                 existing.source = 'dual-verified';
-                if (sg.evidence)    existing.evidence    = sg.evidence;
+                if (sg.evidence)     existing.evidence    = sg.evidence;
                 if (sg.evidenceTier) existing.evidenceTier = sg.evidenceTier;
-                // Severity escalation — both uppercase registry values, safe to compare
                 const w  = { NUCLEAR:3, CRITICAL:2, HIGH:1 };
                 const hW = w[(sg.severity       || '').toUpperCase()] || 0;
                 const sW = w[(existing.severity || '').toUpperCase()] || 0;
@@ -661,10 +637,8 @@ function buildDashboard() {
         });
     }
 
-    // Ensure every gap has source set
     activeGaps.forEach(g => { if (!g.source) g.source = 'scanner'; });
 
-    // Sort: severity first, then source quality
     const sevW = { NUCLEAR:3, CRITICAL:2, HIGH:1 };
     const srcW = g => g.source === 'dual-verified' ? 3 : g.source === 'scrape' ? 2 : 1;
     activeGaps.sort((a, b) => {
@@ -678,14 +652,12 @@ function buildDashboard() {
         if (s === 'NUCLEAR') cN++; else if (s === 'CRITICAL') cC++; else cH++;
     });
 
-    // Plan routing — by lanes only, not by gap count
     recommendedPlan = (selectedLanes.includes('commercial') && selectedLanes.includes('operational'))
         ? 'complete_stack'
         : selectedLanes.includes('operational') ? 'workplace_shield' : 'agentic_shield';
     activePlan = recommendedPlan;
     const pData = PLAN_DATA[activePlan];
 
-    // Statutory exposure — sums EXT_VALUES for all tripped surfaces
     let statutoryExposure = 0;
     if (trippedSurfaces.size > 0) {
         trippedSurfaces.forEach(ext => { if (EXT_VALUES[ext]) statutoryExposure += EXT_VALUES[ext]; });
@@ -698,7 +670,6 @@ function buildDashboard() {
         ? `> CORRELATING PUBLIC ARCHITECTURE WITH INTERNAL CONFESSIONS...<br><br>> MERGE COMPLETE. <span class="text-white font-bold">${activeGaps.length} TOTAL VULNERABILITIES DETECTED.</span>`
         : "Engine processed your inputs. Gaps identified are structurally verified against your architecture.";
 
-    // Tripwire alerts
     let tripwireHTML = '';
     if (trippedSurfaces.size > 0) {
         tripwireHTML = Array.from(trippedSurfaces).map(ext => `
@@ -708,66 +679,36 @@ function buildDashboard() {
         </div>`).join('');
     }
 
-    // ── 6-COLUMN TABLE ────────────────────────────────────────────────
-    // Columns: The Gap | What It Costs You | How We Found It | Severity | Clock | The Fix
-    // Rows 1-3: Full reveal
-    // Rows 4-6: trap + pain blurred (3px), evidence + severity + clock + fix all visible
-    // Rows 7+:  Not rendered — counted in iceberg lock
-
     let matrixRows = activeGaps.length === 0
         ? `<tr><td colspan="6" class="p-6 text-center text-marble/50 font-sans text-xs">No structural gaps detected.</td></tr>`
         : '';
 
     activeGaps.forEach((g, i) => {
-        if (i >= 6) return; // rows 7+ go to iceberg, not rendered
-
-        const badge = sourceBadge(g);
+        if (i >= 6) return;
+        const badge  = sourceBadge(g);
         const evBlock = evidenceBlock(g);
-        const sc    = sevClasses(g.severity);
-        const vd    = velDisplay(g.velocity);
-        const docId = getDocId(g.theFix);
-        const pain  = truncatePain(g.thePain);
+        const sc     = sevClasses(g.severity);
+        const vd     = velDisplay(g.velocity);
+        const docId  = getDocId(g.theFix);
+        const pain   = truncatePain(g.thePain);
 
         if (i < 3) {
-            // TIER 1 — Full reveal
             matrixRows += `
             <tr class="matrix-row border-b border-white/5">
-                <td class="p-4 align-top">
-                    <span class="font-bold text-marble text-xs block">${g.trap}</span>
-                    ${badge}
-                </td>
-                <td class="p-4 align-top">
-                    <span class="text-marble/70 text-[11px] leading-relaxed">${pain}</span>
-                </td>
-                <td class="p-4 align-top">
-                    ${evBlock || '<span class="text-marble/30 text-[10px]">Internal audit signal</span>'}
-                </td>
-                <td class="p-4 align-top">
-                    <span class="px-2 py-1 text-[9px] font-bold ${sc}">${g.severity}</span>
-                </td>
+                <td class="p-4 align-top"><span class="font-bold text-marble text-xs block">${g.trap}</span>${badge}</td>
+                <td class="p-4 align-top"><span class="text-marble/70 text-[11px] leading-relaxed">${pain}</span></td>
+                <td class="p-4 align-top">${evBlock || '<span class="text-marble/30 text-[10px]">Internal audit signal</span>'}</td>
+                <td class="p-4 align-top"><span class="px-2 py-1 text-[9px] font-bold ${sc}">${g.severity}</span></td>
                 <td class="p-4 align-top text-marble/80 text-[10px] tracking-widest uppercase">${vd}</td>
                 <td class="p-4 align-top text-gold font-bold text-xs">${docId}</td>
             </tr>`;
         } else {
-            // TIER 2 — Partial blur: trap + pain blurred at 3px
-            // Evidence block, severity, clock, fix remain 100% visible
-            // Logic: they can see WHERE we found it + how severe + which doc fixes it
-            // but cannot read WHAT the gap is or WHAT it costs them — that's the hook
             matrixRows += `
             <tr class="matrix-row border-b border-white/5 opacity-90">
-                <td class="p-4 align-top">
-                    <span class="font-bold text-marble text-xs block" style="filter:blur(3px);user-select:none">${g.trap}</span>
-                    ${badge}
-                </td>
-                <td class="p-4 align-top">
-                    <span class="text-marble/70 text-[11px] leading-relaxed" style="filter:blur(3px);user-select:none">${pain}</span>
-                </td>
-                <td class="p-4 align-top">
-                    ${evBlock || '<span class="text-marble/30 text-[10px]">Internal audit signal</span>'}
-                </td>
-                <td class="p-4 align-top">
-                    <span class="px-2 py-1 text-[9px] font-bold ${sc}">${g.severity}</span>
-                </td>
+                <td class="p-4 align-top"><span class="font-bold text-marble text-xs block" style="filter:blur(3px);user-select:none">${g.trap}</span>${badge}</td>
+                <td class="p-4 align-top"><span class="text-marble/70 text-[11px] leading-relaxed" style="filter:blur(3px);user-select:none">${pain}</span></td>
+                <td class="p-4 align-top">${evBlock || '<span class="text-marble/30 text-[10px]">Internal audit signal</span>'}</td>
+                <td class="p-4 align-top"><span class="px-2 py-1 text-[9px] font-bold ${sc}">${g.severity}</span></td>
                 <td class="p-4 align-top text-marble/80 text-[10px] tracking-widest uppercase">${vd}</td>
                 <td class="p-4 align-top text-gold font-bold text-xs">${docId}</td>
             </tr>`;
@@ -786,16 +727,15 @@ function buildDashboard() {
         <p class="text-[10px] text-marble/40 max-w-sm mx-auto">Combined forensic audit revealed ${redacted} further structural gaps. Vault locked under Lex Nova Client Privilege.</p>
     </div>` : '';
 
-    // Document manifest — DOC_PP and DOC_PBK now included in both kits
     const KITS = {
         agentic: [
-            { id:'DOC_TOS', n:'AI Terms of Service'    },
-            { id:'DOC_AGT', n:'Agentic Addendum'       },
-            { id:'DOC_AUP', n:'Acceptable Use Policy'  },
+            { id:'DOC_TOS', n:'AI Terms of Service'     },
+            { id:'DOC_AGT', n:'Agentic Addendum'        },
+            { id:'DOC_AUP', n:'Acceptable Use Policy'   },
             { id:'DOC_DPA', n:'Data Processing Agreement'},
-            { id:'DOC_SLA', n:'AI-Specific SLA'        },
-            { id:'DOC_PP',  n:'Privacy Policy'          },
-            { id:'DOC_PBK', n:'Negotiation Playbook'   }
+            { id:'DOC_SLA', n:'AI-Specific SLA'         },
+            { id:'DOC_PP',  n:'Privacy Policy'           },
+            { id:'DOC_PBK', n:'Negotiation Playbook'    }
         ],
         workplace: [
             { id:'DOC_HND',  n:'AI Employee Handbook'  },
@@ -820,7 +760,7 @@ function buildDashboard() {
     document.getElementById('state-dashboard').innerHTML = `
     <div class="mb-12 text-center lg:text-left">
         <h1 class="font-serif text-5xl text-marble mb-4">Structural Integrity Report</h1>
-        <p class="font-sans text-xs tracking-[0.3em] text-gold uppercase">Proprietary Forensic Audit · Lex Nova Canon V5.5</p>
+        <p class="font-sans text-xs tracking-[0.3em] text-gold uppercase">Proprietary Forensic Audit · Lex Nova Canon V5.6</p>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-10 items-start">
         <div class="space-y-8">
@@ -880,7 +820,7 @@ function buildDashboard() {
     document.getElementById('trigger-checkout-btn').addEventListener('click', injectCheckout);
 }
 
-// ── 11. CHECKOUT INJECTION ──────────────────────────────────────────────
+// ── 12. CHECKOUT INJECTION ──────────────────────────────────────────────
 function injectCheckout() {
     switchState('state-dashboard', 'state-checkout');
     document.getElementById('main-wrap').classList.replace('max-w-6xl', 'max-w-3xl');
@@ -904,7 +844,7 @@ function renderPlans() {
     const ctr = document.getElementById('locked-plan-display');
     let html = '<div class="space-y-4">';
     Object.keys(PLAN_DATA).forEach(key => {
-        const pd   = PLAN_DATA[key];
+        const pd    = PLAN_DATA[key];
         const isSel = activePlan === key;
         const isRec = recommendedPlan === key;
         html += `
@@ -926,13 +866,12 @@ function renderPlans() {
     ctr.querySelectorAll('input[name="plan_choice"]').forEach(radio => {
         radio.addEventListener('change', e => {
             activePlan = e.target.value;
-            resetELAcceptance(); // Option B: reset acceptance on plan change
+            resetELAcceptance();
             renderPlans();
         });
     });
 }
 
-// Resets EL acceptance — called whenever plan changes after acceptance
 function resetELAcceptance() {
     document.getElementById('engagement-checkbox').checked = false;
     const vc = document.getElementById('visual-checkbox');
@@ -944,7 +883,7 @@ function resetELAcceptance() {
     mainBtn.classList.add('opacity-50', 'cursor-not-allowed');
 }
 
-// ── 12. ENGAGEMENT LETTER MODAL ─────────────────────────────────────────
+// ── 13. ENGAGEMENT LETTER MODAL ─────────────────────────────────────────
 document.getElementById('engagement-checkbox').parentElement.addEventListener('click', e => {
     if (e.target.tagName !== 'BUTTON' && e.target.id !== 'open-modal-btn') {
         e.preventDefault();
@@ -983,18 +922,16 @@ document.getElementById('open-modal-btn').addEventListener('click', e => {
     document.getElementById('engagement-modal').classList.remove('hidden-state');
     document.body.style.overflow = 'hidden';
 
-    const container    = document.getElementById('engagement-scroll-container');
+    const container     = document.getElementById('engagement-scroll-container');
     container.scrollTop = 0;
 
-    const acceptBtn    = document.getElementById('accept-modal-btn');
-    acceptBtn.disabled = true;
+    const acceptBtn     = document.getElementById('accept-modal-btn');
+    acceptBtn.disabled  = true;
     acceptBtn.className = "bg-gold/20 text-marble/30 cursor-not-allowed font-sans text-xs tracking-[0.2em] uppercase px-10 py-4 font-bold w-full md:w-auto transition-all duration-300";
     document.getElementById('scroll-instruction').classList.remove('hidden-state');
     checkScrollBottom();
 });
 
-// Close modal without accepting — checkout button stays locked
-// HTML REQUIRED: add <button id="close-modal-btn"> to engagement-modal header right side
 document.getElementById('close-modal-btn')?.addEventListener('click', () => {
     document.getElementById('engagement-modal').classList.add('hidden-state');
     document.body.style.overflow = 'auto';
@@ -1005,8 +942,8 @@ if (elScrollContainer) elScrollContainer.addEventListener('scroll', checkScrollB
 
 function checkScrollBottom() {
     if (elScrollContainer.scrollHeight - elScrollContainer.scrollTop <= elScrollContainer.clientHeight + 20) {
-        const acceptBtn    = document.getElementById('accept-modal-btn');
-        acceptBtn.disabled = false;
+        const acceptBtn     = document.getElementById('accept-modal-btn');
+        acceptBtn.disabled  = false;
         acceptBtn.className = "bg-gold text-void hover:bg-marble cursor-pointer font-sans text-xs tracking-[0.2em] uppercase px-10 py-4 font-bold w-full md:w-auto transition-all duration-300";
         document.getElementById('scroll-instruction').classList.add('hidden-state');
     }
@@ -1025,7 +962,7 @@ document.getElementById('accept-modal-btn').addEventListener('click', () => {
     document.body.style.overflow = 'auto';
 });
 
-// ── 13. CHECKOUT SUBMISSION ─────────────────────────────────────────────
+// ── 14. CHECKOUT SUBMISSION ─────────────────────────────────────────────
 document.getElementById('checkout-form').addEventListener('submit', async e => {
     e.preventDefault();
 
@@ -1060,61 +997,24 @@ document.getElementById('checkout-form').addEventListener('submit', async e => {
         price:                pd.price,
         leadType:             "hot_lead",
         status:               "hot_payment_pending",
-        source:               "unified_scanner_v5.5",
+        source:               "unified_scanner_v5.6",
         engagementReference:  engagementRefCode,
         elAccepted:           true,
         elAcceptedAt:         new Date().toISOString(),
-        elAcceptedForPlan:    activePlan   // records which plan the EL was read and accepted for
+        elAcceptedForPlan:    activePlan
     };
 
     try {
         const docId = email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
         await setDoc(doc(db, "leads", docId), { ...leadData, lastTouched:serverTimestamp() }, { merge:true });
         await fetch(CHECKOUT_WEBHOOK, {
-            method:"POST", headers:{ "Content-Type":"application/json" },
-            body: JSON.stringify({ ...leadData, timestamp:new Date().toISOString() })
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ ...leadData, timestamp:new Date().toISOString() })
         });
     } catch(err) { console.error("Checkout Error:", err); }
 
     window.location.href = PAYPAL_LINKS[activePlan];
-});
-
-// ── 14. EXIT INTENT ─────────────────────────────────────────────────────
-document.addEventListener('mouseleave', e => {
-    const dashV = !document.getElementById('state-dashboard')?.classList.contains('hidden-state');
-    const gateV = !document.getElementById('state-gate')?.classList.contains('hidden-state');
-    const chkV  = !document.getElementById('state-checkout')?.classList.contains('hidden-state');
-    if (e.clientY < 0 && !exitFired && !dashV && !gateV && !chkV) {
-        exitFired = true;
-        document.getElementById('exit-modal').classList.remove('hidden-state');
-        document.body.style.overflow = 'hidden';
-    }
-});
-
-document.getElementById('close-exit-btn')?.addEventListener('click', () => {
-    document.getElementById('exit-modal').classList.add('hidden-state');
-    document.body.style.overflow = 'auto';
-    setTimeout(() => { exitFired = false; }, 2000);
-});
-
-document.getElementById('exit-form')?.addEventListener('submit', async e => {
-    e.preventDefault();
-    const btn     = document.getElementById('exit-submit-btn');
-    btn.innerText = "Saved."; btn.disabled = true;
-    const email   = document.getElementById('exit-email').value.trim().toLowerCase();
-    try {
-        await setDoc(doc(db, "leads", email.replace(/[^a-zA-Z0-9@._-]/g, '')), {
-            email, status:'cold_lead', source:'exit_intent', createdAt:serverTimestamp()
-        }, { merge:true });
-        fetch(GATE_WEBHOOK, {
-            method:'POST', headers:{ 'Content-Type':'application/json' },
-            body: JSON.stringify({ email, source:'exit_intent' })
-        }).catch(() => {});
-    } catch(err) { console.error("Exit write failed:", err); }
-    setTimeout(() => {
-        document.getElementById('exit-modal').classList.add('hidden-state');
-        document.body.style.overflow = 'auto';
-    }, 1500);
 });
 
 // ── 15. UTILITIES ───────────────────────────────────────────────────────
