@@ -40,18 +40,7 @@
 
 <body class="bg-void text-marble font-sans antialiased selection:bg-gold selection:text-void min-h-screen flex flex-col">
 
-    <!-- EXIT INTENT MODAL -->
-    <div id="exit-modal" class="hidden-state fixed inset-0 bg-void/95 z-[200] flex items-center justify-center p-6">
-        <div class="max-w-lg w-full border border-shadow bg-[#080808] p-10 text-center shadow-2xl">
-            <h3 class="font-serif text-3xl text-marble mb-4">Before you go.</h3>
-            <p class="font-sans text-sm text-marble opacity-60 leading-relaxed mb-8">Leave your email and we'll send you the top 3 legal gaps destroying AI companies right now — with the exact clauses that close them.</p>
-            <form id="exit-form" class="flex flex-col gap-4">
-                <input type="email" id="exit-email" required placeholder="your@company.com" class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors text-center">
-                <button type="submit" id="exit-submit-btn" class="bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-8 py-4 hover:bg-marble transition-colors font-bold">Send Me The Gaps</button>
-            </form>
-            <button id="close-exit-btn" class="mt-6 font-sans text-xs text-marble opacity-30 hover:opacity-60 transition-opacity uppercase tracking-widest">No thanks</button>
-        </div>
-    </div>
+  
 
     <!-- NAV -->
     <nav class="w-full py-8 px-6 md:px-12 flex justify-center md:justify-between items-center z-50 relative border-b border-shadow">
@@ -67,7 +56,31 @@
 
         <!-- STATE: INTRO + CONFIG -->
         <div id="state-intro" class="w-full text-center fade-enter">
-
+<!-- ENTRY GATE -->
+<div id="entry-gate" class="w-full max-w-xl mx-auto mb-12">
+    <div class="text-center mb-8">
+        <h3 class="font-serif text-3xl md:text-4xl text-marble mb-3">Map Your AI Liability.</h3>
+        <p class="font-sans text-sm text-marble opacity-60 leading-relaxed">
+            Enter your details to begin the forensic audit. The scanner identifies your exact legal exposure based on active AI case law.
+        </p>
+    </div>
+    <form id="entry-form" class="flex flex-col gap-5">
+        <div>
+            <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Work Email</label>
+            <input type="email" id="entry-email" required placeholder="you@company.com" class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors">
+        </div>
+        <div>
+            <label class="font-sans text-[10px] tracking-[0.2em] text-marble opacity-50 uppercase block mb-2">Company Name</label>
+            <input type="text" id="entry-company" required placeholder="Your company" class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors">
+        </div>
+        <p class="font-sans text-[10px] text-marble opacity-40 leading-relaxed border-l border-gold/30 pl-4 italic">
+            PS — If you have received any communication from us, please use the email you received it on. This helps us connect your audit to your profile.
+        </p>
+        <button type="submit" class="w-full bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase py-5 hover:bg-marble transition-all duration-500 font-bold">
+            Begin Forensic Audit
+        </button>
+    </form>
+</div>
             <!-- Terminal greeting -->
             <div id="greeting-box" class="mb-12 text-left bg-[#080808] border border-shadow p-6 font-mono text-xs text-gold/80 opacity-0 transition-opacity duration-1000">
                 <div class="typewriter mb-2">> INITIALIZING PID RECOGNITION...</div>
@@ -182,30 +195,7 @@
             </div>
         </div>
 
-        <!-- STATE: GATE FORM -->
-        <div id="state-gate" class="hidden-state fade-enter w-full max-w-xl">
-            <div class="mb-8 p-6 border-2 border-danger/40 bg-danger/10 text-center">
-                <h4 class="font-sans text-[11px] tracking-[0.2em] text-danger uppercase mb-2 font-bold animate-pulse">System Alert</h4>
-                <p id="gate-summary" class="font-serif text-2xl text-marble">Nuclear structural gaps detected.</p>
-            </div>
-            <h2 class="font-serif text-4xl text-marble mb-4 text-center">Your Forensic Report is Sealed.</h2>
-            <p class="font-sans text-sm text-marble/60 mb-8 text-center leading-relaxed">Confirm your details to unlock the full Gaps-Pain-Damage Matrix and your remediation roadmap.</p>
-            <form id="gate-form" class="flex flex-col gap-5 text-left">
-                <div id="field-name-wrap">
-                    <label class="font-sans text-[10px] tracking-[0.2em] text-marble/50 uppercase block mb-2">Full Name</label>
-                    <input type="text" id="lead-name" class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors">
-                </div>
-                <div id="field-email-wrap">
-                    <label class="font-sans text-[10px] tracking-[0.2em] text-marble/50 uppercase block mb-2">Work Email</label>
-                    <input type="email" id="lead-email" required class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors">
-                </div>
-                <div id="field-comp-wrap">
-                    <label class="font-sans text-[10px] tracking-[0.2em] text-marble/50 uppercase block mb-2">Company Name</label>
-                    <input type="text" id="lead-company" class="w-full bg-[#050505] border border-shadow focus:border-gold outline-none p-4 text-marble font-sans text-sm transition-colors">
-                </div>
-                <button type="submit" id="gate-submit-btn" class="mt-4 bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase px-12 py-5 hover:bg-marble transition-colors duration-500 font-bold w-full">Unlock Forensic Report</button>
-            </form>
-        </div>
+        
 
         <!-- STATE: DASHBOARD (built by JS) -->
         <div id="state-dashboard" class="hidden-state fade-enter w-full"></div>
