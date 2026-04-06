@@ -950,7 +950,7 @@ function buildDashboard() {
         const evBlock = evidenceBlock(g);
         const sc      = sevClasses(g.severity);
         const vd      = velDisplay(g.velocity);
-        const docId   = getDocId(g.theFix);
+        const docId   = getDocId(g.theFix, g.threatId);
         const docDesc = DOC_DESCRIPTIONS[docId] || '';
         const pain    = truncatePain(g.thePain);
         const gapName = g.gapName || g.trap || '—';
