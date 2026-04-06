@@ -355,8 +355,9 @@ function evidenceBlock(g) {
 // ── 07. INITIALIZATION ──────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
 
-    // If PID in URL, pre-fill entry gate email
-    // Prospect lookup happens on entry gate submit — not here
+    let pidBypassed = false;
+
+    // If PID in URL, try to load prospect and bypass entry gate
     if (pidFromUrl) {
         localStorage.setItem('ln_pid', pidFromUrl);
         engagementRefCode = `LN-2026-${pidFromUrl.toUpperCase()}`;
@@ -364,13 +365,58 @@ document.addEventListener('DOMContentLoaded', async () => {
             const snap = await getDoc(doc(db, "prospects", pidFromUrl));
             if (snap.exists()) {
                 prospectData = snap.data();
-                // Pre-fill entry gate with known email
+
+                // Store email/company for downstream use
+                if (prospectData.email) localStorage.setItem('ln_email', prospectData.email);
+                if (prospectData.company) localStorage.setItem('ln_company', prospectData.company);
+
+                // Set scannerClicked immediately
+                await setDoc(doc(db, "prospects", pidFromUrl), {
+                    scannerClicked: true,
+                    status:         'ENGAGED',
+                    lastActive:     serverTimestamp()
+                }, { merge: true });
+
+                // Write lead record for tracking
+                try {
+                    const leadDocId = prospectData.email
+                        ? prospectData.email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase()
+                        : pidFromUrl;
+                    await setDoc(doc(db, "leads", leadDocId), {
+                        email:     prospectData.email || '',
+                        company:   prospectData.company || '',
+                        source:    'scanner_pid_bypass_v5.7',
+                        status:    'warm_lead',
+                        scannerClicked: true,
+                        createdAt: serverTimestamp()
+                    }, { merge: true });
+                } catch(err) { console.error("PID bypass lead write:", err); }
+
+                // Hide entry gate, show terminal directly
+                document.getElementById('entry-gate').classList.add('hidden-state');
+
+                const greetName = prospectData.founderName || prospectData.name || 'Guest';
+                const greetComp = prospectData.company || 'Unknown';
+                document.getElementById('founder-greet').innerText = greetName;
+                document.getElementById('company-greet').innerText = greetComp;
+                document.getElementById('term-name').classList.remove('hidden-state');
+                document.getElementById('term-comp').classList.remove('hidden-state');
+                document.getElementById('greeting-box').style.opacity = "1";
+
+                setTimeout(() => {
+                    const ui = document.getElementById('config-ui');
+                    ui.classList.remove('hidden-state');
+                    void ui.offsetWidth;
+                    ui.style.opacity = "1";
+                }, 2000);
+
+                pidBypassed = true;
+            } else {
+                // PID in URL but no Firestore match — fall through to entry gate
                 const emailField = document.getElementById('entry-email');
-                if (emailField && prospectData.email) emailField.value = prospectData.email;
-                const companyField = document.getElementById('entry-company');
-                if (companyField && prospectData.company) companyField.value = prospectData.company;
+                if (emailField) emailField.placeholder = "you@company.com";
             }
-        } catch(e) { console.error("PID pre-fill:", e); }
+        } catch(e) { console.error("PID lookup:", e); }
     } else {
         engagementRefCode = `LN-2026-${Math.floor(Math.random() * 90000) + 10000}`;
     }
@@ -407,14 +453,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('btn-start').addEventListener('click', startDiagnostic);
 });
-
-function checkConfig() {
-    const ok  = selectedLanes.length > 0 && selectedArchs.length > 0;
-    const btn = document.getElementById('btn-start');
-    btn.disabled = !ok;
-    btn.classList.toggle('opacity-30',         !ok);
-    btn.classList.toggle('cursor-not-allowed', !ok);
-}
 
 // ── 08. ENTRY GATE ──────────────────────────────────────────────────────
 // Collects email + company before terminal/config shows.
