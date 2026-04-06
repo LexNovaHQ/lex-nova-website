@@ -1,5 +1,5 @@
 /**
- * LEX NOVA HQ — FORENSIC SCANNER v5.7
+ * * LEX NOVA HQ — FORENSIC SCANNER v5.8
  * scanner-logic.js
  *
  * CHANGES FROM v5.6:
@@ -542,7 +542,7 @@ function evidenceBlock(g) {
     </div>`;
 }
 
-// ── 07. INITIALIZATION ──────────────────────────────────────────────────
+// ── 07. INITIALIZATION — V5.8 ──────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
 
     let pidBypassed = false;
@@ -560,6 +560,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 await setDoc(doc(db, "prospects", pidFromUrl), {
                     scannerClicked: true,
+                    scannerStep:    'page_loaded',
+                    scannerStepAt:  serverTimestamp(),
                     status:         'ENGAGED',
                     lastActive:     serverTimestamp()
                 }, { merge: true });
@@ -571,41 +573,112 @@ document.addEventListener('DOMContentLoaded', async () => {
                     await setDoc(doc(db, "leads", leadDocId), {
                         email:     prospectData.email || '',
                         company:   prospectData.company || '',
-                        source:    'scanner_pid_bypass_v5.7',
+                        source:    'scanner_pid_bypass_v5.8',
                         status:    'warm_lead',
                         scannerClicked: true,
                         createdAt: serverTimestamp()
                     }, { merge: true });
                 } catch(err) { console.error("PID bypass lead write:", err); }
 
-                document.getElementById('entry-gate').classList.add('hidden-state');
+                // ── BUILD PERSONALIZED HERO ──────────────────────────
+                const founderFirst = (prospectData.founderName || prospectData.name || '').split(' ')[0] || 'there';
+                const compName     = prospectData.company || 'your company';
+                const gapCount     = (prospectData.forensicGaps || []).length;
 
-                const greetName = prospectData.founderName || prospectData.name || 'Guest';
-                const greetComp = prospectData.company || 'Unknown';
-                document.getElementById('founder-greet').innerText = greetName;
-                document.getElementById('company-greet').innerText = greetComp;
-                document.getElementById('term-name').classList.remove('hidden-state');
-                document.getElementById('term-comp').classList.remove('hidden-state');
-                document.getElementById('greeting-box').style.opacity = "1";
+                document.getElementById('pid-greeting').innerText = `Hi ${founderFirst},`;
+                document.getElementById('pid-headline').innerText = `${compName}'s AI Architecture Audit`;
 
-                setTimeout(() => {
-                    const ui = document.getElementById('config-ui');
-                    ui.classList.remove('hidden-state');
-                    void ui.offsetWidth;
-                    ui.style.opacity = "1";
-                }, 2000);
+                if (gapCount > 0) {
+                    let nuc = 0, crit = 0, high = 0;
+                    prospectData.forensicGaps.forEach(g => {
+                        const s = (g.severity || '').toUpperCase();
+                        if (s === 'NUCLEAR') nuc++;
+                        else if (s === 'CRITICAL') crit++;
+                        else high++;
+                    });
+
+                    document.getElementById('pid-body').innerText =
+                        `We reviewed ${compName}'s public legal architecture and mapped ${gapCount} structural gaps across your setup. This scanner confirms which ones are active inside your actual operations.`;
+
+                    let badgeHTML = '';
+                    if (nuc)  badgeHTML += `<span class="bg-danger/10 border border-danger/20 px-3 py-1 text-[9px] text-danger font-bold tracking-widest">${nuc} NUCLEAR</span>`;
+                    if (crit) badgeHTML += `<span class="bg-orange-500/10 border border-orange-500/20 px-3 py-1 text-[9px] text-orange-500 font-bold tracking-widest">${crit} CRITICAL</span>`;
+                    if (high) badgeHTML += `<span class="bg-yellow-500/10 border border-yellow-500/20 px-3 py-1 text-[9px] text-yellow-500 font-bold tracking-widest">${high} HIGH</span>`;
+                    document.getElementById('pid-badges').innerHTML = badgeHTML;
+                    document.getElementById('pid-intel-detail').innerText =
+                        `${gapCount} gaps identified from public documents, product pages, and legal terms. The scanner cross-references these against your internal setup.`;
+                    document.getElementById('pid-intel').classList.remove('hidden-state');
+                } else {
+                    document.getElementById('pid-body').innerText =
+                        `This scanner maps the structural gaps in ${compName}'s AI legal architecture. 10 questions, 90 seconds — confirms where your setup stands today.`;
+                }
+
+                // ── PRE-SELECT CONFIG FROM FIRESTORE ────────────────
+                // Lanes
+                const plan = prospectData.intendedPlan || 'agentic_shield';
+                if (plan === 'complete_stack') {
+                    selectedLanes = ['commercial', 'operational'];
+                } else if (plan === 'workplace_shield') {
+                    selectedLanes = ['operational'];
+                } else {
+                    selectedLanes = ['commercial'];
+                }
+
+                // Archetypes — map INT codes to arch groups
+                const archMap = {
+                    'INT.01': 'actions', 'INT.09': 'actions', 'INT.10': 'actions',
+                    'INT.02': 'evaluates', 'INT.08': 'evaluates',
+                    'INT.04': 'creates', 'INT.05': 'creates', 'INT.06': 'creates', 'INT.07': 'creates',
+                    'INT.03': 'talks'
+                };
+                const archSet = new Set();
+                (prospectData.primaryArchetype || []).forEach(code => {
+                    if (archMap[code]) archSet.add(archMap[code]);
+                });
+                // If no archetypes in data, default to 'creates' (safest broad coverage)
+                if (archSet.size === 0) archSet.add('creates');
+                selectedArchs = Array.from(archSet);
+
+                // Show the hero
+                document.getElementById('pid-hero').classList.remove('hidden-state');
+
+                // Wire the start button to skip config and go straight to quiz
+                document.getElementById('pid-start-btn').addEventListener('click', () => {
+                    setDoc(doc(db, "prospects", pidFromUrl), {
+                        scannerStep: 'config_complete', scannerStepAt: serverTimestamp()
+                    }, { merge: true }).catch(() => {});
+                    startDiagnostic();
+                });
 
                 pidBypassed = true;
             } else {
+                // PID not found in Firestore — fall back to normal flow
                 const emailField = document.getElementById('entry-email');
                 if (emailField) emailField.placeholder = "you@company.com";
+                // Unhide entry gate (CSS hid it for pid-mode)
+                document.getElementById('entry-gate').style.display = '';
             }
-        } catch(e) { console.error("PID lookup:", e); }
+        } catch(e) {
+            console.error("PID lookup:", e);
+            // On error, fall back to normal flow
+            document.getElementById('entry-gate').style.display = '';
+        }
     } else {
         engagementRefCode = `LN-2026-${Math.floor(Math.random() * 90000) + 10000}`;
     }
 
-    // Lane toggles
+    // ── NON-PID FLOW: terminal greeting + config (unchanged) ────────
+    if (!pidBypassed) {
+        document.getElementById('greeting-box').style.opacity = "1";
+        setTimeout(() => {
+            const ui = document.getElementById('config-ui');
+            ui.classList.remove('hidden-state');
+            void ui.offsetWidth;
+            ui.style.opacity = "1";
+        }, 2000);
+    }
+
+    // Lane toggles (still needed for non-PID visitors)
     document.querySelectorAll('.lane-toggle').forEach(btn => {
         btn.addEventListener('click', e => {
             const v = e.currentTarget.getAttribute('data-lane');
@@ -620,7 +693,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Arch toggles
+    // Arch toggles (still needed for non-PID visitors)
     document.querySelectorAll('.arch-toggle').forEach(btn => {
         btn.addEventListener('click', e => {
             const v = e.currentTarget.getAttribute('data-arch');
@@ -645,7 +718,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('btn-start').addEventListener('click', startDiagnostic);
 });
-
 // ── 08. ENTRY GATE ──────────────────────────────────────────────────────
 document.getElementById('entry-form')?.addEventListener('submit', async e => {
     e.preventDefault();
@@ -803,7 +875,14 @@ function renderQuestion() {
                 }
             }
 
-            currentQIndex++;
+          currentQIndex++;
+
+            if (pidFromUrl && currentQIndex === 5) {
+                setDoc(doc(db, "prospects", pidFromUrl), {
+                    scannerStep: 'quiz_midpoint', scannerStepAt: serverTimestamp()
+                }, { merge: true }).catch(() => {});
+            }
+
             if (currentQIndex < quizRoute.length) renderQuestion();
             else finishDiagnostic();
         });
@@ -813,8 +892,13 @@ function renderQuestion() {
 
 // ── 10. FINISH DIAGNOSTIC ───────────────────────────────────────────────
 async function finishDiagnostic() {
-    switchState('state-quiz', 'state-dashboard');
+    if (pidFromUrl) {
+        await setDoc(doc(db, "prospects", pidFromUrl), {
+            scannerStep: 'quiz_complete', scannerStepAt: serverTimestamp()
+        }, { merge: true }).catch(() => {});
+    }
 
+    switchState('state-quiz', 'state-dashboard');
     const email   = localStorage.getItem('ln_email')   || '';
     const company = localStorage.getItem('ln_company') || '';
     const docId   = pidFromUrl
@@ -831,7 +915,7 @@ async function finishDiagnostic() {
         unsureFlag,
         lanes:            selectedLanes,
         metaVerbs:        selectedArchs,
-        source:           'scanner_gate_v5.7',
+        source:           'scanner_gate_v5.8',
         status:           'Hot',
         updatedAt:        serverTimestamp()
     };
@@ -1136,7 +1220,14 @@ function buildDashboard() {
     </div>`;
 
     document.getElementById('trigger-checkout-btn').addEventListener('click', injectCheckout);
+
+    if (pidFromUrl) {
+        setDoc(doc(db, "prospects", pidFromUrl), {
+            scannerStep: 'dashboard_viewed', scannerStepAt: serverTimestamp()
+        }, { merge: true }).catch(() => {});
+    }
 }
+
 
 // ── 12. CHECKOUT INJECTION ──────────────────────────────────────────────
 function injectCheckout() {
