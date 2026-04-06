@@ -495,10 +495,13 @@ function truncatePain(pain, max = 110) {
 }
 
 // V5.7: Fixed getDocId — only returns DOC_ prefixed IDs
-function getDocId(theFix) {
-    if (!theFix) return '—';
-    const match = theFix.match(/DOC_[A-Z]+/);
-    return match ? match[0] : '—';
+function getDocId(theFix, threatId) {
+    if (threatId && THREAT_TO_DOC[threatId]) return THREAT_TO_DOC[threatId];
+    if (theFix) {
+        const match = theFix.match(/DOC_[A-Z]+/);
+        if (match) return match[0];
+    }
+    return '—';
 }
 
 function velDisplay(v) { return VELOCITY_DISPLAY[v] || v; }
