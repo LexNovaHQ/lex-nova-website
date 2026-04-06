@@ -28,9 +28,11 @@
         })();
     </script>
     <style>
-        .pid-mode #entry-gate { display: none !important; }
+       .pid-mode #entry-gate { display: none !important; }
         .pid-mode #greeting-box { display: none !important; }
         .pid-mode #config-ui { display: none !important; }
+        .pid-mode #pid-hero { display: block !important; }
+        .pid-hero-loading #pid-start-btn { opacity: 0.3; pointer-events: none; }
         body { background: #050505; scroll-behavior: smooth; }
         .hidden-state { display: none !important; }
         .fade-enter { animation: fadeIn 0.5s ease forwards; }
@@ -99,12 +101,12 @@
                 <div class="typewriter mt-4 text-danger">> WARNING: BASELINE FORENSIC SCRAPE COMPLETE. AWAITING STRUCTURAL PARAMETERS.</div>
             </div>
 
-            <!-- PID HERO (shown only for PID prospects — populated by JS) -->
-            <div id="pid-hero" class="hidden-state w-full mb-12">
+           <!-- PID HERO (shown only for PID prospects — populated by JS) -->
+            <div id="pid-hero" class="hidden-state pid-hero-loading w-full mb-12">
                 <div class="text-center md:text-left mb-8">
-                    <p class="font-sans text-sm text-gold mb-4" id="pid-greeting">Hi there,</p>
-                    <h2 class="font-serif text-3xl md:text-4xl text-marble leading-snug mb-4" id="pid-headline">Your AI Architecture Audit</h2>
-                    <p class="font-sans text-sm text-marble/60 leading-relaxed mb-6" id="pid-body">This scanner confirms which gaps are active inside your actual operations.</p>
+                   <p class="font-sans text-sm text-gold mb-4" id="pid-greeting">Hi,</p>
+                    <h2 class="font-serif text-3xl md:text-4xl text-marble leading-snug mb-4" id="pid-headline">Loading your audit...</h2>
+                    <p class="font-sans text-sm text-marble/60 leading-relaxed mb-6" id="pid-body">Connecting to your forensic profile.</p>
                 </div>
                 <div id="pid-intel" class="hidden-state bg-[#080808] border border-danger/30 p-6 mb-6">
                     <div class="flex items-center justify-between mb-4">
