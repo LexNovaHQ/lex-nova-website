@@ -642,12 +642,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Show the hero
                 document.getElementById('pid-hero').classList.remove('hidden-state');
 
-                // Wire the start button to skip config and go straight to quiz
-                // Remove loading state — hero is now populated
+               // Remove loading state — hero is now populated
                 document.getElementById('pid-hero').classList.remove('pid-hero-loading');
 
                 // Wire the start button to skip config and go straight to quiz
-                document.getElementById('pid-start-btn').addEventListener('click', () => {
                 document.getElementById('pid-start-btn').addEventListener('click', () => {
                     setDoc(doc(db, "prospects", pidFromUrl), {
                         scannerStep: 'config_complete', scannerStepAt: serverTimestamp()
