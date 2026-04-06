@@ -391,7 +391,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                         createdAt: serverTimestamp()
                     }, { merge: true });
                 } catch(err) { console.error("PID bypass lead write:", err); }
+// Arch toggles
+    document.querySelectorAll('.arch-toggle').forEach(btn => {
+        // ... existing toggle code ...
+    });
 
+    function checkConfig() {
+        const ok  = selectedLanes.length > 0 && selectedArchs.length > 0;
+        const btn = document.getElementById('btn-start');
+        btn.disabled = !ok;
+        btn.classList.toggle('opacity-30',         !ok);
+        btn.classList.toggle('cursor-not-allowed', !ok);
+    }
+
+    document.getElementById('btn-start').addEventListener('click', startDiagnostic);
+});
                 // Hide entry gate, show terminal directly
                 document.getElementById('entry-gate').classList.add('hidden-state');
 
