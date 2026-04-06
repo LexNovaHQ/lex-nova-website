@@ -21,7 +21,16 @@
             }
         }
     </script>
+    <script>
+        (function(){
+            var p = new URLSearchParams(window.location.search).get('pid');
+            if (p) document.documentElement.classList.add('pid-mode');
+        })();
+    </script>
     <style>
+        .pid-mode #entry-gate { display: none !important; }
+        .pid-mode #greeting-box { display: none !important; }
+        .pid-mode #config-ui { display: none !important; }
         body { background: #050505; scroll-behavior: smooth; }
         .hidden-state { display: none !important; }
         .fade-enter { animation: fadeIn 0.5s ease forwards; }
@@ -48,7 +57,7 @@
             <span class="font-serif text-xl tracking-widest text-gold uppercase mt-1">Lex Nova <span class="text-marble opacity-50 text-sm ml-1">HQ</span></span>
         </a>
         <div class="hidden md:flex gap-8 items-center text-marble opacity-80">
-            <span class="font-sans text-[10px] tracking-[0.2em] uppercase opacity-50">Forensic Engine v5.5 (Canon)</span>
+            <span class="font-sans text-[10px] tracking-[0.2em] uppercase opacity-50">Forensic Engine v5.8</span>
         </div>
     </nav>
 
@@ -82,11 +91,33 @@
     </form>
 </div>
             <!-- Terminal greeting -->
+           <!-- Terminal greeting (non-PID visitors only) -->
             <div id="greeting-box" class="mb-12 text-left bg-[#080808] border border-shadow p-6 font-mono text-xs text-gold/80 opacity-0 transition-opacity duration-1000">
                 <div class="typewriter mb-2">> INITIALIZING PID RECOGNITION...</div>
                 <div id="term-name" class="typewriter hidden-state">> TARGET ACQUIRED: <span class="text-marble font-bold" id="founder-greet">GUEST</span></div>
                 <div id="term-comp" class="typewriter hidden-state">> ENTITY: <span class="text-marble font-bold" id="company-greet">UNKNOWN</span></div>
                 <div class="typewriter mt-4 text-danger">> WARNING: BASELINE FORENSIC SCRAPE COMPLETE. AWAITING STRUCTURAL PARAMETERS.</div>
+            </div>
+
+            <!-- PID HERO (shown only for PID prospects — populated by JS) -->
+            <div id="pid-hero" class="hidden-state w-full mb-12">
+                <div class="text-center md:text-left mb-8">
+                    <p class="font-sans text-sm text-gold mb-4" id="pid-greeting">Hi there,</p>
+                    <h2 class="font-serif text-3xl md:text-4xl text-marble leading-snug mb-4" id="pid-headline">Your AI Architecture Audit</h2>
+                    <p class="font-sans text-sm text-marble/60 leading-relaxed mb-6" id="pid-body">This scanner confirms which gaps are active inside your actual operations.</p>
+                </div>
+                <div id="pid-intel" class="hidden-state bg-[#080808] border border-danger/30 p-6 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="font-sans text-[9px] tracking-[0.2em] text-danger uppercase font-bold">External Findings</span>
+                        <span class="font-sans text-[9px] tracking-[0.2em] text-marble/30 uppercase">Public Architecture Review</span>
+                    </div>
+                    <div class="flex gap-3 flex-wrap mb-4" id="pid-badges"></div>
+                    <p class="font-sans text-xs text-marble/50 leading-relaxed" id="pid-intel-detail"></p>
+                </div>
+                <div class="bg-gold/5 border border-gold/30 p-5 text-center">
+                    <p class="font-sans text-xs text-marble/70"><span class="text-gold font-bold">10 questions.</span> Multiple choice. <span class="text-gold font-bold">90 seconds.</span> No email required. No pitch.</p>
+                </div>
+                <button id="pid-start-btn" class="w-full bg-gold text-void font-sans text-xs tracking-[0.2em] uppercase py-5 hover:bg-marble transition-all duration-500 font-bold mt-6">Start Your Audit</button>
             </div>
 
             <!-- Config UI -->
