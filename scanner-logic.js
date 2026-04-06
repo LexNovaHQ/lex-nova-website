@@ -85,7 +85,26 @@ const DOC_DESCRIPTIONS = {
     DOC_DPIA: "Maps every risk your AI creates before regulators find it — required in the EU, smart everywhere.",
     DOC_SCAN: "Finds every unauthorized AI tool your team is using today — the gaps you don't know about yet."
 };
-
+const THREAT_TO_DOC = {
+    'UNI_CON_001':'DOC_TOS','UNI_CON_002':'DOC_TOS','UNI_CON_003':'DOC_TOS',
+    'UNI_CON_004':'DOC_TOS','UNI_CON_005':'DOC_TOS','UNI_CON_006':'DOC_TOS',
+    'UNI_HAL_001':'DOC_TOS','UNI_HAL_002':'DOC_TOS','UNI_HAL_003':'DOC_TOS',
+    'UNI_LIA_001':'DOC_TOS','UNI_LIA_002':'DOC_TOS','UNI_LIA_003':'DOC_TOS',
+    'UNI_LIA_004':'DOC_TOS','UNI_LIA_005':'DOC_TOS',
+    'UNI_SEC_001':'DOC_DPA','UNI_SEC_002':'DOC_DPA',
+    'UNI_INF_001':'DOC_TOS','UNI_INF_002':'DOC_TOS','UNI_INF_003':'DOC_TOS',
+    'UNI_WAS_001':'DOC_TOS','UNI_WAS_002':'DOC_TOS',
+    'INT01_ROG_001':'DOC_AGT','INT01_ROG_002':'DOC_AGT','INT01_AGT_001':'DOC_AGT',
+    'INT02_DIS_001':'DOC_AGT',
+    'INT03_COM_001':'DOC_TOS','INT03_COM_002':'DOC_TOS','INT03_CON_001':'DOC_TOS','INT03_CON_002':'DOC_TOS',
+    'INT04_COP_001':'DOC_TOS','INT04_COP_002':'DOC_TOS',
+    'INT05_DIS_001':'DOC_DPA','INT05_COP_001':'DOC_DPA',
+    'INT06_ORC_001':'DOC_TOS','INT06_ORC_002':'DOC_TOS',
+    'INT07_BIO_001':'DOC_AUP','INT07_BIO_002':'DOC_AUP','INT07_TRN_001':'DOC_TOS','INT07_TRN_002':'DOC_TOS',
+    'INT08_SEC_001':'DOC_TOS','INT08_SEC_002':'DOC_TOS','INT08_AUD_001':'DOC_TOS','INT08_SEC_003':'DOC_TOS',
+    'INT09_REC_001':'DOC_TOS','INT09_REC_002':'DOC_TOS',
+    'INT10_PHY_001':'DOC_AGT','INT10_PHY_002':'DOC_AGT','INT10_PHY_003':'DOC_AGT'
+};
 const VELOCITY_DISPLAY = {
     "Immediate": "Active Now", "High": "This Year",
     "Upcoming":  "Incoming",   "Pending": "Watch"
