@@ -357,7 +357,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let pidBypassed = false;
 
-    // If PID in URL, try to load prospect and bypass entry gate
     if (pidFromUrl) {
         localStorage.setItem('ln_pid', pidFromUrl);
         engagementRefCode = `LN-2026-${pidFromUrl.toUpperCase()}`;
@@ -366,18 +365,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (snap.exists()) {
                 prospectData = snap.data();
 
-                // Store email/company for downstream use
                 if (prospectData.email) localStorage.setItem('ln_email', prospectData.email);
                 if (prospectData.company) localStorage.setItem('ln_company', prospectData.company);
 
-                // Set scannerClicked immediately
                 await setDoc(doc(db, "prospects", pidFromUrl), {
                     scannerClicked: true,
                     status:         'ENGAGED',
                     lastActive:     serverTimestamp()
                 }, { merge: true });
 
-                // Write lead record for tracking
                 try {
                     const leadDocId = prospectData.email
                         ? prospectData.email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase()
@@ -391,22 +387,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         createdAt: serverTimestamp()
                     }, { merge: true });
                 } catch(err) { console.error("PID bypass lead write:", err); }
-// Arch toggles
-    document.querySelectorAll('.arch-toggle').forEach(btn => {
-        // ... existing toggle code ...
-    });
 
-    function checkConfig() {
-        const ok  = selectedLanes.length > 0 && selectedArchs.length > 0;
-        const btn = document.getElementById('btn-start');
-        btn.disabled = !ok;
-        btn.classList.toggle('opacity-30',         !ok);
-        btn.classList.toggle('cursor-not-allowed', !ok);
-    }
-
-    document.getElementById('btn-start').addEventListener('click', startDiagnostic);
-});
-                // Hide entry gate, show terminal directly
                 document.getElementById('entry-gate').classList.add('hidden-state');
 
                 const greetName = prospectData.founderName || prospectData.name || 'Guest';
@@ -426,7 +407,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 pidBypassed = true;
             } else {
-                // PID in URL but no Firestore match — fall through to entry gate
                 const emailField = document.getElementById('entry-email');
                 if (emailField) emailField.placeholder = "you@company.com";
             }
@@ -464,6 +444,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             checkConfig();
         });
     });
+
+    function checkConfig() {
+        const ok  = selectedLanes.length > 0 && selectedArchs.length > 0;
+        const btn = document.getElementById('btn-start');
+        btn.disabled = !ok;
+        btn.classList.toggle('opacity-30',         !ok);
+        btn.classList.toggle('cursor-not-allowed', !ok);
+    }
 
     document.getElementById('btn-start').addEventListener('click', startDiagnostic);
 });
