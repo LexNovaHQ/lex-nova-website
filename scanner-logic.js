@@ -1031,7 +1031,7 @@ function buildDashboard() {
         ? `<tr><td colspan="6" class="p-6 text-center text-marble/50 font-sans text-xs">No structural gaps detected.</td></tr>`
         : '';
 
-    activeGaps.forEach((g, i) => {
+   activeGaps.forEach((g, i) => {
         if (i >= showTotal) return;
         const badge   = sourceBadge(g);
         const evBlock = evidenceBlock(g);
@@ -1040,13 +1040,15 @@ function buildDashboard() {
         const docId   = getDocId(g.theFix, g.threatId);
         const docDesc = DOC_DESCRIPTIONS[docId] || '';
         const pain    = truncatePain(g.thePain);
-        const gapName = g.gapName || g.trap || '—';
+        const gapNameStr = g.gapName || g.trap || '—';
+        const isBlur  = i >= showFull;
+        const expandId = `gap-expand-${i}`;
 
-        if (i < showFull) {
-            // FULLY VISIBLE
+        // ── DESKTOP ROW (hidden on mobile) ──────────────────────
+        if (!isBlur) {
             matrixRows += `
-            <tr class="matrix-row border-b border-white/5">
-                <td class="p-4 align-top"><span class="font-bold text-marble text-xs block">${gapName}</span>${badge}</td>
+            <tr class="matrix-row border-b border-white/5 hidden md:table-row">
+                <td class="p-4 align-top"><span class="font-bold text-marble text-xs block">${gapNameStr}</span>${badge}</td>
                 <td class="p-4 align-top"><span class="text-marble/70 text-[11px] leading-relaxed">${pain}</span></td>
                 <td class="p-4 align-top">${evBlock || '<span class="text-marble/30 text-[10px]">Internal audit signal</span>'}</td>
                 <td class="p-4 align-top"><span class="px-2 py-1 text-[9px] font-bold ${sc}">${(g.severity||'').toUpperCase()}</span></td>
@@ -1054,15 +1056,59 @@ function buildDashboard() {
                 <td class="p-4 align-top"><span class="text-gold font-bold text-xs">${docId}</span>${docDesc?`<div class="text-[9px] text-marble/40 mt-1">${docDesc}</div>`:''}</td>
             </tr>`;
         } else {
-            // PARTIAL BLUR — name visible, pain + evidence blurred
             matrixRows += `
-            <tr class="matrix-row border-b border-white/5 opacity-90">
-                <td class="p-4 align-top"><span class="font-bold text-marble text-xs block">${gapName}</span>${badge}</td>
+            <tr class="matrix-row border-b border-white/5 opacity-90 hidden md:table-row">
+                <td class="p-4 align-top"><span class="font-bold text-marble text-xs block">${gapNameStr}</span>${badge}</td>
                 <td class="p-4 align-top"><span class="text-marble/70 text-[11px] leading-relaxed" style="filter:blur(4px);user-select:none">${pain}</span></td>
                 <td class="p-4 align-top"><span class="text-marble/30 text-[10px]" style="filter:blur(4px);user-select:none">${evBlock || 'Audit signal classified'}</span></td>
                 <td class="p-4 align-top"><span class="px-2 py-1 text-[9px] font-bold ${sc}">${(g.severity||'').toUpperCase()}</span></td>
                 <td class="p-4 align-top text-marble/80 text-[10px] tracking-widest uppercase">${vd}</td>
                 <td class="p-4 align-top text-gold font-bold text-xs">${docId}</td>
+            </tr>`;
+        }
+
+        // ── MOBILE CARD (hidden on desktop) ─────────────────────
+        if (!isBlur) {
+            matrixRows += `
+            <tr class="md:hidden">
+                <td colspan="6" class="p-0">
+                    <div class="border-b border-white/5 p-4">
+                        <div class="flex items-start justify-between gap-3 mb-2">
+                            <span class="font-bold text-marble text-xs leading-tight flex-1">${gapNameStr}</span>
+                            <span class="px-2 py-1 text-[9px] font-bold shrink-0 ${sc}">${(g.severity||'').toUpperCase()}</span>
+                        </div>
+                        <div class="text-marble/70 text-[11px] leading-relaxed mb-2">${pain}</div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="text-gold font-bold text-[10px]">${docId}</span>
+                                <span class="text-marble/40 text-[9px] uppercase tracking-widest">${vd}</span>
+                            </div>
+                            <button onclick="var el=document.getElementById('${expandId}');el.classList.toggle('hidden');this.textContent=el.classList.contains('hidden')?'Details ▸':'Hide ▴'" class="text-[9px] text-gold tracking-widest uppercase font-bold bg-transparent border border-gold/30 px-2 py-1 hover:bg-gold/10 transition-colors">Details ▸</button>
+                        </div>
+                        <div id="${expandId}" class="hidden mt-3 pt-3 border-t border-white/5">
+                            <div class="mb-2">${badge}</div>
+                            ${evBlock ? `<div class="mb-2">${evBlock}</div>` : ''}
+                            ${docDesc ? `<div class="text-[9px] text-marble/40 leading-relaxed">${docDesc}</div>` : ''}
+                        </div>
+                    </div>
+                </td>
+            </tr>`;
+        } else {
+            matrixRows += `
+            <tr class="md:hidden">
+                <td colspan="6" class="p-0">
+                    <div class="border-b border-white/5 p-4 opacity-90">
+                        <div class="flex items-start justify-between gap-3 mb-2">
+                            <span class="font-bold text-marble text-xs leading-tight flex-1">${gapNameStr}</span>
+                            <span class="px-2 py-1 text-[9px] font-bold shrink-0 ${sc}">${(g.severity||'').toUpperCase()}</span>
+                        </div>
+                        <div class="text-marble/70 text-[11px] leading-relaxed mb-2" style="filter:blur(4px);user-select:none">${pain}</div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-gold font-bold text-[10px]">${docId}</span>
+                            <span class="text-marble/40 text-[9px] uppercase tracking-widest">${vd}</span>
+                        </div>
+                    </div>
+                </td>
             </tr>`;
         }
     });
@@ -1174,9 +1220,9 @@ function buildDashboard() {
                     <div class="bg-[#080808] border border-white/10 px-3 py-1"><span class="text-[9px] text-marble font-bold tracking-widest">TOTAL: ${total}</span></div>
                 </div>
                 <div class="bg-[#080808] border border-shadow p-1 overflow-x-auto">
-                    <table class="w-full text-left font-sans text-[11px] border-collapse min-w-[780px]">
+                    <table class="w-full text-left font-sans text-[11px] border-collapse md:min-w-[780px]">
                         <thead>
-                            <tr class="text-[9px] text-gold/60 uppercase tracking-widest border-b border-white/10">
+                            <tr class="text-[9px] text-gold/60 uppercase tracking-widest border-b border-white/10 hidden md:table-row">
                                 <th class="p-4 w-[20%]">The Gap</th>
                                 <th class="p-4 w-[25%]">What It Costs You</th>
                                 <th class="p-4 w-[20%]">How We Found It</th>
