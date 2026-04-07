@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Structural Audit | Lex Nova HQ</title>
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -40,6 +42,8 @@
         .matrix-row:hover { background: rgba(197, 160, 89, 0.02); }
         .typewriter { overflow: hidden; white-space: nowrap; animation: typing 1.5s steps(40, end); }
         @keyframes typing { from { width: 0 } to { width: 100% } }
+        @keyframes ln-scan { 0% { left: -100%; } 100% { left: 100%; } }
+        #ln-loader { transition: opacity 0.4s ease; }
         #engagement-scroll-container::-webkit-scrollbar { width: 6px; }
         #engagement-scroll-container::-webkit-scrollbar-track { background: #080808; }
         #engagement-scroll-container::-webkit-scrollbar-thumb { background: #1A1A1A; border-radius: 3px; }
@@ -50,7 +54,58 @@
 </head>
 
 <body class="bg-void text-marble font-sans antialiased selection:bg-gold selection:text-void min-h-screen flex flex-col">
+<!-- ── LEX NOVA LOADER ─────────────────────────────────────── -->
+<div id="ln-loader" style="
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:#050505;z-index:9999;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-family:'Inter',sans-serif;
+">
+    <div style="text-align:center;max-width:300px;padding:0 24px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#C5A059;
+                    letter-spacing:0.3em;text-transform:uppercase;margin-bottom:36px;">
+            LEX NOVA <span style="color:rgba(234,232,227,0.3);font-size:11px;letter-spacing:0.2em;">HQ</span>
+        </div>
+        <div id="loader-status" style="
+            font-size:9px;color:rgba(234,232,227,0.35);letter-spacing:0.18em;
+            text-transform:uppercase;margin-bottom:20px;min-height:14px;
+        ">Initializing Diagnostic Engine</div>
+        <div style="width:100%;height:1px;background:rgba(197,160,89,0.08);position:relative;overflow:hidden;">
+            <div style="
+                position:absolute;top:0;left:-100%;width:100%;height:100%;
+                background:linear-gradient(90deg,transparent,#C5A059,transparent);
+                animation:ln-scan 1.6s ease-in-out infinite;
+            "></div>
+        </div>
+        <div style="font-size:8px;color:rgba(234,232,227,0.15);letter-spacing:0.15em;
+                    text-transform:uppercase;margin-top:20px;">
+            Forensic AI Architecture Scanner
+        </div>
+    </div>
+</div>
+    <script>
+    (function() {
+        var pid = new URLSearchParams(window.location.search).get('pid');
+        var loader = document.getElementById('ln-loader');
 
+        if (pid) {
+            // PID flow — pid-hero skeleton handles loading feedback
+            // Hide the overlay immediately so it never shows
+            if (loader) loader.style.display = 'none';
+        } else {
+            // Non-PID flow — no existing loading state, use the overlay
+            var msgs = ['Initializing diagnostic engine', 'Loading threat registry', 'Preparing analysis suite'];
+            var i = 0;
+            var el = document.getElementById('loader-status');
+            if (el) el.textContent = msgs[0];
+            window._lnMsgInterval = setInterval(function() {
+                i = (i + 1) % msgs.length;
+                var el2 = document.getElementById('loader-status');
+                if (el2) el2.textContent = msgs[i];
+            }, 1800);
+        }
+    })();
+</script>
   
 
     <!-- NAV -->
