@@ -778,6 +778,14 @@ document.getElementById('entry-form')?.addEventListener('submit', async e => {
     document.getElementById('company-greet').innerText = greetComp;
     document.getElementById('term-name').classList.remove('hidden-state');
     document.getElementById('term-comp').classList.remove('hidden-state');
+    // ── DISMISS LOADER ──────────────────────────────────────────
+    clearInterval(window._lnMsgInterval);
+    const _loader = document.getElementById('ln-loader');
+    if (_loader) {
+        _loader.style.opacity = '0';
+        setTimeout(() => _loader.remove(), 400);
+    }
+
     document.getElementById('greeting-box').style.opacity = "1";
 
     setTimeout(() => {
@@ -785,7 +793,7 @@ document.getElementById('entry-form')?.addEventListener('submit', async e => {
         ui.classList.remove('hidden-state');
         void ui.offsetWidth;
         ui.style.opacity = "1";
-    }, 2000);
+    }, 300);
 });
 
 // ── 09. QUIZ ENGINE — V5.7: ALWAYS 10 QUESTIONS ────────────────────────
