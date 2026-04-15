@@ -888,9 +888,11 @@ function renderQuestion() {
 
           currentQIndex++;
 
-            if (pidFromUrl && currentQIndex === 5) {
+            if (pidFromUrl) {
                 setDoc(doc(db, "prospects", pidFromUrl), {
-                    scannerStep: 'quiz_midpoint', scannerStepAt: serverTimestamp()
+                    scannerStep: `answered_q${currentQIndex}`,
+                    lastQuestionSeen: currentQIndex + 1,
+                    scannerStepAt: serverTimestamp()
                 }, { merge: true }).catch(() => {});
             }
 
