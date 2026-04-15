@@ -722,7 +722,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btn-start').addEventListener('click', startDiagnostic);
 });
 // ── 08. ENTRY GATE ──────────────────────────────────────────────────────
-document.getElementById('entry-form')?.addEventListener('submit', async e => {
+document.getElementById('entry-form')?.addEventListener('submit', e => {
+    // 1. Stop page reload & disable button
     e.preventDefault();
     const btn = document.getElementById('entry-submit-btn');
     btn.disabled   = true;
@@ -734,51 +735,17 @@ document.getElementById('entry-form')?.addEventListener('submit', async e => {
     localStorage.setItem('ln_email',   email);
     localStorage.setItem('ln_company', company);
 
-    if (!prospectData) {
-        try {
-            const q = query(collection(db, "prospects"), where("email", "==", email));
-            const snap = await getDocs(q);
-            if (!snap.empty) {
-                const matchDoc = snap.docs[0];
-                prospectData = matchDoc.data();
-                const matchId = matchDoc.id;
-                engagementRefCode = `LN-2026-${matchId.toUpperCase()}`;
-                await setDoc(doc(db, "prospects", matchId), {
-                    scannerClicked: true,
-                    status:         'ENGAGED',
-                    lastActive:     serverTimestamp()
-                }, { merge:true });
-            }
-        } catch(err) { console.error("Entry gate prospect lookup:", err); }
-    } else {
-        try {
-            await setDoc(doc(db, "prospects", pidFromUrl), {
-                scannerClicked: true,
-                status:         'ENGAGED',
-                lastActive:     serverTimestamp()
-            }, { merge:true });
-        } catch(err) { console.error("PID scannerClicked write:", err); }
-    }
-
-    try {
-        const docId = email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
-        await setDoc(doc(db, "leads", docId), {
-            email, company,
-            source:    'scanner_entry_v5.7',
-            status:    'warm_lead',
-            createdAt: serverTimestamp()
-        }, { merge:true });
-    } catch(err) { console.error("Entry lead write:", err); }
-
+    // 2. INSTANT UI TRANSITION (Do not wait for Firebase)
     document.getElementById('entry-gate').classList.add('hidden-state');
-
-    const greetName = prospectData?.founderName || prospectData?.name || email.split('@')[0] || "Guest";
-    const greetComp = prospectData?.company || company || "Unknown";
-    document.getElementById('founder-greet').innerText = greetName;
-    document.getElementById('company-greet').innerText = greetComp;
+    
+    // Set baseline fallbacks immediately
+    const baseName = email.split('@')[0];
+    document.getElementById('founder-greet').innerText = baseName;
+    document.getElementById('company-greet').innerText = company;
     document.getElementById('term-name').classList.remove('hidden-state');
     document.getElementById('term-comp').classList.remove('hidden-state');
-    // ── DISMISS LOADER ──────────────────────────────────────────
+
+    // Dismiss Loader
     clearInterval(window._lnMsgInterval);
     const _loader = document.getElementById('ln-loader');
     if (_loader) {
@@ -787,15 +754,43 @@ document.getElementById('entry-form')?.addEventListener('submit', async e => {
     }
 
     document.getElementById('greeting-box').style.opacity = "1";
-
     setTimeout(() => {
         const ui = document.getElementById('config-ui');
         ui.classList.remove('hidden-state');
         void ui.offsetWidth;
         ui.style.opacity = "1";
     }, 300);
-});
 
+    // 3. BACKGROUND FIREBASE CALLS (Fails silently without blocking the user)
+    (async () => {
+        try {
+            if (!prospectData) {
+                const q = query(collection(db, "prospects"), where("email", "==", email));
+                const snap = await getDocs(q);
+                if (!snap.empty) {
+                    const matchDoc = snap.docs[0];
+                    prospectData = matchDoc.data();
+                    engagementRefCode = `LN-2026-${matchDoc.id.toUpperCase()}`;
+                    
+                    // Retroactively update name if DB returns faster than the user reads
+                    if (prospectData.founderName || prospectData.name) {
+                        document.getElementById('founder-greet').innerText = prospectData.founderName || prospectData.name;
+                    }
+                    
+                    await setDoc(doc(db, "prospects", matchDoc.id), {
+                        scannerClicked: true, status: 'ENGAGED', lastActive: serverTimestamp()
+                    }, { merge:true });
+                }
+            }
+            const docId = email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase();
+            await setDoc(doc(db, "leads", docId), {
+                email, company, source: 'scanner_entry_v5.8', status: 'warm_lead', createdAt: serverTimestamp()
+            }, { merge:true });
+        } catch(err) { 
+            console.warn("Background Firebase write blocked by client firewall. Proceeding anyway.", err); 
+        }
+    })();
+});
 // ── 09. QUIZ ENGINE — V5.7: ALWAYS 10 QUESTIONS ────────────────────────
 const ARCH_PRIORITY = ['actions', 'evaluates', 'creates', 'talks'];
 const ARCH_ALL_QUESTIONS = [];
