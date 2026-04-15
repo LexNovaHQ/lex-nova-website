@@ -591,21 +591,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const founderFirst = (prospectData.founderName || prospectData.name || '').split(' ')[0] || 'there';
                 const compName     = prospectData.company || 'your company';
                 
-                // Deduplicate gaps across both arrays to ensure the Hero math matches the Dashboard math
-                const gapMap = new Map();
+                // Deduplicate gaps across both arrays for the Hero count
+                const heroMap = new Map();
                 [...(prospectData.true_gaps || []), ...(prospectData.forensicGaps || [])].forEach(g => {
                     const tid = g.Threat_ID || g.threatId;
-                    if (tid) gapMap.set(tid, g);
+                    if (tid) heroMap.set(tid, g);
                 });
-                const allGaps = Array.from(gapMap.values());
-                const gapCount = allGaps.length;
+                const allHeroGaps = Array.from(heroMap.values());
+                const totalHeroCount = allHeroGaps.length;
 
                 document.getElementById('pid-greeting').innerText = `Hi ${founderFirst},`;
                 document.getElementById('pid-headline').innerText = `${compName}'s AI Architecture Audit`;
 
-                if (gapCount > 0) {
+                if (totalHeroCount > 0) {
                     let ext = 0, nuc = 0, crit = 0;
-                    allGaps.forEach(g => {
+                    allHeroGaps.forEach(g => {
                         const t = getTier(g).label;
                         if (t === 'EXTINCTION') ext++;
                         else if (t === 'NUCLEAR') nuc++;
@@ -613,7 +613,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     });
 
                     document.getElementById('pid-body').innerText = 
-                        `We reviewed ${compName}'s public legal architecture and mapped ${gapCount} structural gaps. This diagnostic confirms which are active inside your actual operations.`;
+                        `We reviewed ${compName}'s public legal architecture and mapped ${totalHeroCount} structural gaps. This diagnostic confirms which are active inside your actual operations.`;
 
                     let badgeHTML = '';
                     if (ext)  badgeHTML += `<span class="bg-danger/10 border border-danger/20 px-3 py-1 text-[9px] text-danger font-bold tracking-widest">${ext} EXTINCTION</span>`;
@@ -621,25 +621,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (crit) badgeHTML += `<span class="bg-orange-500/10 border border-orange-500/20 px-3 py-1 text-[9px] text-orange-500 font-bold tracking-widest">${crit} CRITICAL</span>`;
                     
                     document.getElementById('pid-badges').innerHTML = badgeHTML;
-                    document.getElementById('pid-intel-detail').innerText = `${gapCount} total vulnerabilities identified from public documents and forensic scraping.`;
+                    document.getElementById('pid-intel-detail').innerText = `${totalHeroCount} total vulnerabilities identified from public documents and forensic scraping.`;
                     document.getElementById('pid-intel').classList.remove('hidden-state');
-                }
-
-                    document.getElementById('pid-body').innerText =
-                        `We reviewed ${compName}'s public legal architecture and mapped ${gapCount} structural gaps across your setup. This scanner confirms which ones are active inside your actual operations.`;
-
-                    let badgeHTML = '';
-                    if (nuc)  badgeHTML += `<span class="bg-danger/10 border border-danger/20 px-3 py-1 text-[9px] text-danger font-bold tracking-widest">${nuc} NUCLEAR</span>`;
-                    if (crit) badgeHTML += `<span class="bg-orange-500/10 border border-orange-500/20 px-3 py-1 text-[9px] text-orange-500 font-bold tracking-widest">${crit} CRITICAL</span>`;
-                    if (high) badgeHTML += `<span class="bg-yellow-500/10 border border-yellow-500/20 px-3 py-1 text-[9px] text-yellow-500 font-bold tracking-widest">${high} HIGH</span>`;
-                    document.getElementById('pid-badges').innerHTML = badgeHTML;
-                    document.getElementById('pid-intel-detail').innerText =
-                        `${gapCount} gaps identified from public documents, product pages, and legal terms. The scanner cross-references these against your internal setup.`;
-                    document.getElementById('pid-intel').classList.remove('hidden-state');
-                } else {
-                    document.getElementById('pid-body').innerText =
-                        `This scanner maps the structural gaps in ${compName}'s AI legal architecture. 10 questions, 90 seconds — confirms where your setup stands today.`;
-                }
+                
 
                 // ── PRE-SELECT CONFIG FROM FIRESTORE ────────────────
                 // Lanes
@@ -996,29 +980,31 @@ function buildDashboard() {
 
     let scrapeCount = 0, dualCount = 0;
 
-    // ── V5.8: INTELLIGENT MERGE (V2 Rich Prose Priority) ──────────────
-    // 1. Ingest True Gaps (The high-stakes mechanism/stakes data)
-    if (prospectData?.true_gaps?.length) {
-        prospectData.true_gaps.forEach(tg => {
-            activeGaps.push({ ...tg, threatId: tg.Threat_ID || tg.threatId, source: 'scrape' });
-            scrapeCount++;
-        });
-    }
+    // ── V5.8: INTELLIGENT MERGE (Priority on True Gaps) ────────────────
+    const ingestMap = new Map();
 
-    // 2. Merge Forensic Gaps (The legacy evidence strings)
-    if (prospectData?.forensicGaps?.length) {
-        prospectData.forensicGaps.forEach(sg => {
-            const existing = activeGaps.find(g => g.threatId === sg.threatId);
-            if (!existing) {
-                activeGaps.push({ ...sg, source: 'scrape' });
-                scrapeCount++;
-            } else {
-                existing.source = 'dual-verified';
-                if (sg.evidence) existing.evidence = sg.evidence;
-                dualCount++;
-            }
-        });
-    }
+    // 1. Ingest True Gaps (V2 - Rich Prose)
+    (prospectData?.true_gaps || []).forEach(tg => {
+        const tid = tg.Threat_ID || tg.threatId;
+        if (tid) ingestMap.set(tid, { ...tg, threatId: tid, source: 'scrape' });
+    });
+
+    // 2. Merge Forensic Gaps (V1 - Evidence Strings)
+    (prospectData?.forensicGaps || []).forEach(sg => {
+        const tid = sg.threatId || sg.Threat_ID;
+        if (!tid) return;
+        if (ingestMap.has(tid)) {
+            const existing = ingestMap.get(tid);
+            existing.source = 'dual-verified';
+            if (sg.evidence) existing.evidence = sg.evidence;
+            dualCount++;
+        } else {
+            ingestMap.set(tid, { ...sg, threatId: tid, source: 'scrape' });
+            scrapeCount++;
+        }
+    });
+
+    activeGaps = Array.from(ingestMap.values());
 
     activeGaps.forEach(g => { if (!g.source) g.source = 'scanner'; });
 
@@ -1544,5 +1530,13 @@ document.getElementById('checkout-form').addEventListener('submit', async e => {
 function switchState(fromId, toId) {
     const f = document.getElementById(fromId);
     const t = document.getElementById(toId);
-    if (f) { f.classList.add('hidden-state');    f.classList.remove('fade-enter'); }
-    if (t) { t.classList.remove('hidden-state'); void t.offsetWidth; t.classList.add('fade-enter'); }}
+    if (f) { 
+        f.classList.add('hidden-state'); 
+        f.classList.remove('fade-enter'); 
+    }
+    if (t) { 
+        t.classList.remove('hidden-state'); 
+        void t.offsetWidth; 
+        t.classList.add('fade-enter'); 
+    }
+}
