@@ -684,9 +684,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Unhide entry gate (CSS hid it for pid-mode)
                 document.getElementById('entry-gate').style.display = '';
             }
-        } catch(e) { // <--- FIXED: Added the closing brace '}' before catch
-            console.error("PID lookup:", e);
-            // On error, fall back to normal flow
+        } catch(e) { console.error("PID lookup:", e);
             document.getElementById('entry-gate').style.display = '';
         }
     } else {
