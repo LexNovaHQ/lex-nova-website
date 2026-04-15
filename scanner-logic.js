@@ -934,7 +934,36 @@ function buildDashboard() {
         const gapNameStr = g.gapName || g.trap || '—';
         const isBlur  = i >= showFull;
         const expandId = `gap-expand-${i}`;
+    // ── V5.8: THE VELVET ROPE BLUR LOGIC ──────────────────────────────
+        let blurClass = '';
+        let lockOverlay = '';
 
+        if (index < 3) {
+            // THE FREE KILLS: Fully visible
+            blurClass = '';
+        } else if (index === 3) {
+            // THE TEASE: Partial blur, unreadable but tantalizing
+            blurClass = 'blur-[3px] select-none opacity-80 pointer-events-none';
+        } else {
+            // THE LOCKOUT: Full blur
+            blurClass = 'blur-md select-none opacity-30 pointer-events-none';
+            
+            // Only render the CTA overlay on the very first fully locked item (index 4)
+            if (index === 4) {
+                lockOverlay = `
+                <div class="absolute inset-0 flex flex-col items-center justify-center z-10 p-4 text-center">
+                    <div class="bg-black/90 border border-danger p-6 shadow-2xl">
+                        <h4 class="text-danger font-bold text-lg uppercase mb-2">RESTRICTED ACCESS</h4>
+                        <p class="text-sm text-gray-300 mb-4">You have ${activeGaps.length - 3} more active liabilities in your architecture. Legal access required to view complete threat mechanisms.</p>
+                        <a href="offer-bundle.html?pid=${pidFromUrl}" class="inline-block bg-danger text-white px-6 py-3 font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all">Unlock Full Audit ($1,500)</a>
+                    </div>
+                </div>`;
+            }
+        }
+
+        // Extract the terrifying backend prose (if it exists)
+        const mechanismText = g.FP_Mechanism ? `<div class="mt-3 text-sm text-gray-300 font-mono"><strong>MECHANISM:</strong> ${g.FP_Mechanism}</div>` : '';
+        const stakesText = (g.FP_Stakes && g.FP_Stakes !== 'NULL') ? `<div class="mt-2 text-sm text-danger font-bold uppercase tracking-wide"><strong>THE STAKES:</strong> ${g.FP_Stakes}</div>` : '';
         // ── DESKTOP ROW (hidden on mobile) ──────────────────────
         if (!isBlur) {
             matrixRows += `
