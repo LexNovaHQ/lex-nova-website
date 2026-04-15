@@ -677,14 +677,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
 
                 pidBypassed = true;
-            } else {
+           } else {
                 // PID not found in Firestore — fall back to normal flow
                 const emailField = document.getElementById('entry-email');
                 if (emailField) emailField.placeholder = "you@company.com";
                 // Unhide entry gate (CSS hid it for pid-mode)
                 document.getElementById('entry-gate').style.display = '';
             }
-         catch(e) {
+        } catch(e) { // <--- FIXED: Added the closing brace '}' before catch
             console.error("PID lookup:", e);
             // On error, fall back to normal flow
             document.getElementById('entry-gate').style.display = '';
