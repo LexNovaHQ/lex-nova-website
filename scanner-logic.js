@@ -49,25 +49,32 @@ const PLAN_DATA = {
     complete_stack:   { name:"The Complete Stack",   price:2000, tier:"Bundle", lane:"Hybrid (A + B)",       delivery:"72 hours from Intake Form submission", rev:"2 Rounds" }
 };
 
+// ── V5.8: ALIGNED EXT VALUES (Matches V2 Registry Reality) ───────────
 const EXT_VALUES = {
-    "EXT.01": 15000000, "EXT.02":  5000000, "EXT.03": 10000000,
-    "EXT.04":  5000000, "EXT.05": 10000000, "EXT.06": 20000000,
-    "EXT.07":  5000000, "EXT.08":  2500000, "EXT.09": 10000000,
-    "EXT.10":  5000000
+    "EXT.01": 38000000, // €35M EU AI Act equivalent
+    "EXT.02": 10000000, // CPRA base statutory aggregation
+    "EXT.03": 30000000, // ₹250 crore DPDP Act equivalent
+    "EXT.04":  5000000, // BIPA strict liability base
+    "EXT.05": 20000000, // SEC/SEBI systemic enforcement base
+    "EXT.06": 25000000, // Minor protection $15k/day scaling
+    "EXT.07": 10000000, // Class-action employment baseline
+    "EXT.08": 15000000, // FTC deceptive practice / ROSCA base
+    "EXT.09": 20000000, // Enterprise reliance / wasted cost base
+    "EXT.10": 50000000  // Copyright willful infringement base
 };
 
-// ── V5.7: EXT REFERENCE TABLE — statutory language (Option A) ───────────
+// ── V5.8: EXT REFERENCE TABLE (Aligned to V2 Registry Key) ───────────
 const EXT_REFERENCE = {
-    "EXT.01": { plain:"Your product touches EU users or data",                          penalty:"Up to €20M or 4% of global annual revenue, whichever is higher", source:"GDPR Art. 83(5)" },
-    "EXT.02": { plain:"Your product touches California users or data",                  penalty:"Up to $7,988 per violation — no cap on total violations",        source:"CCPA/CPRA §1798.155" },
-    "EXT.03": { plain:"Your AI ingests third-party data without provenance",             penalty:"Up to $150,000 per work infringed (willful)",                    source:"17 U.S.C. §504(c)(2)" },
-    "EXT.04": { plain:"Your product processes voice, face, or biometric data",           penalty:"Up to $5,000 per violation + attorney fees — no cap on total",   source:"BIPA 740 ILCS 14/20" },
-    "EXT.05": { plain:"Your marketing makes unsubstantiated AI claims",                  penalty:"Up to $50,120 per violation (2025 adjusted)",                    source:"FTC Act §5, 15 U.S.C. §45" },
-    "EXT.06": { plain:"Your product is accessible to minors",                            penalty:"Up to $50,120 per violation + state AG enforcement",             source:"COPPA 16 CFR §312" },
-    "EXT.07": { plain:"Your AI makes decisions about people — hiring, scoring, filtering",penalty:"Up to $7,988 per violation + private right of action",          source:"CCPA/CPRA ADMT + EEOC" },
-    "EXT.08": { plain:"Your product is consumer-facing (B2C)",                           penalty:"Up to $7,988 per consumer per violation — multiplied by user base",source:"CCPA/CPRA §1798.155" },
-    "EXT.09": { plain:"Your product sells to businesses (B2B)",                          penalty:"Uncapped contract damages — each enterprise deal is a separate exposure",source:"UCC Art. 2 + Common Law" },
-    "EXT.10": { plain:"Your AI generates content without ownership architecture",        penalty:"Up to $150,000 per work (willful) — AI output has no copyright protection",source:"17 U.S.C. §504(c)(2)" }
+    "EXT.01": { plain:"Your product touches EU users, data, or markets", penalty:"Up to €35M or 7% of global annual revenue", source:"GDPR / EU AI Act" },
+    "EXT.02": { plain:"Your product touches California users or data", penalty:"Uncapped statutory damages & AG civil penalties", source:"CPRA / State AI Laws" },
+    "EXT.03": { plain:"Your product touches Indian users or data", penalty:"Up to ₹250 crore per instance + criminal exposure", source:"DPDP Act / IT Rules" },
+    "EXT.04": { plain:"Your product processes biometric data (IL, TX, WA, CO)", penalty:"Strict liability $1,000-$5,000 per violation, per user", source:"BIPA / CUBI" },
+    "EXT.05": { plain:"Your product operates in financial markets or algorithmic trading", penalty:"Broker license revocation + systemic intervention", source:"SEBI / SEC / IOSCO" },
+    "EXT.06": { plain:"Your product is accessible to users under 18", penalty:"$15,000 per day per violation + private right of action", source:"COPPA / State Minor Laws" },
+    "EXT.07": { plain:"Your product makes HR, hiring, or workforce decisions", penalty:"Direct discrimination liability + civil penalties", source:"NYC LL 144 / Employment Law" },
+    "EXT.08": { plain:"Your product is consumer-facing (B2C)", penalty:"Uncapped FTC disgorgement + state UDAP actions", source:"FTC Act / State Consumer Law" },
+    "EXT.09": { plain:"Your product sells to enterprise businesses (B2B)", penalty:"Uncapped contract damages (reliance/wasted costs)", source:"UCC Art. 2 + Commercial Law" },
+    "EXT.10": { plain:"Your model trains on third-party scraped corpora", penalty:"Up to $150,000 per work (willful) + model destruction", source:"Copyright Act / Fair Use Doctrine" }
 };
 
 // ── V5.7: DOCUMENT MANIFEST DESCRIPTIONS ────────────────────────────────
