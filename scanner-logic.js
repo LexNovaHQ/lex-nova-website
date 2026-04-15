@@ -118,27 +118,155 @@ const VELOCITY_DISPLAY = {
 
 // ── 03. GAP REGISTRY ────────────────────────────────────────────────────
 // GLOBAL / UNIVERSAL
-GAP_SPECHT.threatId = "UNI_CNS_001";
-GAP_MOFFATT.threatId = "UNI_HAL_001";
-GAP_SCHREMS.threatId = "UNI_PRV_001";
-GAP_BARTZ.threatId = "UNI_INF_001";
-GAP_WARRANTY.threatId = "UNI_LIA_004";
-GAP_SHADOW.threatId = null; 
+const GAP_SPECHT = {
+    id:"gap_specht", threatId:"UNI_CNS_001",
+    trap:'"Browsewrap" Invalidity', legalAmmo:"Specht v. Netscape (2002)",
+    severity:"CRITICAL", velocity:"Immediate",
+    thePain:"Courts throw out arbitration clauses and liability caps",
+    theFix:"DOC_TOS §1.1", ext:"EXT.08, EXT.09",
+    source:"scanner", dualVerifiable:true
+};
+const GAP_MOFFATT = {
+    id:"gap_moffatt", threatId:"UNI_HAL_001",
+    trap:"Bot Accountability", legalAmmo:"Moffatt v. Air Canada (2024)",
+    severity:"CRITICAL", velocity:"Immediate",
+    thePain:"Company legally forced to pay out hallucinated financial promises",
+    theFix:"DOC_TOS §8.1 & §8.2", ext:"EXT.08",
+    source:"scanner", dualVerifiable:true
+};
+const GAP_SCHREMS = {
+    id:"gap_schrems", threatId:"UNI_PRV_001",
+    trap:"Illegal Data Migration", legalAmmo:"Schrems II (2020)",
+    severity:"CRITICAL", velocity:"Immediate",
+    thePain:"Routing EU data to US servers without Standard Contractual Clauses",
+    theFix:"DOC_DPA §6.2", ext:"EXT.01",
+    source:"scanner", dualVerifiable:true
+};
+const GAP_BARTZ = {
+    id:"gap_bartz", threatId:"UNI_INF_001",
+    trap:"Upstream Training Piracy Liability",
+    legalAmmo:"Bartz v. Anthropic (2025)",
+    severity:"NUCLEAR", velocity:"Immediate",
+    thePain:"Largest copyright settlement in US history ($1.5B); piracy-sourced training is per se infringement",
+    theFix:"DOC_TOS §8.7", ext:"EXT.10",
+    source:"scanner", dualVerifiable:true
+};
+const GAP_WARRANTY = {
+    id:"gap_warranty", threatId:"UNI_LIA_004",
+    trap:"Inconspicuous Warranty Caps", legalAmmo:"UCC § 2-316 & § 2-719",
+    severity:"NUCLEAR", velocity:"High",
+    thePain:'Warranty disclaimers must be "conspicuous" (ALL CAPS) or courts strike them — leaving no liability protection',
+    theFix:"DOC_TOS §9.2", ext:"EXT.08, EXT.09",
+    source:"scanner", dualVerifiable:true
+};
+const GAP_SHADOW = {
+    id:"SCAN_INTERNAL_001", threatId:null,
+    trap:"Shadow AI Bleed", legalAmmo:"Trade Secret Law",
+    severity:"NUCLEAR", velocity:"Immediate",
+    thePain:"Employees are actively leaking proprietary IP and client data into public LLMs without restriction",
+    theFix:"DOC_HND", ext:"EXT.09",
+    source:"scanner", dualVerifiable:false
+};
 
 // ARCHETYPES
-GAP_UETA.threatId = "UNI_LIA_007";           // Dropped INT01_AGT, moved to UNI_LIA
-GAP_MOBLEY.threatId = "I02_DEC_001";         // The Judge - Vendor Immunity
-GAP_CREATOR.threatId = "I04_INF_001";        // The Creator - Copyright Collapse
-GAP_FTC.threatId = "I05_PRV_001";            // The Reader - Disgorgement
-GAP_BIPA.threatId = "I07_BIO_001";           // The Translator - Voiceprint
-GAP_COMPANION.threatId = "I03_HRM_002";      // The Companion - Memory Pathologization
+const GAP_UETA = {
+    id:"gap_ueta", threatId:"UNI_LIA_007",
+    trap:"Electronic Agent Authority", legalAmmo:"UETA § 14",
+    severity:"NUCLEAR", velocity:"Immediate",
+    thePain:"The principal is legally bound by its AI's operations, even if no human reviewed the action",
+    theFix:"DOC_AGT §2.1", ext:"EXT.08, EXT.09",
+    source:"scanner", dualVerifiable:true
+};
+const GAP_MOBLEY = {
+    id:"gap_mobley", threatId:"I02_DEC_001",
+    trap:'Vendor Immunity / "HITL Theater"',
+    legalAmmo:"Mobley v. Workday (2025)",
+    severity:"NUCLEAR", velocity:"Immediate",
+    thePain:'Judge rejected blanket immunity for AI vendors; suit proceeds under "agency" theory against you directly',
+    theFix:"DOC_AGT §2.2", ext:"EXT.07",
+    source:"scanner", dualVerifiable:true
+};
+const GAP_CREATOR = {
+    id:"gap_creator", threatId:"I04_INF_001",
+    trap:"Copyright Collapse", legalAmmo:"Thaler v. Perlmutter",
+    severity:"NUCLEAR", velocity:"Immediate",
+    thePain:"Raw AI output falls into the public domain immediately; copyright requires documented human authorship",
+    theFix:"DOC_TOS §6.2", ext:"EXT.10, EXT.08",
+    source:"scanner", dualVerifiable:true
+};
+const GAP_FTC = {
+    id:"gap_ftc", threatId:"I05_PRV_001",
+    trap:'The "Death Penalty" Disgorgement', legalAmmo:"FTC v. Rite Aid (2023)",
+    severity:"NUCLEAR", velocity:"Immediate",
+    thePain:"FTC ordering complete destruction of model and algorithms trained on improperly obtained data",
+    theFix:"DOC_DPA §4.1", ext:"EXT.03",
+    source:"scanner", dualVerifiable:true
+};
+const GAP_BIPA = {
+    id:"gap_bipa", threatId:"I07_BIO_001",
+    trap:'The "Diarization" Voiceprint Trap',
+    legalAmmo:"Cruz v. Fireflies.AI (2025)",
+    severity:"NUCLEAR", velocity:"Immediate",
+    thePain:"Assessing vocal pitch constitutes illegal biometric harvesting without statutory written consent",
+    theFix:"DOC_AUP §3.6", ext:"EXT.04, EXT.09",
+    source:"scanner", dualVerifiable:true
+};
+const GAP_COMPANION = {
+    id:"gap_companion", threatId:"I03_HRM_002",
+    trap:"Memory Pathologization",
+    legalAmmo:"Gavalas v. Google (2026)",
+    severity:"NUCLEAR", velocity:"Immediate",
+    thePain:"Wrongful death suit targeting AI-manufactured delusional reality and coached suicide",
+    theFix:"DOC_TOS §5.2", ext:"EXT.08",
+    source:"scanner", dualVerifiable:true
+};
 
 // V5.7 NEW GAPS
-GAP_OPTIMIZER.threatId = "UNI_HAL_003";      // Tort Negligence for Output (Closest V2 Match)
-GAP_MOVER.threatId = "I10_LIA_001";          // The Mover - Bodily Injury
-GAP_SHIELD.threatId = "I08_LIA_001";         // The Shield - False Negative
-GAP_ROUTER.threatId = "I06_LIA_001";         // The Orchestrator - SLA Breach
-GAP_PERSUASION.threatId = "I03_HRM_003";     // Psychological Manipulation
+const GAP_OPTIMIZER = {
+    id:"gap_optimizer", threatId:"UNI_HAL_003",
+    trap:"Uncapped Recommendation Liability",
+    legalAmmo:"Negligent Misrepresentation Doctrine",
+    severity:"NUCLEAR", velocity:"Immediate",
+    thePain:"AI recommendation costs customers money — company absorbs full loss with no contractual ceiling",
+    theFix:"DOC_TOS §8.4", ext:"EXT.09",
+    source:"scanner", dualVerifiable:true
+};
+const GAP_MOVER = {
+    id:"gap_mover", threatId:"I10_LIA_001",
+    trap:"Physical Harm Liability Gap",
+    legalAmmo:"Product Liability Doctrine",
+    severity:"NUCLEAR", velocity:"Immediate",
+    thePain:"AI hardware injures someone — unlimited tort exposure with no contractual defense",
+    theFix:"DOC_AGT §4.1", ext:"EXT.01, EXT.09",
+    source:"scanner", dualVerifiable:true
+};
+const GAP_SHIELD = {
+    id:"gap_shield", threatId:"I08_LIA_001",
+    trap:"The False Negative Breach",
+    legalAmmo:"Negligence Per Se",
+    severity:"NUCLEAR", velocity:"Immediate",
+    thePain:"AI misses a real threat — company funds the client's entire response with no contractual ceiling",
+    theFix:"DOC_TOS §8.5", ext:"EXT.09",
+    source:"scanner", dualVerifiable:true
+};
+const GAP_ROUTER = {
+    id:"gap_router", threatId:"I06_LIA_001",
+    trap:"Multi-Model Liability Gap",
+    legalAmmo:"Sub-Processor Liability",
+    severity:"CRITICAL", velocity:"Immediate",
+    thePain:"Downstream model failure — company absorbs liability for a failure it didn't cause",
+    theFix:"DOC_TOS §7.3", ext:"EXT.09",
+    source:"scanner", dualVerifiable:true
+};
+const GAP_PERSUASION = {
+    id:"gap_persuasion", threatId:"I03_HRM_003",
+    trap:"Emotional Manipulation Liability",
+    legalAmmo:"EU AI Act Art. 5(1)(a)",
+    severity:"CRITICAL", velocity:"Immediate",
+    thePain:"AI uses persuasion without disclosure — dark pattern enforcement at scale",
+    theFix:"DOC_TOS §5.3", ext:"EXT.06, EXT.08",
+    source:"scanner", dualVerifiable:true
+};
 
 // ── 04. QUESTION BANK ───────────────────────────────────────────────────
 
@@ -1127,9 +1255,10 @@ function buildDashboard() {
             ${tripwireHTML}
             <div>
                 <div class="flex gap-4 mb-4 flex-wrap">
-                    <div class="bg-danger/10 border border-danger/20 px-3 py-1"><span class="text-[9px] text-danger font-bold tracking-widest">NUCLEAR: ${cN}</span></div>
-                    <div class="bg-orange-500/10 border border-orange-500/20 px-3 py-1"><span class="text-[9px] text-orange-500 font-bold tracking-widest">CRITICAL: ${cC}</span></div>
-                    <div class="bg-yellow-500/10 border border-yellow-500/20 px-3 py-1"><span class="text-[9px] text-yellow-500 font-bold tracking-widest">HIGH: ${cH}</span></div>
+                    <div class="bg-danger/10 border border-danger/20 px-3 py-1"><span class="text-[9px] text-danger font-bold tracking-widest">EXTINCTION: ${cExt}</span></div>
+<div class="bg-danger/10 border border-danger/20 px-3 py-1"><span class="text-[9px] text-danger font-bold tracking-widest">NUCLEAR: ${cNuc}</span></div>
+<div class="bg-orange-500/10 border border-orange-500/20 px-3 py-1"><span class="text-[9px] text-orange-500 font-bold tracking-widest">CRITICAL: ${cCrit}</span></div>
+<div class="bg-yellow-500/10 border border-yellow-500/20 px-3 py-1"><span class="text-[9px] text-yellow-500 font-bold tracking-widest">HIGH: ${cHigh}</span></div>
                     <div class="bg-[#080808] border border-white/10 px-3 py-1"><span class="text-[9px] text-marble font-bold tracking-widest">TOTAL: ${total}</span></div>
                 </div>
                 <div class="bg-[#080808] border border-shadow p-1 overflow-x-auto">
