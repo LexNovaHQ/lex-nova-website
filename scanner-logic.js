@@ -1393,4 +1393,4 @@ function switchState(fromId, toId) {
     const f = document.getElementById(fromId);
     const t = document.getElementById(toId);
     if (f) { f.classList.add('hidden-state');    f.classList.remove('fade-enter'); }
-    if (t) { t.classList.remove('hidden-state'); void t.offsetWidth; t.classList.add('fade-enter'); }
+    if (t) { t.classList.remove('hidden-state'); void t.offsetWidth; t.classList.add('fade-enter'); }}
