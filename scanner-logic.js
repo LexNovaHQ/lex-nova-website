@@ -521,13 +521,16 @@ function sourceBadge(g) {
         return `<span class="inline-block mt-1 text-[9px] tracking-widest uppercase text-gold font-bold"><span class="opacity-50">SOURCE:</span> INTERNAL AUDIT</span>`;
     return `<span class="inline-block mt-1 text-[9px] tracking-widest uppercase text-gold font-bold"><span class="opacity-50">SOURCE:</span> INTERNAL AUDIT</span>`;
 }
-// V5.8: TIER TRANSLATOR (Maps V2 Registry T1-T5 to UI)
+// V5.8: TIER TRANSLATOR (Maps V2 Registry T1-T5 AND legacy strings to UI)
 const TIER_MAP = {
     'T1': { label: 'EXTINCTION', class: 'bg-danger/10 text-danger border border-danger/20', weight: 5 },
     'T2': { label: 'NUCLEAR',    class: 'bg-danger/10 text-danger border border-danger/20', weight: 4 },
+    'NUCLEAR': { label: 'NUCLEAR', class: 'bg-danger/10 text-danger border border-danger/20', weight: 4 },
     'T3': { label: 'CRITICAL',   class: 'bg-orange-500/10 text-orange-500 border border-orange-500/20', weight: 3 },
     'T4': { label: 'CRITICAL',   class: 'bg-orange-500/10 text-orange-500 border border-orange-500/20', weight: 2 },
-    'T5': { label: 'HIGH',       class: 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20', weight: 1 }
+    'CRITICAL': { label: 'CRITICAL', class: 'bg-orange-500/10 text-orange-500 border border-orange-500/20', weight: 3 },
+    'T5': { label: 'HIGH',       class: 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20', weight: 1 },
+    'HIGH': { label: 'HIGH',     class: 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20', weight: 1 }
 };
 
 function getTier(g) {
@@ -584,22 +587,43 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }, { merge: true });
                 } catch(err) { console.error("PID bypass lead write:", err); }
 
-                // ── BUILD PERSONALIZED HERO ──────────────────────────
+             // ── BUILD PERSONALIZED HERO (DEDUPED & CALIBRATED) ─────
                 const founderFirst = (prospectData.founderName || prospectData.name || '').split(' ')[0] || 'there';
                 const compName     = prospectData.company || 'your company';
-                const gapCount     = (prospectData.forensicGaps || []).length;
+                
+                // Deduplicate gaps across both arrays to ensure the Hero math matches the Dashboard math
+                const gapMap = new Map();
+                [...(prospectData.true_gaps || []), ...(prospectData.forensicGaps || [])].forEach(g => {
+                    const tid = g.Threat_ID || g.threatId;
+                    if (tid) gapMap.set(tid, g);
+                });
+                const allGaps = Array.from(gapMap.values());
+                const gapCount = allGaps.length;
 
                 document.getElementById('pid-greeting').innerText = `Hi ${founderFirst},`;
                 document.getElementById('pid-headline').innerText = `${compName}'s AI Architecture Audit`;
 
                 if (gapCount > 0) {
-                    let nuc = 0, crit = 0, high = 0;
-                    prospectData.forensicGaps.forEach(g => {
-                        const s = (g.severity || '').toUpperCase();
-                        if (s === 'NUCLEAR') nuc++;
-                        else if (s === 'CRITICAL') crit++;
-                        else high++;
+                    let ext = 0, nuc = 0, crit = 0;
+                    allGaps.forEach(g => {
+                        const t = getTier(g).label;
+                        if (t === 'EXTINCTION') ext++;
+                        else if (t === 'NUCLEAR') nuc++;
+                        else if (t === 'CRITICAL') crit++;
                     });
+
+                    document.getElementById('pid-body').innerText = 
+                        `We reviewed ${compName}'s public legal architecture and mapped ${gapCount} structural gaps. This diagnostic confirms which are active inside your actual operations.`;
+
+                    let badgeHTML = '';
+                    if (ext)  badgeHTML += `<span class="bg-danger/10 border border-danger/20 px-3 py-1 text-[9px] text-danger font-bold tracking-widest">${ext} EXTINCTION</span>`;
+                    if (nuc)  badgeHTML += `<span class="bg-danger/10 border border-danger/20 px-3 py-1 text-[9px] text-danger font-bold tracking-widest">${nuc} NUCLEAR</span>`;
+                    if (crit) badgeHTML += `<span class="bg-orange-500/10 border border-orange-500/20 px-3 py-1 text-[9px] text-orange-500 font-bold tracking-widest">${crit} CRITICAL</span>`;
+                    
+                    document.getElementById('pid-badges').innerHTML = badgeHTML;
+                    document.getElementById('pid-intel-detail').innerText = `${gapCount} total vulnerabilities identified from public documents and forensic scraping.`;
+                    document.getElementById('pid-intel').classList.remove('hidden-state');
+                }
 
                     document.getElementById('pid-body').innerText =
                         `We reviewed ${compName}'s public legal architecture and mapped ${gapCount} structural gaps across your setup. This scanner confirms which ones are active inside your actual operations.`;
@@ -972,26 +996,25 @@ function buildDashboard() {
 
     let scrapeCount = 0, dualCount = 0;
 
+    // ── V5.8: INTELLIGENT MERGE (V2 Rich Prose Priority) ──────────────
+    // 1. Ingest True Gaps (The high-stakes mechanism/stakes data)
+    if (prospectData?.true_gaps?.length) {
+        prospectData.true_gaps.forEach(tg => {
+            activeGaps.push({ ...tg, threatId: tg.Threat_ID || tg.threatId, source: 'scrape' });
+            scrapeCount++;
+        });
+    }
+
+    // 2. Merge Forensic Gaps (The legacy evidence strings)
     if (prospectData?.forensicGaps?.length) {
         prospectData.forensicGaps.forEach(sg => {
-            addExt(sg.ext);
-            if (sg.extSurfaces) sg.extSurfaces.forEach(e => trippedSurfaces.add(e));
-            const existing = activeGaps.find(g =>
-                (sg.threatId && g.threatId && g.threatId === sg.threatId) ||
-                (sg.id       && g.id       && g.id       === sg.id)
-            );
+            const existing = activeGaps.find(g => g.threatId === sg.threatId);
             if (!existing) {
-                activeGaps.push({ ...sg, source:'scrape' });
+                activeGaps.push({ ...sg, source: 'scrape' });
                 scrapeCount++;
             } else {
                 existing.source = 'dual-verified';
-                if (sg.evidence)        existing.evidence        = sg.evidence;
-                if (sg.evidenceTier)    existing.evidenceTier    = sg.evidenceTier;
-                if (sg.evidence_source) existing.evidence_source = sg.evidence_source;
-                const w  = { NUCLEAR:3, CRITICAL:2, HIGH:1 };
-                const hW = w[(sg.severity       || '').toUpperCase()] || 0;
-                const sW = w[(existing.severity || '').toUpperCase()] || 0;
-                if (hW > sW) existing.severity = sg.severity.toUpperCase();
+                if (sg.evidence) existing.evidence = sg.evidence;
                 dualCount++;
             }
         });
