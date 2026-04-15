@@ -85,25 +85,24 @@ const DOC_DESCRIPTIONS = {
     DOC_DPIA: "Maps every risk your AI creates before regulators find it — required in the EU, smart everywhere.",
     DOC_SCAN: "Finds every unauthorized AI tool your team is using today — the gaps you don't know about yet."
 };
+// ── V5.8: V2 REGISTRY THREAT_TO_DOC MAPPING ───────────────────────────
 const THREAT_TO_DOC = {
-    'UNI_CON_001':'DOC_TOS','UNI_CON_002':'DOC_TOS','UNI_CON_003':'DOC_TOS',
-    'UNI_CON_004':'DOC_TOS','UNI_CON_005':'DOC_TOS','UNI_CON_006':'DOC_TOS',
-    'UNI_HAL_001':'DOC_TOS','UNI_HAL_002':'DOC_TOS','UNI_HAL_003':'DOC_TOS',
-    'UNI_LIA_001':'DOC_TOS','UNI_LIA_002':'DOC_TOS','UNI_LIA_003':'DOC_TOS',
-    'UNI_LIA_004':'DOC_TOS','UNI_LIA_005':'DOC_TOS',
-    'UNI_SEC_001':'DOC_DPA','UNI_SEC_002':'DOC_DPA',
-    'UNI_INF_001':'DOC_TOS','UNI_INF_002':'DOC_TOS','UNI_INF_003':'DOC_TOS',
-    'UNI_WAS_001':'DOC_TOS','UNI_WAS_002':'DOC_TOS',
-    'INT01_ROG_001':'DOC_AGT','INT01_ROG_002':'DOC_AGT','INT01_AGT_001':'DOC_AGT',
-    'INT02_DIS_001':'DOC_AGT',
-    'INT03_COM_001':'DOC_TOS','INT03_COM_002':'DOC_TOS','INT03_CON_001':'DOC_TOS','INT03_CON_002':'DOC_TOS',
-    'INT04_COP_001':'DOC_TOS','INT04_COP_002':'DOC_TOS',
-    'INT05_DIS_001':'DOC_DPA','INT05_COP_001':'DOC_DPA',
-    'INT06_ORC_001':'DOC_TOS','INT06_ORC_002':'DOC_TOS',
-    'INT07_BIO_001':'DOC_AUP','INT07_BIO_002':'DOC_AUP','INT07_TRN_001':'DOC_TOS','INT07_TRN_002':'DOC_TOS',
-    'INT08_SEC_001':'DOC_TOS','INT08_SEC_002':'DOC_TOS','INT08_AUD_001':'DOC_TOS','INT08_SEC_003':'DOC_TOS',
-    'INT09_REC_001':'DOC_TOS','INT09_REC_002':'DOC_TOS',
-    'INT10_PHY_001':'DOC_AGT','INT10_PHY_002':'DOC_AGT','INT10_PHY_003':'DOC_AGT'
+    'UNI_CNS_001':'DOC_TOS','UNI_CNS_002':'DOC_TOS','UNI_CNS_003':'DOC_TOS','UNI_CNS_004':'DOC_TOS','UNI_CNS_005':'DOC_TOS','UNI_CNS_006':'DOC_TOS','UNI_CNS_007':'DOC_TOS',
+    'UNI_LIA_001':'DOC_TOS','UNI_LIA_002':'DOC_TOS','UNI_LIA_003':'DOC_TOS','UNI_LIA_004':'DOC_TOS','UNI_LIA_005':'DOC_TOS','UNI_LIA_006':'DOC_TOS','UNI_LIA_007':'DOC_TOS',
+    'UNI_HAL_001':'DOC_TOS','UNI_HAL_002':'DOC_TOS','UNI_HAL_003':'DOC_TOS','UNI_HAL_004':'DOC_TOS',
+    'UNI_INF_001':'DOC_TOS','UNI_INF_002':'DOC_TOS','UNI_INF_003':'DOC_TOS','UNI_INF_004':'DOC_AUP',
+    'UNI_PRV_001':'DOC_DPA','UNI_PRV_002':'DOC_DPA','UNI_PRV_003':'DOC_DPA',
+    'UNI_DEC_001':'DOC_AUP','UNI_FRD_001':'DOC_AUP','UNI_FRD_002':'DOC_AUP',
+    'I02_DEC_001':'DOC_AGT','I02_DEC_002':'DOC_AUP','I02_DEC_003':'DOC_TOS','I02_DEC_004':'DOC_AUP','I02_DEC_005':'DOC_AUP','I02_DEC_006':'DOC_TOS','I02_DEC_007':'DOC_AUP','I02_DEC_008':'DOC_TOS','I02_DEC_009':'DOC_AUP','I02_DEC_010':'DOC_AUP',
+    'I02_HRM_001':'DOC_TOS','I02_HRM_002':'DOC_AUP','I02_FRD_001':'DOC_AUP',
+    'I03_HRM_001':'DOC_AUP','I03_HRM_002':'DOC_TOS','I03_HRM_003':'DOC_TOS','I03_HRM_004':'DOC_AUP','I03_HRM_005':'DOC_TOS','I03_HRM_006':'DOC_TOS','I03_HRM_007':'DOC_AUP',
+    'I04_INF_001':'DOC_TOS','I04_INF_002':'DOC_AUP','I04_INF_003':'DOC_AUP','I04_INF_004':'DOC_AUP','I04_INF_005':'DOC_TOS',
+    'I05_INF_001':'DOC_TOS','I05_INF_002':'DOC_TOS','I05_INF_003':'DOC_DPA','I05_PRV_001':'DOC_DPA','I05_PRV_002':'DOC_DPA',
+    'I06_PRV_001':'DOC_DPA','I06_PRV_002':'DOC_DPA','I06_PRV_003':'DOC_DPA','I06_LIA_001':'DOC_SLA',
+    'I07_BIO_001':'DOC_AUP','I07_BIO_002':'DOC_AUP','I07_BIO_003':'DOC_AUP','I07_BIO_004':'DOC_AUP',
+    'I08_LIA_001':'DOC_TOS','I08_LIA_002':'DOC_TOS','I08_LIA_003':'DOC_AGT','I08_LIA_004':'DOC_AGT',
+    'I09_TRD_001':'DOC_TOS','I09_TRD_002':'DOC_AGT','I09_TRD_003':'DOC_TOS','I09_TRD_004':'DOC_AUP',
+    'I10_LIA_001':'DOC_TOS','I10_LIA_002':'DOC_TOS'
 };
 const VELOCITY_DISPLAY = {
     "Immediate": "Active Now", "High": "This Year",
@@ -111,170 +110,28 @@ const VELOCITY_DISPLAY = {
 };
 
 // ── 03. GAP REGISTRY ────────────────────────────────────────────────────
-const GAP_SPECHT = {
-    id:"gap_specht", threatId:"UNI_CON_001",
-    trap:'"Browsewrap" Invalidity', legalAmmo:"Specht v. Netscape (2002)",
-    severity:"CRITICAL", velocity:"Immediate",
-    thePain:"Courts throw out arbitration clauses and liability caps",
-    theFix:"DOC_TOS §1.1", ext:"EXT.08, EXT.09",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:true
-};
-const GAP_MOFFATT = {
-    id:"gap_moffatt", threatId:"UNI_HAL_001",
-    trap:"Bot Accountability", legalAmmo:"Moffatt v. Air Canada (2024)",
-    severity:"CRITICAL", velocity:"Immediate",
-    thePain:"Company legally forced to pay out hallucinated financial promises",
-    theFix:"DOC_TOS §8.1 & §8.2", ext:"EXT.08",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:true
-};
-const GAP_SCHREMS = {
-    id:"gap_schrems", threatId:"UNI_SEC_001",
-    trap:"Illegal Data Migration", legalAmmo:"Schrems II (2020)",
-    severity:"CRITICAL", velocity:"Immediate",
-    thePain:"Routing EU data to US servers without Standard Contractual Clauses",
-    theFix:"DOC_DPA §6.2", ext:"EXT.01",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:true
-};
-const GAP_BARTZ = {
-    id:"gap_bartz", threatId:"UNI_INF_001",
-    trap:"Upstream Training Piracy Liability",
-    legalAmmo:"Bartz v. Anthropic (Settlement approved Sep 2025)",
-    severity:"NUCLEAR", velocity:"Immediate",
-    thePain:"Largest copyright settlement in US history ($1.5B); piracy-sourced training is per se infringement",
-    theFix:"DOC_TOS §8.7", ext:"EXT.10",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:true
-};
-const GAP_WARRANTY = {
-    id:"gap_warranty", threatId:"UNI_LIA_004",
-    trap:"Inconspicuous Warranty Caps", legalAmmo:"UCC § 2-316 & § 2-719",
-    severity:"NUCLEAR", velocity:"High",
-    thePain:'Warranty disclaimers must be "conspicuous" (ALL CAPS) or courts strike them — leaving no liability protection',
-    theFix:"DOC_TOS §9.2", ext:"EXT.08, EXT.09",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:true
-};
-const GAP_SHADOW = {
-    id:"SCAN_INTERNAL_001", threatId:null,
-    trap:"Shadow AI Bleed", legalAmmo:"Trade Secret Law / Internal IP Policy",
-    severity:"NUCLEAR", velocity:"Immediate",
-    thePain:"Employees are actively leaking proprietary IP and client data into public LLMs without restriction or detection",
-    theFix:"DOC_HND", ext:"EXT.09",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:false
-};
-const GAP_UETA = {
-    id:"gap_ueta", threatId:"INT01_AGT_001",
-    trap:"Electronic Agent Authority", legalAmmo:"UETA § 14",
-    severity:"NUCLEAR", velocity:"Immediate",
-    thePain:"The principal is legally bound by its AI's operations, even if no human reviewed the action",
-    theFix:"DOC_AGT §2.1", ext:"EXT.08, EXT.09",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:true
-};
-const GAP_MOBLEY = {
-    id:"gap_mobley", threatId:"INT02_DIS_001",
-    trap:'Vendor Immunity / "HITL Theater"',
-    legalAmmo:"Mobley v. Workday (Active 2025/2026)",
-    severity:"NUCLEAR", velocity:"Immediate",
-    thePain:'Judge rejected blanket immunity for the AI vendor; suit proceeds under "agency" theory against the software company directly',
-    theFix:"DOC_AGT §2.2", ext:"EXT.07",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:true
-};
-const GAP_CREATOR = {
-    id:"gap_creator", threatId:"INT04_COP_001",
-    trap:"Copyright Collapse", legalAmmo:"Thaler v. Perlmutter (2023/2025)",
-    severity:"NUCLEAR", velocity:"Immediate",
-    thePain:"Raw AI output falls into the public domain immediately; copyright requires documented human authorship",
-    theFix:"DOC_TOS §6.2", ext:"EXT.10, EXT.08",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:true
-};
-const GAP_FTC = {
-    id:"gap_ftc", threatId:"INT05_DIS_001",
-    trap:'The "Death Penalty" Disgorgement', legalAmmo:"FTC v. Rite Aid (2023)",
-    severity:"NUCLEAR", velocity:"Immediate",
-    thePain:"FTC ordering complete destruction of model, data, and algorithms trained on improperly obtained data",
-    theFix:"DOC_DPA §4.1", ext:"EXT.03",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:true
-};
-const GAP_BIPA = {
-    id:"gap_bipa", threatId:"INT07_BIO_001",
-    trap:'The "Diarization" Voiceprint Trap',
-    legalAmmo:"Cruz v. Fireflies.AI (Dec 18, 2025) & Basich v. Microsoft Corp. (Feb 5, 2026)",
-    severity:"NUCLEAR", velocity:"Immediate",
-    thePain:"Assessing vocal pitch constitutes illegal biometric harvesting; standard audio prompts fail to satisfy statutory written consent requirements",
-    theFix:"DOC_AUP §3.6", ext:"EXT.04, EXT.09",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:true
-};
-const GAP_COMPANION = {
-    id:"gap_companion", threatId:"INT03_COM_002",
-    trap:"Persistent Memory Pathologization",
-    legalAmmo:"Gavalas v. Google (Filed Mar 4, 2026)",
-    severity:"NUCLEAR", velocity:"Immediate",
-    thePain:"First wrongful death suit targeting Gemini; alleges AI manufactured delusional reality over 7 weeks and coached suicide; faulty design and wrongful death claims active",
-    theFix:"DOC_TOS §5.2", ext:"EXT.08",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:true
-};
+// GLOBAL / UNIVERSAL
+GAP_SPECHT.threatId = "UNI_CNS_001";
+GAP_MOFFATT.threatId = "UNI_HAL_001";
+GAP_SCHREMS.threatId = "UNI_PRV_001";
+GAP_BARTZ.threatId = "UNI_INF_001";
+GAP_WARRANTY.threatId = "UNI_LIA_004";
+GAP_SHADOW.threatId = null; 
 
-// ── V5.7: NEW GAP OBJECTS ───────────────────────────────────────────────
-const GAP_OPTIMIZER = {
-    id:"gap_optimizer", threatId:"INT09_REC_001",
-    trap:"Uncapped Recommendation Liability",
-    legalAmmo:"Common Law Negligent Misrepresentation",
-    severity:"NUCLEAR", velocity:"Immediate",
-    thePain:"AI recommendation costs the customer real money — company absorbs the full loss with no contractual ceiling",
-    theFix:"DOC_TOS §8.4", ext:"EXT.09",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:true
-};
-const GAP_MOVER = {
-    id:"gap_mover", threatId:"INT10_PHY_001",
-    trap:"Physical Harm Liability Gap",
-    legalAmmo:"Product Liability Doctrine / Strict Liability",
-    severity:"NUCLEAR", velocity:"Immediate",
-    thePain:"AI-controlled hardware injures someone or damages property — unlimited tort exposure with no contractual defense",
-    theFix:"DOC_AGT §4.1", ext:"EXT.01, EXT.09",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:true
-};
-const GAP_SHIELD = {
-    id:"gap_shield", threatId:"INT08_SEC_001",
-    trap:"The False Negative Breach",
-    legalAmmo:"Negligence Per Se / Professional Malpractice Doctrine",
-    severity:"NUCLEAR", velocity:"Immediate",
-    thePain:"AI misses a real threat — company funds the client's entire breach response with no contractual ceiling",
-    theFix:"DOC_TOS §8.5", ext:"EXT.09",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:true
-};
-const GAP_ROUTER = {
-    id:"gap_router", threatId:"INT06_ORC_001",
-    trap:"Multi-Model Liability Gap",
-    legalAmmo:"Sub-Processor Liability / Indemnification Chain Doctrine",
-    severity:"CRITICAL", velocity:"Immediate",
-    thePain:"Downstream model produces harmful output — company absorbs the liability for a failure it didn't cause and can't control",
-    theFix:"DOC_TOS §7.3", ext:"EXT.09",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:true
-};
-const GAP_PERSUASION = {
-    id:"gap_persuasion", threatId:"INT03_CON_002",
-    trap:"Emotional Manipulation Liability",
-    legalAmmo:"FTC Dark Patterns Enforcement / EU AI Act Art. 5(1)(a)",
-    severity:"CRITICAL", velocity:"Immediate",
-    thePain:"AI uses persuasion tactics without disclosure — dark pattern enforcement and deceptive practice claims at scale",
-    theFix:"DOC_TOS §5.3", ext:"EXT.06, EXT.08",
-    evidenceTier:null, evidence:{ source:null, reason:null },
-    source:"scanner", dualVerifiable:true
-};
+// ARCHETYPES
+GAP_UETA.threatId = "UNI_LIA_007";           // Dropped INT01_AGT, moved to UNI_LIA
+GAP_MOBLEY.threatId = "I02_DEC_001";         // The Judge - Vendor Immunity
+GAP_CREATOR.threatId = "I04_INF_001";        // The Creator - Copyright Collapse
+GAP_FTC.threatId = "I05_PRV_001";            // The Reader - Disgorgement
+GAP_BIPA.threatId = "I07_BIO_001";           // The Translator - Voiceprint
+GAP_COMPANION.threatId = "I03_HRM_002";      // The Companion - Memory Pathologization
+
+// V5.7 NEW GAPS
+GAP_OPTIMIZER.threatId = "UNI_HAL_003";      // Tort Negligence for Output (Closest V2 Match)
+GAP_MOVER.threatId = "I10_LIA_001";          // The Mover - Bodily Injury
+GAP_SHIELD.threatId = "I08_LIA_001";         // The Shield - False Negative
+GAP_ROUTER.threatId = "I06_LIA_001";         // The Orchestrator - SLA Breach
+GAP_PERSUASION.threatId = "I03_HRM_003";     // Psychological Manipulation
 
 // ── 04. QUESTION BANK ───────────────────────────────────────────────────
 
@@ -529,7 +386,19 @@ function sourceBadge(g) {
         return `<span class="inline-block mt-1 text-[9px] tracking-widest uppercase text-gold font-bold"><span class="opacity-50">SOURCE:</span> INTERNAL AUDIT</span>`;
     return `<span class="inline-block mt-1 text-[9px] tracking-widest uppercase text-gold font-bold"><span class="opacity-50">SOURCE:</span> INTERNAL AUDIT</span>`;
 }
+// V5.8: TIER TRANSLATOR (Maps V2 Registry T1-T5 to UI)
+const TIER_MAP = {
+    'T1': { label: 'EXTINCTION', class: 'bg-danger/10 text-danger border border-danger/20', weight: 5 },
+    'T2': { label: 'NUCLEAR',    class: 'bg-danger/10 text-danger border border-danger/20', weight: 4 },
+    'T3': { label: 'CRITICAL',   class: 'bg-orange-500/10 text-orange-500 border border-orange-500/20', weight: 3 },
+    'T4': { label: 'CRITICAL',   class: 'bg-orange-500/10 text-orange-500 border border-orange-500/20', weight: 2 },
+    'T5': { label: 'HIGH',       class: 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20', weight: 1 }
+};
 
+function getTier(g) {
+    const raw = (g.painTier || g.Pain_Tier || g.severity || 'T5').toUpperCase();
+    return TIER_MAP[raw] || TIER_MAP['T5']; 
+}
 function evidenceBlock(g) {
     if (!g.evidence || (!g.evidence.found && !g.evidence.source && !g.evidence.reason)) return '';
     const found = g.evidence.found || g.evidence.source || '';
@@ -984,17 +853,20 @@ function buildDashboard() {
 
     activeGaps.forEach(g => { if (!g.source) g.source = 'scanner'; });
 
-    const sevW = { NUCLEAR:3, CRITICAL:2, HIGH:1 };
     const srcW = g => g.source === 'dual-verified' ? 3 : g.source === 'scrape' ? 2 : 1;
     activeGaps.sort((a, b) => {
-        const sd = (sevW[(b.severity || '').toUpperCase()] || 0) - (sevW[(a.severity || '').toUpperCase()] || 0);
+        const sd = getTier(b).weight - getTier(a).weight;
         return sd !== 0 ? sd : srcW(b) - srcW(a);
     });
 
-    let cN = 0, cC = 0, cH = 0;
+    // V5.8: Consolidated Counters
+    let cExt = 0, cNuc = 0, cCrit = 0, cHigh = 0;
     activeGaps.forEach(g => {
-        const s = (g.severity || '').toUpperCase();
-        if (s === 'NUCLEAR') cN++; else if (s === 'CRITICAL') cC++; else cH++;
+        const t = getTier(g).label;
+        if (t === 'EXTINCTION') cExt++;
+        else if (t === 'NUCLEAR') cNuc++;
+        else if (t === 'CRITICAL') cCrit++;
+        else cHigh++;
     });
 
     // ── V5.7: SCALED VISIBILITY TIERS ───────────────────────────────────
@@ -1045,7 +917,9 @@ function buildDashboard() {
         if (i >= showTotal) return;
         const badge   = sourceBadge(g);
         const evBlock = evidenceBlock(g);
-        const sc      = sevClasses(g.severity);
+        const tierObj = getTier(g);
+        const sc      = tierObj.class;
+        const tierLbl = tierObj.label;
         const vd      = velDisplay(g.velocity);
         const docId   = getDocId(g.theFix, g.threatId);
         const docDesc = DOC_DESCRIPTIONS[docId] || '';
@@ -1061,7 +935,7 @@ function buildDashboard() {
                 <td class="p-4 align-top"><span class="font-bold text-marble text-xs block">${gapNameStr}</span>${badge}</td>
                 <td class="p-4 align-top"><span class="text-marble/70 text-[11px] leading-relaxed">${pain}</span></td>
                 <td class="p-4 align-top">${evBlock || '<span class="text-marble/30 text-[10px]">Internal audit signal</span>'}</td>
-                <td class="p-4 align-top"><span class="px-2 py-1 text-[9px] font-bold ${sc}">${(g.severity||'').toUpperCase()}</span></td>
+                <td class="p-4 align-top"><span class="px-2 py-1 text-[9px] font-bold ${sc}">${tierLbl}</span></td>
                 <td class="p-4 align-top text-marble/80 text-[10px] tracking-widest uppercase">${vd}</td>
                 <td class="p-4 align-top"><span class="text-gold font-bold text-xs">${docId}</span>${docDesc?`<div class="text-[9px] text-marble/40 mt-1">${docDesc}</div>`:''}</td>
             </tr>`;
@@ -1071,7 +945,7 @@ function buildDashboard() {
                 <td class="p-4 align-top"><span class="font-bold text-marble text-xs block">${gapNameStr}</span>${badge}</td>
                 <td class="p-4 align-top"><span class="text-marble/70 text-[11px] leading-relaxed" style="filter:blur(4px);user-select:none">${pain}</span></td>
                 <td class="p-4 align-top"><span class="text-marble/30 text-[10px]" style="filter:blur(4px);user-select:none">${evBlock || 'Audit signal classified'}</span></td>
-                <td class="p-4 align-top"><span class="px-2 py-1 text-[9px] font-bold ${sc}">${(g.severity||'').toUpperCase()}</span></td>
+                <td class="p-4 align-top"><span class="px-2 py-1 text-[9px] font-bold ${sc}">${tierLbl}</span></td>
                 <td class="p-4 align-top text-marble/80 text-[10px] tracking-widest uppercase">${vd}</td>
                 <td class="p-4 align-top text-gold font-bold text-xs">${docId}</td>
             </tr>`;
@@ -1085,7 +959,7 @@ function buildDashboard() {
                     <div class="border-b border-white/5 p-4">
                         <div class="flex items-start justify-between gap-3 mb-2">
                             <span class="font-bold text-marble text-xs leading-tight flex-1">${gapNameStr}</span>
-                            <span class="px-2 py-1 text-[9px] font-bold shrink-0 ${sc}">${(g.severity||'').toUpperCase()}</span>
+                            <span class="px-2 py-1 text-[9px] font-bold shrink-0 ${sc}">${tierLbl}</span>
                         </div>
                         <div class="text-marble/70 text-[11px] leading-relaxed mb-2">${pain}</div>
                         <div class="flex items-center justify-between">
@@ -1110,7 +984,7 @@ function buildDashboard() {
                     <div class="border-b border-white/5 p-4 opacity-90">
                         <div class="flex items-start justify-between gap-3 mb-2">
                             <span class="font-bold text-marble text-xs leading-tight flex-1">${gapNameStr}</span>
-                            <span class="px-2 py-1 text-[9px] font-bold shrink-0 ${sc}">${(g.severity||'').toUpperCase()}</span>
+                            <span class="px-2 py-1 text-[9px] font-bold shrink-0 ${sc}">${tierLbl}</span>
                         </div>
                         <div class="text-marble/70 text-[11px] leading-relaxed mb-2" style="filter:blur(4px);user-select:none">${pain}</div>
                         <div class="flex items-center gap-3">
