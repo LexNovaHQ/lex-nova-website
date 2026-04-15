@@ -521,11 +521,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                // Remove loading state — hero is now populated
                 document.getElementById('pid-hero').classList.remove('pid-hero-loading');
 
+                // ── DISMISS GLOBAL LOADER FOR PID USERS ───────────────────
+                if (window._lnMsgInterval) clearInterval(window._lnMsgInterval);
+                const _loader = document.getElementById('ln-loader');
+                if (_loader) {
+                    _loader.style.opacity = '0';
+                    setTimeout(() => _loader.remove(), 400);
+                }
+
                 // Wire the start button to skip config and go straight to quiz
                 document.getElementById('pid-start-btn').addEventListener('click', () => {
                     setDoc(doc(db, "prospects", pidFromUrl), {
                         scannerStep: 'config_complete', scannerStepAt: serverTimestamp()
                     }, { merge: true }).catch(() => {});
+                    
+                    // V5.8: HIDE THE HERO SO THE QUIZ CAN BE SEEN
+                    document.getElementById('pid-hero').classList.add('hidden-state'); 
                     startDiagnostic();
                 });
 
@@ -924,81 +935,80 @@ function buildDashboard() {
         if (i >= showTotal) return;
         const badge   = sourceBadge(g);
         const evBlock = evidenceBlock(g);
-        const tierObj = getTier(g);
-        const sc      = tierObj.class;
-        const tierLbl = tierObj.label;
+        const tierObj     = getTier(g);
+       const sc          = tierObj.class;
+       const severityLbl = tierObj.label;
         const vd      = velDisplay(g.velocity);
         const docId   = getDocId(g.theFix, g.threatId);
         const docDesc = DOC_DESCRIPTIONS[docId] || '';
         const pain    = truncatePain(g.thePain);
         const gapNameStr = g.gapName || g.trap || '—';
-        const isBlur  = i >= showFull;
         const expandId = `gap-expand-${i}`;
-    // ── V5.8: THE VELVET ROPE BLUR LOGIC ──────────────────────────────
-        let blurClass = '';
+
+        // ── V5.8: THE VELVET ROPE BLUR LOGIC ──────────────────────────────
+        let blurStyle = '';
         let lockOverlay = '';
 
-        if (index < 3) {
-            // THE FREE KILLS: Fully visible
-            blurClass = '';
-        } else if (index === 3) {
-            // THE TEASE: Partial blur, unreadable but tantalizing
-            blurClass = 'blur-[3px] select-none opacity-80 pointer-events-none';
+        if (i < 3) {
+            // The Free Kills
+            blurStyle = '';
+        } else if (i === 3) {
+            // The Tease
+            blurStyle = 'filter: blur(3px); user-select: none; opacity: 0.8; pointer-events: none;';
         } else {
-            // THE LOCKOUT: Full blur
-            blurClass = 'blur-md select-none opacity-30 pointer-events-none';
-            
-            // Only render the CTA overlay on the very first fully locked item (index 4)
-            if (index === 4) {
+            // The Lockout
+            blurStyle = 'filter: blur(6px); user-select: none; opacity: 0.3; pointer-events: none;';
+            if (i === 4) {
                 lockOverlay = `
-                <div class="absolute inset-0 flex flex-col items-center justify-center z-10 p-4 text-center">
-                    <div class="bg-black/90 border border-danger p-6 shadow-2xl">
+                <div class="absolute inset-0 flex flex-col items-center justify-center z-10 p-4 text-center bg-black/80 h-full w-full left-0 top-0">
+                    <div class="border border-danger p-6 shadow-2xl bg-[#080808]">
                         <h4 class="text-danger font-bold text-lg uppercase mb-2">RESTRICTED ACCESS</h4>
-                        <p class="text-sm text-gray-300 mb-4">You have ${activeGaps.length - 3} more active liabilities in your architecture. Legal access required to view complete threat mechanisms.</p>
+                        <p class="text-sm text-gray-300 mb-4">You have ${activeGaps.length - 3} more active liabilities. Legal access required.</p>
                         <a href="offer-bundle.html?pid=${pidFromUrl}" class="inline-block bg-danger text-white px-6 py-3 font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all">Unlock Full Audit ($1,500)</a>
                     </div>
                 </div>`;
             }
         }
 
-        // Extract the terrifying backend prose (if it exists)
-        const mechanismText = g.FP_Mechanism ? `<div class="mt-3 text-sm text-gray-300 font-mono"><strong>MECHANISM:</strong> ${g.FP_Mechanism}</div>` : '';
-        const stakesText = (g.FP_Stakes && g.FP_Stakes !== 'NULL') ? `<div class="mt-2 text-sm text-danger font-bold uppercase tracking-wide"><strong>THE STAKES:</strong> ${g.FP_Stakes}</div>` : '';
-        // ── DESKTOP ROW (hidden on mobile) ──────────────────────
-        if (!isBlur) {
-            matrixRows += `
-            <tr class="matrix-row border-b border-white/5 hidden md:table-row">
-                <td class="p-4 align-top"><span class="font-bold text-marble text-xs block">${gapNameStr}</span>${badge}</td>
-                <td class="p-4 align-top"><span class="text-marble/70 text-[11px] leading-relaxed">${pain}</span></td>
-                <td class="p-4 align-top">${evBlock || '<span class="text-marble/30 text-[10px]">Internal audit signal</span>'}</td>
-                <td class="p-4 align-top"><span class="px-2 py-1 text-[9px] font-bold ${sc}">${tierLbl}</span></td>
-                <td class="p-4 align-top text-marble/80 text-[10px] tracking-widest uppercase">${vd}</td>
-                <td class="p-4 align-top"><span class="text-gold font-bold text-xs">${docId}</span>${docDesc?`<div class="text-[9px] text-marble/40 mt-1">${docDesc}</div>`:''}</td>
-            </tr>`;
-        } else {
-            matrixRows += `
-            <tr class="matrix-row border-b border-white/5 opacity-90 hidden md:table-row">
-                <td class="p-4 align-top"><span class="font-bold text-marble text-xs block">${gapNameStr}</span>${badge}</td>
-                <td class="p-4 align-top"><span class="text-marble/70 text-[11px] leading-relaxed" style="filter:blur(4px);user-select:none">${pain}</span></td>
-                <td class="p-4 align-top"><span class="text-marble/30 text-[10px]" style="filter:blur(4px);user-select:none">${evBlock || 'Audit signal classified'}</span></td>
-                <td class="p-4 align-top"><span class="px-2 py-1 text-[9px] font-bold ${sc}">${tierLbl}</span></td>
-                <td class="p-4 align-top text-marble/80 text-[10px] tracking-widest uppercase">${vd}</td>
-                <td class="p-4 align-top text-gold font-bold text-xs">${docId}</td>
-            </tr>`;
-        }
+        // Extract the terrifying backend prose
+        const mechanismText = g.FP_Mechanism ? `<div class="mt-3 text-[11px] text-gray-300 font-mono leading-relaxed border-l-2 border-danger/50 pl-2"><strong>MECHANISM:</strong> ${g.FP_Mechanism}</div>` : '';
+        const stakesText = (g.FP_Stakes && g.FP_Stakes !== 'NULL') ? `<div class="mt-2 text-[11px] text-danger font-bold uppercase tracking-wide leading-relaxed"><strong>THE STAKES:</strong> ${g.FP_Stakes}</div>` : '';
 
-        // ── MOBILE CARD (hidden on desktop) ─────────────────────
-        if (!isBlur) {
-            matrixRows += `
-            <tr class="md:hidden">
-                <td colspan="6" class="p-0">
-                    <div class="border-b border-white/5 p-4">
+        // ── DESKTOP ROW (Safe Table Wrapping) ──────────────────────
+        matrixRows += `
+        <tr class="matrix-row border-b border-white/5 relative hidden md:table-row">
+            <td class="p-0" colspan="6">
+                <div class="relative w-full h-full">
+                    ${lockOverlay}
+                    <table class="w-full" style="${blurStyle}">
+                        <tr>
+                            <td class="p-4 align-top w-[20%]"><span class="font-bold text-marble text-xs block">${gapNameStr}</span>${badge}</td>
+                            <td class="p-4 align-top w-[25%]"><span class="text-marble/70 text-[11px] leading-relaxed">${pain}</span>${mechanismText}${stakesText}</td>
+                            <td class="p-4 align-top w-[20%]">${evBlock || '<span class="text-marble/30 text-[10px]">Internal audit signal</span>'}</td>
+                            <td class="p-4 align-top w-[10%]"><span class="px-2 py-1 text-[9px] font-bold ${sc}">${severityLbl}</span></td>
+                            <td class="p-4 align-top w-[10%] text-marble/80 text-[10px] tracking-widest uppercase">${vd}</td>
+                            <td class="p-4 align-top w-[15%]"><span class="text-gold font-bold text-xs">${docId}</span>${docDesc?`<div class="text-[9px] text-marble/40 mt-1">${docDesc}</div>`:''}</td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>`;
+
+        // ── MOBILE CARD ──────────────────────────────────────────
+        matrixRows += `
+        <tr class="md:hidden">
+            <td colspan="6" class="p-0">
+                <div class="relative w-full h-full">
+                    ${lockOverlay}
+                    <div class="border-b border-white/5 p-4" style="${blurStyle}">
                         <div class="flex items-start justify-between gap-3 mb-2">
                             <span class="font-bold text-marble text-xs leading-tight flex-1">${gapNameStr}</span>
-                            <span class="px-2 py-1 text-[9px] font-bold shrink-0 ${sc}">${tierLbl}</span>
+                            <span class="px-2 py-1 text-[9px] font-bold shrink-0 ${sc}">${severityLbl}</span>
                         </div>
                         <div class="text-marble/70 text-[11px] leading-relaxed mb-2">${pain}</div>
-                        <div class="flex items-center justify-between">
+                        ${mechanismText}
+                        ${stakesText}
+                        <div class="flex items-center justify-between mt-3">
                             <div class="flex items-center gap-3">
                                 <span class="text-gold font-bold text-[10px]">${docId}</span>
                                 <span class="text-marble/40 text-[9px] uppercase tracking-widest">${vd}</span>
@@ -1011,26 +1021,9 @@ function buildDashboard() {
                             ${docDesc ? `<div class="text-[9px] text-marble/40 leading-relaxed">${docDesc}</div>` : ''}
                         </div>
                     </div>
-                </td>
-            </tr>`;
-        } else {
-            matrixRows += `
-            <tr class="md:hidden">
-                <td colspan="6" class="p-0">
-                    <div class="border-b border-white/5 p-4 opacity-90">
-                        <div class="flex items-start justify-between gap-3 mb-2">
-                            <span class="font-bold text-marble text-xs leading-tight flex-1">${gapNameStr}</span>
-                            <span class="px-2 py-1 text-[9px] font-bold shrink-0 ${sc}">${tierLbl}</span>
-                        </div>
-                        <div class="text-marble/70 text-[11px] leading-relaxed mb-2" style="filter:blur(4px);user-select:none">${pain}</div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-gold font-bold text-[10px]">${docId}</span>
-                            <span class="text-marble/40 text-[9px] uppercase tracking-widest">${vd}</span>
-                        </div>
-                    </div>
-                </td>
-            </tr>`;
-        }
+                </div>
+            </td>
+        </tr>`;
     });
 
     // ── V5.7: ICEBERG — LOCKED GAPS ─────────────────────────────────────
@@ -1401,4 +1394,3 @@ function switchState(fromId, toId) {
     const t = document.getElementById(toId);
     if (f) { f.classList.add('hidden-state');    f.classList.remove('fade-enter'); }
     if (t) { t.classList.remove('hidden-state'); void t.offsetWidth; t.classList.add('fade-enter'); }
-}
