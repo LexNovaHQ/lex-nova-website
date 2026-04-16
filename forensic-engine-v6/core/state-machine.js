@@ -9,7 +9,6 @@
 // 0. DEPENDENCIES (Hooks into future UI modules)
 // ============================================================================
 import { renderWelcomeScreen } from '../ui/dom-manager.js';
-import { isEngagementAccepted, triggerEngagementModal } from '../ui/legal-firewall.js';
 import { getActiveProspectId } from '../bridge/firebase-adapter.js';
 
 // ============================================================================
