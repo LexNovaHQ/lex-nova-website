@@ -47,14 +47,22 @@ export async function initFirebase() {
         const docRef = doc(db, "prospects", pid);
         const docSnap = await getDoc(docRef);
 
-      if (docSnap.exists()) {
+   if (docSnap.exists()) {
             activeProspectId = pid;
             isWarmLead = true;
-            // THE TREASURE CAPTURE: Grabbing the full object from the vault
-            const prospectData = docSnap.data(); 
-            console.log(`> Warm lead confirmed: ${pid}. Bypassing Cold Gate.`);
-            // THE FULL HANDOFF: Returning the path, ID, and the complete data object
-            return { path: 'WARM', pid: activeProspectId, data: prospectData };
+            const prospectData = docSnap.data();
+
+            // PID CLICK TRACKING: Immediate update to Firestore
+            await updateDoc(docRef, {
+                scannerClicked: true,
+                scannerStep: 'page_loaded',
+                scannerStepAt: serverTimestamp(),
+                status: 'ENGAGED',
+                lastActive: serverTimestamp()
+            });
+
+            console.log(`> Warm lead confirmed & tracked: ${pid}.`);
+            return { path: 'WARM', prospectId: activeProspectId, data: prospectData };
         }
 
     console.log("> Organic traffic detected. Routing to Cold Gate.");
@@ -74,10 +82,10 @@ export async function captureColdLead(email, companyName) {
     const docRef = doc(db, "prospects", newId);
     await setDoc(docRef, {
         email: email,
-        companyName: companyName,
+        company: companyName, // Key: company
         source: "organic_scanner_v6",
         status: "COLD_LEAD",
-        createdAt: serverTimestamp()
+        addedAt: serverTimestamp() // Key: addedAt
     });
 
     activeProspectId = newId;
@@ -96,9 +104,10 @@ export async function saveForensicPayload(vaultInputs, activeGaps) {
     const docRef = doc(db, "prospects", activeProspectId);
     
     await updateDoc(docRef, {
-        vaultInputs: vaultInputs, // The raw Q&A arrays
-        activeGaps: activeGaps,   // The array of Threat_IDs (e.g., ["UNI_HAL_001"])
-        scannerCompletedAt: serverTimestamp(),
+        vaultInputs: vaultInputs,
+        activeGaps: activeGaps,
+        scannerCompleted: true, // Key: scannerCompleted
+        scannerStepAt: serverTimestamp(), // Key: scannerStepAt
         status: "FORENSIC_COMPLETE"
     });
 
@@ -127,7 +136,9 @@ export const Telemetry = {
         try {
             await updateDoc(doc(db, "prospects", activeProspectId), {
                 scannerStep: stepName,
-                lastActive: serverTimestamp()
+                scannerStepAt: serverTimestamp(), // Key: scannerStepAt
+                lastActive: serverTimestamp(),
+                updatedAt: serverTimestamp() // Key: updatedAt
             });
             console.log(`> TELEMETRY: State updated to [${stepName}]`);
         } catch (e) {
@@ -145,6 +156,7 @@ export const Telemetry = {
             await updateDoc(doc(db, "prospects", activeProspectId), {
                 lastQuestionSeen: questionIndex,
                 scannerStep: `quiz_viewing_q${questionIndex}`,
+                scannerStepAt: serverTimestamp(), // Key: scannerStepAt
                 lastActive: serverTimestamp()
             });
         } catch (e) {}
