@@ -6,6 +6,7 @@
 
 import { advanceToQuiz, advanceToDashboard } from '../core/state-machine.js';
 import { buildInterrogationRoute, getNextQuestion, submitAnswer } from '../engine/question-router.js';
+import { Telemetry } from '../bridge/firebase-adapter.js';
 
 // ============================================================================
 // 1. STATE (UI Memory)
@@ -69,7 +70,7 @@ function buildWelcomeIntelCards(prospectData) {
 export function renderWelcomeScreen(prospectData) {
     console.log("> PAINTER: Rendering VIP Lounge with pre-quiz intel...");
 
-    // ALIGNMENT: Using exact keys from the Firestore database
+    // ALIGNMENT: Using founderName as primary, stripping everything except the first name
     const founderFirst = (prospectData.founderName || '').split(' ')[0] || 'there';
     const compName = prospectData.company || 'your company';
     const gapCount = (prospectData.forensicGaps || []).length;
@@ -130,21 +131,20 @@ export function renderWelcomeScreen(prospectData) {
  */
 
 export function initializeGate() {
-    // ALIGNMENT: Matching the new IDs in scanner.html
+    // ALIGNMENT: Re-wired to the gate-submit-btn ID from scanner.html
     const submitBtn = document.getElementById('gate-submit-btn');
     if (!submitBtn) return;
 
     submitBtn.onclick = (e) => {
         e.preventDefault();
         
-        // Grab data from standardized gate IDs
+        // Grab data using the updated v6.0 IDs
         uiState.email = document.getElementById('gate-email').value.trim().toLowerCase();
         uiState.company = document.getElementById('gate-company').value.trim();
         
         localStorage.setItem('ln_email', uiState.email);
         localStorage.setItem('ln_company', uiState.company);
 
-        // Advance through the state machine
         advanceToConfig();
     };
 }
@@ -214,6 +214,10 @@ export function initializeConfig() {
 function paintNextQuestion() {
     const questionData = getNextQuestion();
 
+    // TRACKING: Log the question view to Firestore immediately
+    if (questionData) {
+        Telemetry.logQuestionView(questionData.stepCurrent);
+    }
     // If the Engine returns null, the interrogation is over.
     if (!questionData) {
         console.log("> PAINTER: Interrogation complete. Requesting Dashboard transition.");
