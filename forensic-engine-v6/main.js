@@ -8,7 +8,8 @@
 // Strict ES6 Imports from the isolated subdirectories
 import { validateGovernance } from './config/governance.js';
 import { initFirebase, Telemetry } from './bridge/firebase-adapter.js';
-import { startStateMachine } from './core/state-machine.js';
+// FIXED: This now correctly matches the export in state-machine.js
+import { initStateMachine } from './core/state-machine.js'; 
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("> LEX NOVA FORENSIC ENGINE v6.0 INITIALIZING...");
@@ -20,8 +21,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         // ====================================================================
         // STEP 1: THE KILL SWITCH
         // ====================================================================
-        // Verify the Magna Carta constraints (Pricing, Rates). 
-        // If this throws an error, the system physically refuses to load the Gate.
         if (typeof validateGovernance === 'function') {
             validateGovernance();
             console.log("> Governance verified. Margins protected.");
@@ -30,8 +29,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         // ====================================================================
         // STEP 2: IDENTITY CAPTURE, INTEGRATION & TELEMETRY
         // ====================================================================
-        // Boot Firebase & check for Prospect ID (?pid=) bypass in the URL.
-        // This sets the global state determining if they hit the Cold Gate or VIP Room.
         const identity = await initFirebase();
         console.log(`> Integration Hub connected. Routing Path: [${identity.path}]`);
 
@@ -45,8 +42,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         // ====================================================================
         // STEP 3: FUNNEL HANDOFF
         // ====================================================================
-        // Hand control to the Central Nervous System to render the UI.
-        startStateMachine();
+        // FIXED: Execute the correct function name
+        initStateMachine(identity);
 
         // Kill the loading screen once the routing is complete
         if (loader) {
@@ -61,9 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // ====================================================================
         // PHYSICAL HALT
         // ====================================================================
-        // Protects against broken states, API outages, or hacked pricing.
         if (loader) {
-            // Remove the hidden-state class just in case it was applied before the crash
             loader.classList.remove('hidden-state');
             loader.innerHTML = `
                 <div class="border border-danger/30 bg-danger/10 p-6 rounded-md max-w-md mx-auto mt-10 text-left">
