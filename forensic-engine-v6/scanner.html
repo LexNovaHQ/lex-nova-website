@@ -53,8 +53,33 @@
             <div class="font-serif text-gold text-sm tracking-[0.3em] uppercase animate-pulse">Initializing Diagnostic Engine...</div>
         </div>
 
-        <div id="state-gate" class="hidden-state w-full max-w-xl fade-enter">
+       <div id="state-gate" class="hidden-state w-full max-w-xl fade-enter">
+            <div class="text-center md:text-left bg-[#050505] border border-shadow p-8 md:p-12 relative">
+                <div class="absolute top-0 left-0 w-full bg-[#080808] border-b border-shadow py-3 px-6 flex justify-between items-center">
+                    <span class="text-[9px] uppercase tracking-widest text-marble/50">Security Checkpoint</span>
+                </div>
+                
+                <h2 class="font-serif text-3xl text-marble mb-4 mt-6">Structural Diagnostic</h2>
+                <p class="text-sm text-marble/60 leading-relaxed font-sans mb-8">
+                    Enter your credentials to initiate the AI-driven commercial architecture audit.
+                </p>
+                
+                <div class="space-y-6 mb-8">
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-gold mb-2">Company Name</label>
+                        <input type="text" id="gate-company" class="w-full bg-void border border-shadow text-marble p-4 focus:outline-none focus:border-gold transition-colors font-sans text-sm" placeholder="e.g., Acme Corp">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-gold mb-2">Founder Email</label>
+                        <input type="email" id="gate-email" class="w-full bg-void border border-shadow text-marble p-4 focus:outline-none focus:border-gold transition-colors font-sans text-sm" placeholder="founder@company.com">
+                    </div>
+                </div>
+
+                <button id="gate-submit-btn" class="bg-gold text-void px-8 py-4 font-bold text-xs tracking-widest uppercase hover:bg-marble transition-colors w-full shadow-[0_0_15px_rgba(255,215,0,0.15)]">
+                    Initiate Diagnostic
+                </button>
             </div>
+        </div>
 
         <div id="state-vip" class="hidden-state w-full max-w-3xl text-left fade-enter">
             <h2 id="pid-greeting" class="font-serif text-3xl text-marble mb-2"></h2>
