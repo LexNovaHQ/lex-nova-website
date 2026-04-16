@@ -24,9 +24,9 @@ let uiState = {
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    wireColdGate();
+    initializeGate();
+    initializeConfig();
 });
-
 
 // ============================================================================
 // 3. THE VIP CANVAS (ABM Welcome Screen)
