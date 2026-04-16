@@ -62,7 +62,8 @@ export function initStateMachine(routingInstruction) {
     setTimeout(() => {
         if (routingInstruction && routingInstruction.path === 'WARM') {
             // THE VIP PATH
-            renderWelcomeScreen(routingInstruction.pid);
+            // THE BRIEFCASE HANDOFF: Passing the full data object to the painter
+            renderWelcomeScreen(routingInstruction.data); 
             switchView('state-vip');
         } else {
             // THE STREET PATH
