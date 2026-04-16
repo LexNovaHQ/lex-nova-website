@@ -8,7 +8,6 @@
 // Strict ES6 Imports from the isolated subdirectories
 import { validateGovernance } from './config/governance.js';
 import { initFirebase, Telemetry } from './bridge/firebase-adapter.js';
-// FIXED: This now correctly matches the export in state-machine.js
 import { initStateMachine } from './core/state-machine.js'; 
 import { generateFinalReport } from './engine/scoring-processor.js';
 import { renderDashboard } from './ui/dashboard-renderer.js';
@@ -53,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             loader.classList.add('hidden-state');
         }
 
-        console.log("> IGNITION: Handoff complete. Engine is live.");
+    console.log("> IGNITION: Handoff complete. Engine is live.");
 
         // ====================================================================
         // STEP 4: ORCHESTRATE THE DASHBOARD
@@ -83,7 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.error("> MAIN: Dashboard Orchestration Failed", err);
             }
         });
-
+        
     } catch (error) {
         console.error("> CRITICAL ENGINE FAILURE:", error);
         
