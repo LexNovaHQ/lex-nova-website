@@ -353,3 +353,5 @@ export function renderDashboard(finalReport, prospectData) {
             btn.classList.replace('bg-gold', 'bg-transparent');
         }, 2000);
     });
+
+}
