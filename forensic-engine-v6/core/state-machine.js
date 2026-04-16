@@ -6,7 +6,7 @@
  */
 
 // ============================================================================
-// 0. DEPENDENCIES (Hooks into future UI modules)
+// 0. DEPENDENCIES
 // ============================================================================
 import { renderWelcomeScreen } from '../ui/dom-manager.js';
 import { getActiveProspectId } from '../bridge/firebase-adapter.js';
@@ -16,13 +16,11 @@ import { getActiveProspectId } from '../bridge/firebase-adapter.js';
 // ============================================================================
 // Every major section in scanner.html. Only one can be active at a time.
 const VIEWS = [
-    'view-loader', 
+    'state-loader', 
     'state-gate', 
-    'view-welcome', // Added for the VIP ABM bypass
-    'view-config', 
+    'state-vip', 
     'state-quiz', 
-    'state-dashboard', 
-    'view-checkout'
+    'state-dashboard'
 ];
 
 /**
@@ -57,20 +55,17 @@ function switchView(targetId) {
  * Called by main.js after Firebase connects.
  * Evaluates the routing instruction and opens the correct funnel door.
  */
-export function startStateMachine(routingInstruction) {
+export function initStateMachine(routingInstruction) {
     console.log("> STATE MACHINE: Processing entry credentials...");
 
-    // ADDED: Small delay to let the initial "Loader" pulse run for psychological weight
+    // Small delay to let the initial "Loader" pulse run for psychological weight
     setTimeout(() => {
         if (routingInstruction && routingInstruction.path === 'WARM') {
             // THE VIP PATH
-            // 1. Call the UI Painter to populate the badges & threat data using their ID
             renderWelcomeScreen(routingInstruction.pid);
-            // 2. Open the VIP Lounge
-            switchView('view-welcome');
+            switchView('state-vip');
         } else {
             // THE STREET PATH
-            // Send them to the email capture gate
             switchView('state-gate');
         }
     }, 1500); 
@@ -82,24 +77,23 @@ export function startStateMachine(routingInstruction) {
 
 /**
  * Triggered by dom-manager when a COLD lead submits their email.
+ * (Note: Config logic is now merged directly into the start of the quiz flow)
  */
 export function advanceToConfig() {
-    switchView('view-config');
+    console.log("> STATE MACHINE: Config bypassed in v6.0. Escorting to Quiz.");
+    advanceToQuiz();
 }
 
 /**
- * Triggered by dom-manager when:
- * A) A COLD lead selects their Archetypes on the Config screen.
- * B) A WARM lead clicks "Initiate Diagnostic" from the VIP Welcome screen.
+ * Triggered when users are ready to begin the diagnostic.
  */
 export function advanceToQuiz() {
-    // Scroll to top of window to ensure they see the first question
     window.scrollTo({ top: 0, behavior: 'smooth' });
     switchView('state-quiz');
 }
 
 /**
- * Triggered by scoring-processor when the 10th question is answered.
+ * Triggered by the scoring processor when the final question is answered.
  */
 export function advanceToDashboard() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -112,19 +106,17 @@ export function advanceToDashboard() {
 
 /**
  * Triggered when the user clicks "Secure Architecture" on the Dashboard.
- * physically blocks checkout if the user has not accepted the Terms.
+ * physically routes the user out of the scanner and into the secure Engagement Portal.
  */
-export function advanceToCheckout() {
-    console.log("> STATE MACHINE: Checking Legal Firewall status...");
+export function advanceToCheckout(pid, plan) {
+    console.log("> STATE MACHINE: Checking Legal Firewall routing...");
 
-    if (isEngagementAccepted()) {
-        // The user has already scrolled and accepted. Open the checkout room.
-        console.log("> Firewall cleared. Opening Checkout.");
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        switchView('view-checkout');
-    } else {
-        // The user has NOT accepted. Block the transition and force the Modal.
-        console.warn("> Firewall triggered. Forcing Engagement Letter Modal.");
-        triggerEngagementModal();
+    if (!pid || !plan) {
+        console.error("> BOUNCER ERROR: Missing transaction credentials. Blocked.");
+        return;
     }
+
+    // The user is securely redirected to the v6.0 Engagement Portal
+    console.log(`> Bouncer cleared. Escorting PID [${pid}] to checkout for [${plan}].`);
+    window.location.href = `./engagement.html?pid=${pid}&plan=${plan}`;
 }
