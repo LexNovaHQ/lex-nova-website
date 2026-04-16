@@ -8,7 +8,7 @@
 // Strict ES6 Imports from the isolated subdirectories
 import { validateGovernance } from './config/governance.js';
 import { initFirebase, Telemetry } from './bridge/firebase-adapter.js';
-import { initStateMachine } from './core/state-machine.js';
+import { startStateMachine } from './core/state-machine.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("> LEX NOVA FORENSIC ENGINE v6.0 INITIALIZING...");
