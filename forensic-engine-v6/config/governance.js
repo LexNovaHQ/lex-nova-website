@@ -1,7 +1,7 @@
 /**
  * LEX NOVA HQ — FORENSIC ENGINE v6.0
  * /config/governance.js - The Magna Carta
- * * CRITICAL: This file hardcodes the firm's margin baseline and legal firewall.
+ * * THE SUPREME COMMAND: This file hardcodes the firm's margin baseline and legal firewall.
  * It uses Object.freeze() to physically prevent runtime mutation.
  */
 
