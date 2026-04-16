@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // STEP 3: FUNNEL HANDOFF
         // ====================================================================
         // Hand control to the Central Nervous System to render the UI.
-        await initStateMachine(identity);
+        startStateMachine();
 
         // Kill the loading screen once the routing is complete
         if (loader) {
