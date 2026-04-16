@@ -177,6 +177,9 @@ export function getNextQuestion() {
  * Returns boolean: TRUE if interrogation continues, FALSE if complete.
  */
 export function submitAnswer(selectedOptionIndex) {
+    // GUARD: Refuse to process if the interrogation is already over
+    if (currentQIndex >= currentRoute.length) return false;
+
     const q = currentRoute[currentQIndex];
     const opt = q.options[selectedOptionIndex];
 
