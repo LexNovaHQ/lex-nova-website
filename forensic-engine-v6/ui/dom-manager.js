@@ -264,6 +264,9 @@ async function paintNextQuestion() {
         btn.innerText = opt.t;
         
         btn.onclick = () => {
+            // PREVENT DOUBLE-CLICKS: Instantly freeze UI and show processing state
+            container.innerHTML = '<div class="w-full text-center text-gold text-[10px] uppercase tracking-widest animate-pulse p-5 border border-gold/20 bg-gold/5">Encrypting Response...</div>';
+            
             // Tell the Engine what they clicked
             submitAnswer(index);
             // Recursively paint the next one
