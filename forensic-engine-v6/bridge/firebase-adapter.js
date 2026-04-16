@@ -47,7 +47,7 @@ export async function initFirebase() {
         const docRef = doc(db, "prospects", pid);
         const docSnap = await getDoc(docRef);
 
-   if (docSnap.exists()) {
+        if (docSnap.exists()) {
             activeProspectId = pid;
             isWarmLead = true;
             const prospectData = docSnap.data();
@@ -63,7 +63,10 @@ export async function initFirebase() {
 
             console.log(`> Warm lead confirmed & tracked: ${pid}.`);
             return { path: 'WARM', prospectId: activeProspectId, data: prospectData };
+        } else {
+            console.warn(`> Invalid PID provided: ${pid}. Reverting to Cold Gate.`);
         }
+    }
 
     console.log("> Organic traffic detected. Routing to Cold Gate.");
     return { path: 'COLD' };
