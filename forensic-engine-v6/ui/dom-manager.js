@@ -1,11 +1,10 @@
 /**
  * LEX NOVA HQ — FORENSIC ENGINE v6.0
  * /ui/dom-manager.js - The Painter
- * * THE SUPREME COMMAND: This module handles all DOM manipulation for the front 
- * half of the funnel (Welcome, Gate, Config, Quiz). It does no math.
+ * * THE SUPREME COMMAND: This module strictly handles DOM manipulation and UI wiring.
  */
 
-import { advanceToConfig, advanceToQuiz, advanceToDashboard } from '../core/state-machine.js';
+import { advanceToQuiz, advanceToDashboard } from '../core/state-machine.js';
 import { buildInterrogationRoute, getNextQuestion, submitAnswer } from '../engine/question-router.js';
 
 // ============================================================================
@@ -14,12 +13,21 @@ import { buildInterrogationRoute, getNextQuestion, submitAnswer } from '../engin
 let uiState = {
     email: '',
     company: '',
-    selectedLanes: [],
-    selectedArchs: []
+    selectedLanes: ['commercial', 'operational'], // Default routing for cold traffic
+    selectedArchs: ['creates']
 };
 
 // ============================================================================
-// 2. THE VIP CANVAS (ABM Welcome Screen)
+// 2. BOOTSTRAPPER (Called by main.js or runs automatically)
+// ============================================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    wireColdGate();
+});
+
+
+// ============================================================================
+// 3. THE VIP CANVAS (ABM Welcome Screen)
 // ============================================================================
 
 /**
@@ -111,7 +119,7 @@ export function renderWelcomeScreen(prospectData) {
     }
 }
 // ============================================================================
-// 3. THE COLD CANVAS (Email Gate & Config)
+// 4. THE COLD CANVAS (Email Gate & Config)
 // ============================================================================
 
 /**
@@ -192,7 +200,7 @@ export function initializeConfig() {
 }
 
 // ============================================================================
-// 4. THE INTERROGATION CANVAS (The Quiz UI)
+// 5. THE INTERROGATION CANVAS (The Quiz UI)
 // ============================================================================
 
 /**
