@@ -4,7 +4,7 @@
  * * THE SUPREME COMMAND: This module solely handles the rendering of the final 
  * $72.5M dashboard, the Itemized Receipt, the Threat Matrix, and the Checkouts.
  */
-import { getActiveProspectId } from '../bridge/firebase-adapter.js';
+import { getActiveProspectId, Telemetry } from '../bridge/firebase-adapter.js';
 
 // Your active Make.com webhook for the Hesitation Valve
 const HESITATION_WEBHOOK = "https://hook.eu1.make.com/r77qw3emv27csjq2eag7ibqku1juve4t";
@@ -75,7 +75,7 @@ function applyHostageRule(sortedThreats) {
 
 function buildHeader(prospectData) {
     const compName = prospectData?.company || "Your Company";
-    const founderName = prospectData?.founderName || prospectData?.name || "Founder";
+    const founderName = prospectData?.founderName || "Founder"; // ALIGNMENT: Locked to universal key
     const jurisdiction = prospectData?.jurisdiction || "Global Market";
 
     return `
@@ -293,11 +293,14 @@ export function renderDashboard(finalReport, prospectData) {
 // 4. Wire Event Listeners
 
     // BUTTON 1: THE MONEY (Routes to the Engagement Portal)
-    document.getElementById('trigger-checkout-btn').addEventListener('click', () => {
+    document.getElementById('trigger-checkout-btn').addEventListener('click', async () => {
         const pid = getActiveProspectId();
         const plan = finalReport.prescription;
         
         console.log(`> CHECKOUT: Routing PID [${pid}] to Engagement Portal for [${plan}]`);
+        
+        // TRACKING: Log checkout intent to Firestore before redirecting
+        await Telemetry.logState('checkout_initiated');
         
         // Redirects them to the standalone contract page we built
         window.location.href = `./engagement.html?pid=${pid}&plan=${plan}`;
@@ -320,6 +323,9 @@ export function renderDashboard(finalReport, prospectData) {
         const exposure = finalReport.financials.totalExposure;
         
         console.warn(`> 🚨 ASYNC OUT TRIGGERED: Emailing Partners for ${email}`);
+        
+        // TRACKING: Update Firestore status to reflect hesitation/negotiation
+        await Telemetry.logState('negotiation_requested');
         
         try {
             // Fire the actual payload to your Make.com/Slack setup
