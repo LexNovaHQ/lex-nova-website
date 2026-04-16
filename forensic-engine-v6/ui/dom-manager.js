@@ -7,7 +7,7 @@
 import { advanceToQuiz, advanceToDashboard } from '../core/state-machine.js';
 import { buildInterrogationRoute, getNextQuestion, submitAnswer } from '../engine/question-router.js';
 import { Telemetry, saveForensicPayload } from '../bridge/firebase-adapter.js';
-import { getVaultInputs, getActiveGaps } from '../engine/question-router.js';
+import { getInterrogationPayload } from '../engine/question-router.js';
 
 // ============================================================================
 // 1. STATE (UI Memory)
@@ -225,9 +225,10 @@ async function paintNextQuestion() {
     if (!questionData) {
         console.log("> PAINTER: Interrogation complete. Locking payload to vault...");
         
-        // Fetch the final mathematical state from the router
-        const finalInputs = getVaultInputs();
-        const activeThreats = getActiveGaps();
+        // Fetch the final mathematical state from the master router payload
+        const payload = getInterrogationPayload();
+        const finalInputs = payload.vaultInputs;
+        const activeThreats = payload.activeGaps;
         
         // LOCK THE VAULT: Save to database before leaving the page
         try {
