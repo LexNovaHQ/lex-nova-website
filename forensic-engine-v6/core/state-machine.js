@@ -17,11 +17,11 @@ import { getActiveProspectId } from '../bridge/firebase-adapter.js';
 // Every major section in scanner.html. Only one can be active at a time.
 const VIEWS = [
     'view-loader', 
-    'view-gate', 
+    'state-gate', 
     'view-welcome', // Added for the VIP ABM bypass
     'view-config', 
-    'view-quiz', 
-    'view-dashboard', 
+    'state-quiz', 
+    'state-dashboard', 
     'view-checkout'
 ];
 
@@ -71,7 +71,7 @@ export function startStateMachine(routingInstruction) {
         } else {
             // THE STREET PATH
             // Send them to the email capture gate
-            switchView('view-gate');
+            switchView('state-gate');
         }
     }, 1500); 
 }
@@ -95,7 +95,7 @@ export function advanceToConfig() {
 export function advanceToQuiz() {
     // Scroll to top of window to ensure they see the first question
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    switchView('view-quiz');
+    switchView('state-quiz');
 }
 
 /**
@@ -103,7 +103,7 @@ export function advanceToQuiz() {
  */
 export function advanceToDashboard() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    switchView('view-dashboard');
+    switchView('state-dashboard');
 }
 
 // ============================================================================
