@@ -10,6 +10,9 @@ import { validateGovernance } from './config/governance.js';
 import { initFirebase, Telemetry } from './bridge/firebase-adapter.js';
 // FIXED: This now correctly matches the export in state-machine.js
 import { initStateMachine } from './core/state-machine.js'; 
+import { generateFinalReport } from './engine/scoring-processor.js';
+import { renderDashboard } from './ui/dashboard-renderer.js';
+import { getInterrogationPayload } from './engine/question-router.js'; 
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("> LEX NOVA FORENSIC ENGINE v6.0 INITIALIZING...");
@@ -51,6 +54,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         console.log("> IGNITION: Handoff complete. Engine is live.");
+
+        // ====================================================================
+        // STEP 4: ORCHESTRATE THE DASHBOARD
+        // ====================================================================
+        document.addEventListener('LnDiagnosticComplete', async (e) => {
+            console.log("> MAIN: Diagnostic Complete caught. Waking up Actuary...");
+            
+            try {
+                // 1. Get the payload and lanes
+                const lanes = e.detail.lanes || ['commercial'];
+                const payload = getInterrogationPayload();
+                
+                // 2. Fetch the Threat Registry (The Intelligence Database)
+                const registryReq = await fetch('./data/registry.json');
+                const registryData = await registryReq.json();
+                
+                // 3. Extract jurisdictional surfaces (Default to B2B Enterprise if null)
+                const surfaces = identity?.data?.jurisdictional_surface || ['EXT.09']; 
+                
+                // 4. Run the Actuarial Math
+                const finalReport = generateFinalReport(payload, lanes, surfaces, registryData);
+                
+                // 5. Paint the final UI Canvas
+                renderDashboard(finalReport, identity?.data || {});
+                
+            } catch (err) {
+                console.error("> MAIN: Dashboard Orchestration Failed", err);
+            }
+        });
 
     } catch (error) {
         console.error("> CRITICAL ENGINE FAILURE:", error);
