@@ -175,14 +175,25 @@ export function generateFinalReport(interrogationState, selectedLanes, trippedSu
         registryData
     );
 
-    // 2. Package the final report for the UI Renderer (The Painter)
+   // 2. Package the final report for the UI Renderer (The Painter)
     const finalReport = {
         totalScore: interrogationState.totalScore, // Raw point severity
         unsureFlag: interrogationState.unsureFlag, // Did they answer "I don't know"?
         activeGapsCount: interrogationState.activeGaps.length,
         financials: financialData,
         prescription: determinePrescription(selectedLanes),
-        rawConfessions: interrogationState.vaultInputs
+        rawConfessions: interrogationState.vaultInputs,
+        
+        // THE FIX: Reconstruct the full threat objects for the Dashboard Matrix
+        sortedThreats: financialData.receiptLines.map(line => {
+            const threatDef = registryData.threats[line.threatId] || {};
+            return {
+                ...threatDef, // Brings in the copywriting, mechanism, and fix text
+                threatId: line.threatId,
+                threatName: line.threatName,
+                calculatedSeverity: line.tier // Maps to what the Hostage Rule expects
+            };
+        })
     };
 
     // Console Logging for systemic validation
