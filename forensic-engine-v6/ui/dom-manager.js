@@ -70,7 +70,8 @@ function buildWelcomeIntelCards(prospectData) {
 export function renderWelcomeScreen(prospectData) {
     console.log("> PAINTER: Rendering VIP Lounge with pre-quiz intel...");
 
-    // ALIGNMENT: Using founderName as primary, stripping everything except the first name
+  
+    // ALIGNMENT: Lock to Universal Key 'founderName'
     const founderFirst = (prospectData.founderName || '').split(' ')[0] || 'there';
     const compName = prospectData.company || 'your company';
     const gapCount = (prospectData.forensicGaps || []).length;
