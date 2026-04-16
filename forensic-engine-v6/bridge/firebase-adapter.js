@@ -1,6 +1,6 @@
 /**
  * LEX NOVA HQ — FORENSIC ENGINE v6.0
- * /bridge/firebase-adapter.js - The Integration Hub
+ * /bridge/firebase-adapter.js - The Integration Hub & Telemetry Radar
  * * THE SUPREME COMMAND: This is the ONLY file authorized to touch the database.
  */
 
@@ -112,3 +112,64 @@ export async function saveForensicPayload(vaultInputs, activeGaps) {
 export function getActiveProspectId() {
     return activeProspectId;
 }
+
+// ============================================================================
+// 4. TELEMETRY RADAR (Micro & Macro Tracking)
+// ============================================================================
+
+export const Telemetry = {
+    /**
+     * MACRO TRACKING: page_loaded, dashboard_viewed, checkout_initiated
+     */
+    logState: async (stepName) => {
+        if (!activeProspectId) return; // Automatically uses the ID captured in Section 2
+        
+        try {
+            await updateDoc(doc(db, "prospects", activeProspectId), {
+                scannerStep: stepName,
+                lastActive: serverTimestamp()
+            });
+            console.log(`> TELEMETRY: State updated to [${stepName}]`);
+        } catch (e) {
+            console.warn("> TELEMETRY: Failed to log macro state", e);
+        }
+    },
+
+    /**
+     * MICRO TRACKING: Exact question drop-off (e.g., lastQuestionSeen: 4)
+     */
+    logQuestionView: async (questionIndex) => {
+        if (!activeProspectId) return;
+        
+        try {
+            await updateDoc(doc(db, "prospects", activeProspectId), {
+                lastQuestionSeen: questionIndex,
+                scannerStep: `quiz_viewing_q${questionIndex}`,
+                lastActive: serverTimestamp()
+            });
+        } catch (e) {}
+    },
+
+    /**
+     * MICRO TRACKING: Live Answers (Records what they clicked before they finish)
+     */
+    logAnswer: async (questionIndex, questionText, answerText, penaltyScore) => {
+        if (!activeProspectId) return;
+
+        // We use dot notation to build a live map of answers in Firebase.
+        const answerPayload = {
+            [`liveAnswers.q${questionIndex}`]: {
+                question: questionText,
+                answer: answerText,
+                penalty: penaltyScore,
+                answeredAt: new Date().toISOString()
+            },
+            lastActive: serverTimestamp()
+        };
+
+        try {
+            await updateDoc(doc(db, "prospects", activeProspectId), answerPayload);
+            console.log(`> TELEMETRY: Logged Answer for Q${questionIndex}`);
+        } catch (e) {}
+    }
+};
