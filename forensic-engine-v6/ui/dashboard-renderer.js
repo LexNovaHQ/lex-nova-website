@@ -4,7 +4,10 @@
  * * THE SUPREME COMMAND: This module solely handles the rendering of the final 
  * $72.5M dashboard, the Itemized Receipt, the Threat Matrix, and the Checkouts.
  */
+import { getActiveProspectId } from '../bridge/firebase-adapter.js';
 
+// Your active Make.com webhook for the Hesitation Valve
+const HESITATION_WEBHOOK = "https://hook.eu1.make.com/r77qw3emv27csjq2eag7ibqku1juve4t";
 // ============================================================================
 // 1. STATE & CONSTANTS
 // ============================================================================
@@ -287,29 +290,60 @@ export function renderDashboard(finalReport, prospectData) {
         </div>
     </div>`;
 
-    // 4. Wire Event Listeners
+// 4. Wire Event Listeners
+
+    // BUTTON 1: THE MONEY (Routes to the Engagement Portal)
     document.getElementById('trigger-checkout-btn').addEventListener('click', () => {
-        // Assume integration with Stripe/Checkout logic here (Module 11)
-        console.log("> CHECKOUT INITIATED");
+        const pid = getActiveProspectId();
+        const plan = finalReport.prescription;
+        
+        console.log(`> CHECKOUT: Routing PID [${pid}] to Engagement Portal for [${plan}]`);
+        
+        // Redirects them to the standalone contract page we built
+        window.location.href = `./engagement.html?pid=${pid}&plan=${plan}`;
     });
 
+    // BUTTON 2: THE HESITATION VALVE (Opens Modal)
     document.getElementById('trigger-valve-btn').addEventListener('click', () => {
         document.getElementById('hesitation-modal').classList.remove('hidden');
     });
 
-    document.getElementById('confirm-valve-btn').addEventListener('click', (e) => {
-        e.target.innerText = "REQUEST SENT.";
-        e.target.classList.replace('text-gold', 'text-void');
-        e.target.classList.replace('bg-transparent', 'bg-gold');
+    // BUTTON 3: THE ASYNC OUT (Fires Webhook & Closes Modal)
+    document.getElementById('confirm-valve-btn').addEventListener('click', async (e) => {
+        const btn = e.target;
+        btn.innerText = "REQUEST SENT.";
+        btn.classList.replace('text-gold', 'text-void');
+        btn.classList.replace('bg-transparent', 'bg-gold');
         
-        console.warn(`> 🚨 ASYNC OUT TRIGGERED: Emailing Partners for ${prospectData?.email || 'Prospect'}`);
-        // Insert Make.com webhook fetch here
+        const pid = getActiveProspectId();
+        const email = prospectData?.email || "Unknown";
+        const exposure = finalReport.financials.totalExposure;
         
+        console.warn(`> 🚨 ASYNC OUT TRIGGERED: Emailing Partners for ${email}`);
+        
+        try {
+            // Fire the actual payload to your Make.com/Slack setup
+            await fetch(HESITATION_WEBHOOK, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    event: "HESITATION_VALVE_TRIGGERED",
+                    prospectId: pid,
+                    email: email,
+                    company: prospectData?.company || "Unknown",
+                    calculatedExposure: exposure,
+                    timestamp: new Date().toISOString()
+                })
+            });
+        } catch (err) {
+            console.error("> Webhook failed, but UI will proceed.", err);
+        }
+        
+        // Dismiss the modal gracefully
         setTimeout(() => {
             document.getElementById('hesitation-modal').classList.add('hidden');
-            e.target.innerText = "Flag Matrix For Review";
-            e.target.classList.replace('text-void', 'text-gold');
-            e.target.classList.replace('bg-gold', 'bg-transparent');
+            btn.innerText = "Flag Matrix For Review";
+            btn.classList.replace('text-void', 'text-gold');
+            btn.classList.replace('bg-gold', 'bg-transparent');
         }, 2000);
     });
-}
