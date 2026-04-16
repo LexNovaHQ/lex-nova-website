@@ -69,13 +69,16 @@ function buildWelcomeIntelCards(prospectData) {
 export function renderWelcomeScreen(prospectData) {
     console.log("> PAINTER: Rendering VIP Lounge with pre-quiz intel...");
 
-    const founderFirst = (prospectData.founderName || prospectData.name || '').split(' ')[0] || 'there';
+    // ALIGNMENT: Using exact keys from the Firestore database
+    const founderFirst = (prospectData.founderName || '').split(' ')[0] || 'there';
     const compName = prospectData.company || 'your company';
     const gapCount = (prospectData.forensicGaps || []).length;
 
     // Paint the text
-    document.getElementById('pid-greeting').innerText = `Hi ${founderFirst},`;
-    document.getElementById('pid-headline').innerText = `${compName}'s AI Architecture Audit`;
+    const greetingEl = document.getElementById('pid-greeting');
+    const headlineEl = document.getElementById('pid-headline');
+    if (greetingEl) greetingEl.innerText = `Hi ${founderFirst},`;
+    if (headlineEl) headlineEl.innerText = `${compName}'s AI Architecture Audit`;
 
     // Paint the Threat Badges & Intel
     if (gapCount > 0) {
@@ -125,21 +128,23 @@ export function renderWelcomeScreen(prospectData) {
 /**
  * Wires up the cold traffic email capture form.
  */
-export function initializeGate() {
-    const form = document.getElementById('entry-form');
-    if (!form) return;
 
-    form.onsubmit = (e) => {
+export function initializeGate() {
+    // ALIGNMENT: Matching the new IDs in scanner.html
+    const submitBtn = document.getElementById('gate-submit-btn');
+    if (!submitBtn) return;
+
+    submitBtn.onclick = (e) => {
         e.preventDefault();
         
-        // Grab data and store it
-        uiState.email = document.getElementById('entry-email').value.trim().toLowerCase();
-        uiState.company = document.getElementById('entry-company').value.trim();
+        // Grab data from standardized gate IDs
+        uiState.email = document.getElementById('gate-email').value.trim().toLowerCase();
+        uiState.company = document.getElementById('gate-company').value.trim();
         
         localStorage.setItem('ln_email', uiState.email);
         localStorage.setItem('ln_company', uiState.company);
 
-        // Tell the Head of Security to move them to the next room
+        // Advance through the state machine
         advanceToConfig();
     };
 }
