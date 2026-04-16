@@ -6,7 +6,8 @@
 
 import { advanceToQuiz, advanceToDashboard } from '../core/state-machine.js';
 import { buildInterrogationRoute, getNextQuestion, submitAnswer } from '../engine/question-router.js';
-import { Telemetry } from '../bridge/firebase-adapter.js';
+import { Telemetry, saveForensicPayload } from '../bridge/firebase-adapter.js';
+import { getVaultInputs, getActiveGaps } from '../engine/question-router.js';
 
 // ============================================================================
 // 1. STATE (UI Memory)
@@ -212,16 +213,30 @@ export function initializeConfig() {
 /**
  * Asks the Engine for the next question and paints it.
  */
-function paintNextQuestion() {
+async function paintNextQuestion() {
     const questionData = getNextQuestion();
 
     // TRACKING: Log the question view to Firestore immediately
     if (questionData) {
         Telemetry.logQuestionView(questionData.stepCurrent);
     }
+    
     // If the Engine returns null, the interrogation is over.
     if (!questionData) {
-        console.log("> PAINTER: Interrogation complete. Requesting Dashboard transition.");
+        console.log("> PAINTER: Interrogation complete. Locking payload to vault...");
+        
+        // Fetch the final mathematical state from the router
+        const finalInputs = getVaultInputs();
+        const activeThreats = getActiveGaps();
+        
+        // LOCK THE VAULT: Save to database before leaving the page
+        try {
+            await saveForensicPayload(finalInputs, activeThreats);
+        } catch (e) {
+            console.error("> PAINTER: Failed to save forensic payload", e);
+        }
+
+        console.log("> PAINTER: Payload secured. Requesting Dashboard transition.");
         advanceToDashboard();
         
         // Fire an event so Module 10 (Dashboard Renderer) knows to wake up and paint the math
