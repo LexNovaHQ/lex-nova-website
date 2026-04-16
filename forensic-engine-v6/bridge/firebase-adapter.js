@@ -47,15 +47,15 @@ export async function initFirebase() {
         const docRef = doc(db, "prospects", pid);
         const docSnap = await getDoc(docRef);
 
-        if (docSnap.exists()) {
+      if (docSnap.exists()) {
             activeProspectId = pid;
             isWarmLead = true;
+            // THE TREASURE CAPTURE: Grabbing the full object from the vault
+            const prospectData = docSnap.data(); 
             console.log(`> Warm lead confirmed: ${pid}. Bypassing Cold Gate.`);
-            return { path: 'WARM', pid: activeProspectId };
-        } else {
-            console.warn(`> Invalid PID provided: ${pid}. Reverting to Cold Gate.`);
+            // THE FULL HANDOFF: Returning the path, ID, and the complete data object
+            return { path: 'WARM', pid: activeProspectId, data: prospectData };
         }
-    }
 
     console.log("> Organic traffic detected. Routing to Cold Gate.");
     return { path: 'COLD' };
