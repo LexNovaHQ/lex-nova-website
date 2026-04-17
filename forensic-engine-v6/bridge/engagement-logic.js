@@ -44,7 +44,11 @@ const PLAN_DATA = {
     workplace_shield: { name: "The Workplace Shield", price: 1500, tier: "Kit",    delivery: "48 hours from Vault activation" },
     complete_stack:   { name: "The Complete Stack",   price: 2500, tier: "Bundle", delivery: "72 hours from Vault activation" }
 };
-
+const KITS = {
+    agentic_shield:   ['DOC_TOS','DOC_AGT','DOC_AUP','DOC_DPA','DOC_SLA','DOC_PP','DOC_PBK'],
+    workplace_shield: ['DOC_HND','DOC_IP','DOC_SOP','DOC_DPIA','DOC_SCAN','DOC_PBK'],
+    complete_stack:   ['DOC_TOS','DOC_AGT','DOC_AUP','DOC_DPA','DOC_SLA','DOC_PP','DOC_HND','DOC_IP','DOC_DPIA','DOC_PBK']
+};
 // ============================================================================
 // 3. STATE
 // ============================================================================
