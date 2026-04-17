@@ -2,30 +2,31 @@
  * LEX NOVA HQ — FORENSIC ENGINE v6.0
  * /bridge/engagement-logic.js - The Closer
  *
- * FIXES v2.0:
- * - Firebase config inlined (removed broken import from governance.js)
- * - All duplicate IDs use querySelectorAll + forEach (not getElementById)
- * - founderName fallback hardened
- * - Script is now fully self-contained — no external imports required
+ * FIXED v2.1:
+ * 1. Firebase config inlined — removed broken governance.js import
+ * 2. Scroll detection uses Math.ceil() — fixes float precision bug that kept button locked
+ * 3. Auto-unlocks if content is too short to scroll (scrollHeight <= clientHeight)
+ * 4. Uses classList.add('hidden') not 'hidden-state' — correct for engagement.html
+ * 5. All duplicate IDs use querySelectorAll, not getElementById
  */
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { initializeApp }                                       from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 // ============================================================================
-// 1. FIREBASE CONFIG (inlined — do not import from governance.js)
+// 1. FIREBASE CONFIG — inlined, do NOT import from governance.js
 // ============================================================================
 const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
-    authDomain: "lexnova-hq.firebaseapp.com",
-    projectId: "lexnova-hq",
-    storageBucket: "lexnova-hq.firebasestorage.app",
+    apiKey:            "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
+    authDomain:        "lexnova-hq.firebaseapp.com",
+    projectId:         "lexnova-hq",
+    storageBucket:     "lexnova-hq.firebasestorage.app",
     messagingSenderId: "539475214055",
-    appId: "1:539475214055:web:c01a99ec94ff073a9b6c42"
+    appId:             "1:539475214055:web:c01a99ec94ff073a9b6c42"
 };
 
 const app = initializeApp(FIREBASE_CONFIG);
-const db = getFirestore(app);
+const db  = getFirestore(app);
 
 // ============================================================================
 // 2. CONSTANTS
@@ -52,37 +53,32 @@ let activePlanId = null;
 let prospectId   = null;
 
 // ============================================================================
-// 4. HELPERS — safe DOM writers
+// 4. DOM HELPERS
 // ============================================================================
 
-/**
- * Sets innerText on a single element by ID.
- * Safe no-op if element doesn't exist.
- */
+/** Sets innerText on one element by ID. Safe no-op if missing. */
 function setById(id, value) {
     const el = document.getElementById(id);
     if (el) el.innerText = value;
 }
 
-/**
- * Sets innerText on ALL elements matching a selector.
- * Handles duplicate IDs and class-based selectors.
- */
+/** Sets innerText on ALL elements matching selector (handles duplicate IDs). */
 function setAll(selector, value) {
     document.querySelectorAll(selector).forEach(el => { el.innerText = value; });
 }
 
 // ============================================================================
-// 5. INITIALIZATION
+// 5. INIT
 // ============================================================================
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("> CLOSER: Engagement Portal Initialized.");
+    console.log("> CLOSER: Engagement Portal v2.1 initialized.");
 
     const urlParams  = new URLSearchParams(window.location.search);
     prospectId   = urlParams.get('pid');
     activePlanId = urlParams.get('plan') || 'complete_stack';
 
     if (!prospectId || !PLAN_DATA[activePlanId]) {
+        console.error("> CLOSER: Missing pid or plan in URL.");
         alert("Invalid engagement link. Please contact Lex Nova at shwetabh.singh@lexnovahq.com");
         return;
     }
@@ -98,21 +94,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert("Engagement record not found. Please contact Lex Nova.");
         }
     } catch (err) {
-        console.error("> CLOSER: Database connection failed.", err);
-        alert("Connection error. Please try again or contact Lex Nova.");
+        console.error("> CLOSER: Database error:", err);
+        alert("Connection error. Please refresh or contact Lex Nova.");
     }
 });
 
 // ============================================================================
-// 6. THE INJECTOR
+// 6. CONTRACT INJECTION
 // ============================================================================
 function injectContractData() {
     const pd = PLAN_DATA[activePlanId];
 
     const today = new Date().toLocaleDateString('en-GB', {
-        day:   '2-digit',
-        month: 'long',
-        year:  'numeric'
+        day: '2-digit', month: 'long', year: 'numeric'
     });
 
     const company     = prospectData.company     || "[Client Company]";
@@ -121,24 +115,22 @@ function injectContractData() {
     const email       = prospectData.email        || "[Client Email]";
     const refCode     = `LN-2026-${prospectId.toUpperCase()}`;
 
-    // ── Dates ──────────────────────────────────────────────────────────
-    // el-date appears TWICE in the HTML — use querySelectorAll
-    setAll('#el-date', today);
+    // Dates — el-date appears TWICE, use querySelectorAll
+    setAll('#el-date',        today);
     setAll('.el-date-footer', today);
 
-    // ── Names (single IDs — safe to use getElementById via setById) ────
+    // Single IDs
     setById('el-client-name',  company);
     setById('el-contact',      founderName);
     setById('el-client-email', email);
     setById('el-dear',         firstName);
 
-    // ── el-client-body appears TWICE ──────────────────────────────────
-    setAll('#el-client-body', company);
+    // Duplicate IDs — use querySelectorAll
+    setAll('#el-client-body', company);       // appears twice
+    setAll('.el-ref-number',  refCode);       // appears three times (also class-based)
+    setAll('.el-client-footer', company);
 
-    // ── el-ref-number appears THREE TIMES ─────────────────────────────
-    setAll('.el-ref-number', refCode);
-
-    // ── Plan details ──────────────────────────────────────────────────
+    // Schedule A fields
     setById('el-sa-client',   company);
     setById('el-sa-date',     today);
     setById('el-sa-tier',     pd.tier);
@@ -146,88 +138,114 @@ function injectContractData() {
     setById('el-sa-fee',      `$${pd.price.toLocaleString()} USD`);
     setById('el-sa-delivery', pd.delivery);
 
-    // ── Footer client name (class-based — multiple elements) ──────────
-    setAll('.el-client-footer', company);
-
-    // ── Page-level reference number ───────────────────────────────────
-    // This is the one in the page header (outside the scrollable contract)
-    // Already handled by .el-ref-number selector above
-
-    console.log(`> CLOSER: Contract injected for [${company}] | Plan: [${pd.name}] | Ref: [${refCode}]`);
+    console.log(`> CLOSER: Injected — Company: [${company}] | Plan: [${pd.name}] | Ref: [${refCode}]`);
 }
 
 // ============================================================================
-// 7. FRICTION LOCK (Scroll to Accept)
+// 7. FRICTION LOCK — Float-safe scroll detection
 // ============================================================================
 function wireFrictionLock() {
-    const scrollContainer  = document.getElementById('engagement-scroll-container');
-    const acceptBtn        = document.getElementById('accept-pay-btn');
-    const scrollInstruction = document.getElementById('scroll-instruction');
+    const scrollEl  = document.getElementById('engagement-scroll-container');
+    const btn       = document.getElementById('accept-pay-btn');
+    const scrollMsg = document.getElementById('scroll-instruction');
 
-    if (!scrollContainer || !acceptBtn) {
-        console.error("> CLOSER: DOM elements missing for friction lock.");
+    if (!scrollEl || !btn) {
+        console.error("> CLOSER: Friction lock elements not found in DOM.");
         return;
     }
 
-    // Locked state
-    acceptBtn.disabled = true;
-    acceptBtn.classList.add('opacity-50', 'cursor-not-allowed', 'bg-shadow', 'text-marble/30');
-    acceptBtn.classList.remove('bg-gold', 'text-void', 'hover:bg-marble', 'cursor-pointer');
+    // Start locked
+    setLocked(btn, true);
 
-    const unlock = () => {
-        // 20px buffer for zoom/rendering variance
-        const atBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop
-            <= scrollContainer.clientHeight + 20;
+    /**
+     * Float-safe bottom detection.
+     *
+     * scrollTop is a float in modern browsers (e.g. 4823.666...).
+     * Original check: scrollHeight - scrollTop <= clientHeight + 20
+     * fails because float arithmetic never quite reaches the integer target.
+     *
+     * Fix: Math.ceil() collapses the float upward, then compare with a
+     * generous 50px buffer to account for zoom levels and rendering variance.
+     * Also auto-unlocks if content isn't tall enough to require scrolling.
+     */
+    const isAtBottom = () => {
+        const scrolledTo = Math.ceil(scrollEl.scrollTop + scrollEl.clientHeight);
+        const totalHeight = scrollEl.scrollHeight;
 
-        if (atBottom) {
-            acceptBtn.disabled = false;
-            acceptBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-shadow', 'text-marble/30');
-            acceptBtn.classList.add('bg-gold', 'text-void', 'hover:bg-marble', 'cursor-pointer');
+        // Not scrollable (content fits without scrolling) → unlock immediately
+        if (totalHeight <= scrollEl.clientHeight + 5) return true;
 
-            if (scrollInstruction) scrollInstruction.classList.add('hidden');
-            scrollContainer.removeEventListener('scroll', unlock);
+        // Scrolled far enough (50px buffer)
+        return scrolledTo >= totalHeight - 50;
+    };
 
-            console.log("> CLOSER: Document read confirmed. Pay button unlocked.");
+    // Check immediately on wire (handles non-scrollable content)
+    if (isAtBottom()) {
+        unlock(btn, scrollMsg);
+        return;
+    }
+
+    const onScroll = () => {
+        if (isAtBottom()) {
+            unlock(btn, scrollMsg);
+            scrollEl.removeEventListener('scroll', onScroll);
         }
     };
 
-    scrollContainer.addEventListener('scroll', unlock);
-    acceptBtn.addEventListener('click', executeTransaction);
+    scrollEl.addEventListener('scroll', onScroll);
+    btn.addEventListener('click', executeTransaction);
+}
+
+function setLocked(btn, locked) {
+    btn.disabled = locked;
+    if (locked) {
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+        btn.classList.remove('bg-gold', 'text-void', 'hover:bg-marble', 'cursor-pointer');
+        btn.classList.add('bg-shadow', 'text-marble/30');
+    } else {
+        btn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-shadow', 'text-marble/30');
+        btn.classList.add('bg-gold', 'text-void', 'hover:bg-marble', 'cursor-pointer');
+    }
+}
+
+function unlock(btn, scrollMsg) {
+    setLocked(btn, false);
+    // Use 'hidden' — engagement.html does not have .hidden-state CSS rule
+    if (scrollMsg) scrollMsg.classList.add('hidden');
+    console.log("> CLOSER: Document read confirmed. Payment button unlocked.");
 }
 
 // ============================================================================
-// 8. THE CLOSER (Transaction Execution)
+// 8. TRANSACTION EXECUTION
 // ============================================================================
 async function executeTransaction() {
     const btn = document.getElementById('accept-pay-btn');
     if (!btn || btn.disabled) return;
 
-    btn.disabled   = true;
-    btn.innerText  = "SECURING ARCHITECTURE...";
-    btn.classList.add('opacity-50', 'cursor-not-allowed');
+    btn.disabled  = true;
+    btn.innerText = "SECURING ARCHITECTURE...";
+    btn.classList.add('opacity-75', 'cursor-not-allowed');
 
     const pd      = PLAN_DATA[activePlanId];
     const refCode = `LN-2026-${prospectId.toUpperCase()}`;
 
-    const transactionPayload = {
-        email:                 prospectData.email,
-        company:               prospectData.company,
-        founderName:           prospectData.founderName || prospectData.name || "Unknown",
-        plan:                  activePlanId,
-        planName:              pd.name,
-        price:                 pd.price,
-        status:                "hot_payment_pending",
-        elAccepted:            true,
-        elAcceptedAt:          new Date().toISOString(),
-        elAcceptedForPlan:     activePlanId,
-        engagementReference:   refCode,
-        lastUpdated:           new Date().toISOString()
+    const payload = {
+        email:               prospectData.email,
+        company:             prospectData.company,
+        founderName:         prospectData.founderName || prospectData.name || "Unknown",
+        plan:                activePlanId,
+        planName:            pd.name,
+        price:               pd.price,
+        status:              "hot_payment_pending",
+        elAccepted:          true,
+        elAcceptedAt:        new Date().toISOString(),
+        elAcceptedForPlan:   activePlanId,
+        engagementReference: refCode
     };
 
     try {
-        console.log("> CLOSER: Writing transaction to Firebase...");
+        console.log("> CLOSER: Writing to Firebase...");
 
-        // Update prospect record
         await setDoc(doc(db, "prospects", prospectId), {
             status:            "hot_payment_pending",
             elAccepted:        true,
@@ -236,31 +254,25 @@ async function executeTransaction() {
             engagementRef:     refCode
         }, { merge: true });
 
-        // Write/update leads record
-        const safeEmailId = prospectData.email
-            ? prospectData.email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase()
-            : prospectId;
+        const safeId = (prospectData.email || prospectId)
+            .replace(/[^a-zA-Z0-9@._-]/g, '')
+            .toLowerCase();
 
-        await setDoc(doc(db, "leads", safeEmailId), transactionPayload, { merge: true });
+        await setDoc(doc(db, "leads", safeId), payload, { merge: true });
 
-        // Fire Make.com webhook
         await fetch(CHECKOUT_WEBHOOK, {
             method:  "POST",
             headers: { "Content-Type": "application/json" },
-            body:    JSON.stringify({
-                ...transactionPayload,
-                timestamp: new Date().toISOString(),
-                trigger:   "Engagement Letter Accepted"
-            })
+            body:    JSON.stringify({ ...payload, trigger: "EL Accepted", timestamp: new Date().toISOString() })
         });
 
-        console.log("> CLOSER: Firebase + Webhook complete. Routing to payment.");
+        console.log("> CLOSER: Firebase + Webhook complete.");
 
     } catch (err) {
         // Non-blocking — proceed to payment even if logging fails
-        console.error("> CLOSER: Transaction logging failed (proceeding to payment):", err);
+        console.error("> CLOSER: Logging error (proceeding anyway):", err);
     }
 
-    // Redirect to payment processor
+    console.log("> CLOSER: Routing to payment processor.");
     window.location.href = PAYMENT_LINKS[activePlanId];
 }
