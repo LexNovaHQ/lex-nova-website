@@ -57,6 +57,14 @@ const KITS = {
 // ============================================================================
 // 2. HELPER FUNCTIONS & SEVERITY STYLING
 // ============================================================================
+
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function sevClasses(s) {
+
 function sevClasses(s) {
     if (s === 'T1') return 'bg-danger/10 text-danger border border-danger/20';
     if (s === 'T2') return 'bg-orange-500/10 text-orange-500 border border-orange-500/20';
@@ -158,12 +166,12 @@ function buildIndictmentsAndGhosts(prospectData) {
     if (!prospectData) return '';
     let html = `<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">`;
 
-    if (prospectData.posture_alibi) {
+if (prospectData.posture_alibi) {
         html += `
         <div class="bg-[#050505] border border-white/5 p-6 shadow-[inset_0_0_20px_rgba(255,215,0,0.02)]">
             <p class="text-[9px] tracking-widest text-gold uppercase font-bold mb-3">⊘ INVALID DEFENSE POSTURE (Ghost Protection)</p>
-            <p class="text-[11px] text-marble/50 italic mb-2">"But we have ${prospectData.posture_alibi.evidence?.[0]?.what_it_proves || 'an enterprise MSA'}..."</p>
-            <p class="text-xs text-danger font-mono leading-relaxed border-l-2 border-danger pl-3">${prospectData.posture_alibi.argument}</p>
+            <p class="text-[11px] text-marble/50 italic mb-2">"But we have ${escapeHTML(prospectData.posture_alibi.evidence?.[0]?.what_it_proves || 'an enterprise MSA')}..."</p>
+            <p class="text-xs text-danger font-mono leading-relaxed border-l-2 border-danger pl-3">${escapeHTML(prospectData.posture_alibi.argument)}</p>
         </div>`;
     }
 
@@ -172,8 +180,8 @@ function buildIndictmentsAndGhosts(prospectData) {
         html += `
         <div class="bg-[#050505] border border-white/5 p-6 shadow-[inset_0_0_20px_rgba(220,38,38,0.02)]">
             <p class="text-[9px] tracking-widest text-gold uppercase font-bold mb-3">⚠ PUBLIC CONTRADICTION (Self-Indictment)</p>
-            <p class="text-[11px] text-marble/50 italic mb-2">Marketing Claim: "${ind.quote}"</p>
-            <p class="text-xs text-orange-500 font-mono leading-relaxed border-l-2 border-orange-500 pl-3">LEGAL REALITY: ${ind.contradicts}</p>
+            <p class="text-[11px] text-marble/50 italic mb-2">Marketing Claim: "${escapeHTML(ind.quote)}"</p>
+            <p class="text-xs text-orange-500 font-mono leading-relaxed border-l-2 border-orange-500 pl-3">LEGAL REALITY: ${escapeHTML(ind.contradicts)}</p>
         </div>`;
     }
     html += `</div>`;
@@ -197,12 +205,15 @@ function buildEvidenceData(g) {
     }
 
     // Extract Scraped Evidence if it exists
-    const found = g.evidence?.found || g.evidence?.source || '';
+    const rawFound = g.evidence?.found || g.evidence?.source || '';
+    // Apply the HTML Escaper to prevent silent DOM crashes
+    const found = escapeHTML(rawFound.substring(0, 200) + (rawFound.length > 200 ? '...' : ''));
+
     if (found) {
         evBlock = `
-        <div class="mt-3 p-3 bg-[#000000] border border-white/10 font-mono text-[9px] text-marble/60 leading-relaxed">
+        <div class="mt-3 p-3 bg-[#000000] border border-white/10 font-mono text-[9px] text-marble/60 leading-relaxed break-words whitespace-pre-wrap">
             <span class="text-gold font-bold block mb-1">&gt; SCRAPED EVIDENCE:</span> 
-            ${found.substring(0,180)}${found.length>180?'...':''}
+            ${found}
         </div>`;
     }
 
@@ -496,6 +507,7 @@ export function renderDashboard(finalReport, prospectData) {
             })
         }).catch(() => {});
         
+        // Dismiss the modal gracefully
         setTimeout(() => {
             document.getElementById('hesitation-modal').classList.add('hidden');
             btn.innerText = "Flag Matrix For Review";
@@ -504,10 +516,9 @@ export function renderDashboard(finalReport, prospectData) {
         }, 2000);
     });
 
-    console.log("> EXHIBITION: Render Complete. Force-painting screen.");
-    
-    // SUPREME COMMAND: Forcibly override the DOM state-machine to ensure visibility
+    console.log("> EXHIBITION: Render Complete. Stripping CSS Cloak & Forcing Scroll.");
     container.classList.remove('hidden-state', 'hidden');
     container.style.display = 'block';
     container.style.opacity = '1';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
