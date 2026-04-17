@@ -308,18 +308,30 @@
             </div>
 
             <!-- RIGHT COLUMN: The Closer Panel -->
-            <div class="bg-[#080808] border border-shadow p-6 sticky top-8 text-center">
-                <p class="text-[9px] tracking-widest text-gold uppercase font-bold mb-4 border-b border-white/5 pb-4">Transaction Authorization</p>
-                <p class="text-[10px] text-marble/60 leading-relaxed mb-6 text-left">
-                    Review the engagement terms in the active window. The authorization gateway will unlock once you have reached the bottom of the document.
-                </p>
-                
-                <button id="accept-pay-btn" disabled class="w-full bg-shadow text-marble/30 py-4 font-bold text-xs tracking-widest uppercase transition-all duration-300 cursor-not-allowed">
-                    Accept Terms & Pay
-                </button>
-                
-                <p class="text-[9px] text-marble/30 mt-4 uppercase tracking-widest">Secure transaction via Processor</p>
-            </div>
+          <div class="bg-[#080808] border border-shadow p-6 sticky top-8 text-center">
+    <p class="text-[9px] tracking-widest text-gold uppercase font-bold mb-4 border-b border-white/5 pb-4">Transaction Authorization</p>
+    <p class="text-[10px] text-marble/60 leading-relaxed mb-6 text-left">
+        Scroll through the full engagement letter to activate acceptance. Once you reach the bottom, the checkbox below will unlock.
+    </p>
+
+    <label id="consent-label" class="flex items-start gap-3 mb-6 text-left cursor-not-allowed opacity-40">
+        <input type="checkbox" id="consent-checkbox" disabled
+            class="mt-1 w-4 h-4 accent-gold flex-shrink-0 cursor-not-allowed">
+        <span class="text-[10px] text-marble/70 leading-relaxed">
+            I have read and agree to the Engagement Letter and Schedule A in full. I understand that Lex Nova HQ is not a law firm and these are Review-Ready Drafts requiring local counsel review.
+        </span>
+    </label>
+
+    <button id="accept-pay-btn" disabled
+        class="w-full bg-shadow text-marble/30 py-4 font-bold text-xs tracking-widest uppercase transition-all duration-300 cursor-not-allowed">
+        Accept Terms & Pay
+    </button>
+
+    <p id="scroll-instruction" class="text-[9px] text-gold/60 mt-4 uppercase tracking-widest animate-pulse">
+        ↓ Scroll to read full document
+    </p>
+    <p class="text-[9px] text-marble/20 mt-2 uppercase tracking-widest">Secure transaction via PayPal</p>
+</div>
 
         </div>
 
