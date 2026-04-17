@@ -194,54 +194,62 @@ function injectContractData() {
 // 7. FRICTION LOCK — Float-safe scroll detection
 // ============================================================================
 function wireFrictionLock() {
-    const scrollEl  = document.getElementById('engagement-scroll-container');
-    const btn       = document.getElementById('accept-pay-btn');
-    const scrollMsg = document.getElementById('scroll-instruction');
+    const scrollEl   = document.getElementById('engagement-scroll-container');
+    const checkbox   = document.getElementById('consent-checkbox');
+    const label      = document.getElementById('consent-label');
+    const btn        = document.getElementById('accept-pay-btn');
+    const scrollMsg  = document.getElementById('scroll-instruction');
 
-    if (!scrollEl || !btn) {
-        console.error("> CLOSER: Friction lock elements not found in DOM.");
+    if (!scrollEl || !checkbox || !btn) {
+        console.error("> CLOSER: Friction lock elements missing.");
         return;
     }
 
-    // Start locked
+    // Everything starts locked
     setLocked(btn, true);
+    checkbox.disabled = true;
+    if (label) label.classList.add('opacity-40', 'cursor-not-allowed');
 
-    /**
-     * Float-safe bottom detection.
-     *
-     * scrollTop is a float in modern browsers (e.g. 4823.666...).
-     * Original check: scrollHeight - scrollTop <= clientHeight + 20
-     * fails because float arithmetic never quite reaches the integer target.
-     *
-     * Fix: Math.ceil() collapses the float upward, then compare with a
-     * generous 50px buffer to account for zoom levels and rendering variance.
-     * Also auto-unlocks if content isn't tall enough to require scrolling.
-     */
     const isAtBottom = () => {
-        const scrolledTo = Math.ceil(scrollEl.scrollTop + scrollEl.clientHeight);
+        const scrolledTo  = Math.ceil(scrollEl.scrollTop + scrollEl.clientHeight);
         const totalHeight = scrollEl.scrollHeight;
-
-        // Not scrollable (content fits without scrolling) → unlock immediately
         if (totalHeight <= scrollEl.clientHeight + 5) return true;
-
-        // Scrolled far enough (50px buffer)
         return scrolledTo >= totalHeight - 50;
     };
 
-    // Check immediately on wire (handles non-scrollable content)
-    if (isAtBottom()) {
-        unlock(btn, scrollMsg);
-        return;
-    }
-
-    const onScroll = () => {
-        if (isAtBottom()) {
-            unlock(btn, scrollMsg);
-            scrollEl.removeEventListener('scroll', onScroll);
+    const activateCheckbox = () => {
+        checkbox.disabled = false;
+        if (label) {
+            label.classList.remove('opacity-40', 'cursor-not-allowed');
+            label.classList.add('cursor-pointer');
         }
+        if (scrollMsg) scrollMsg.classList.add('hidden');
+        console.log("> CLOSER: Scroll complete. Checkbox activated.");
     };
 
-    scrollEl.addEventListener('scroll', onScroll);
+    // Check immediately (handles short content)
+    if (isAtBottom()) {
+        activateCheckbox();
+    } else {
+        const onScroll = () => {
+            if (isAtBottom()) {
+                activateCheckbox();
+                scrollEl.removeEventListener('scroll', onScroll);
+            }
+        };
+        scrollEl.addEventListener('scroll', onScroll);
+    }
+
+    // Checkbox activates the button
+    checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
+            setLocked(btn, false);
+            console.log("> CLOSER: Consent confirmed. Pay button live.");
+        } else {
+            setLocked(btn, true);
+        }
+    });
+
     btn.addEventListener('click', executeTransaction);
 }
 
