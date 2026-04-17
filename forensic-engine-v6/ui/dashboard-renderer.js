@@ -213,8 +213,10 @@ function buildThreatMatrix(hostageData) {
         const clock = formatVelocity(g.velocity);
         
         // Check for diligence pressure from test.txt
-        const pressure = g.diligence_pressure ? `<div class="mt-2 text-[8px] text-orange-500 uppercase tracking-widest font-bold">⚠ ${g.diligence_pressure.source}: ${g.diligence_pressure.deadline}</div>` : '';
-
+        // UNIVERSAL KEY FIX: Safely parse diligence_pressure based on test.txt schema
+        const pressure = (g.diligence_pressure && g.diligence_pressure.active) 
+            ? `<div class="mt-3 text-[9px] text-orange-500 uppercase tracking-[0.2em] font-bold border border-orange-500/30 bg-orange-500/10 px-2 py-1 inline-block">⚠ ${g.diligence_pressure.trigger || 'DUE DILIGENCE DEADLINE'}</div>` 
+            : '';
         matrixRows += `
         <tr class="border-b border-white/5 bg-[#050505] hover:bg-[#080808] transition-colors">
             <td class="p-5 align-top w-[20%]">
