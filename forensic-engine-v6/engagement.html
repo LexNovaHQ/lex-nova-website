@@ -69,7 +69,7 @@
 <p class="mb-4 text-sm leading-relaxed text-marble/80">To:</p>
 <p class="mb-4 text-sm leading-relaxed text-marble/80">Client Name: <span id="el-client-name" class="font-bold text-white">[Company]</span> </p>
 <p class="mb-4 text-sm leading-relaxed text-marble/80">Attention: <span id="el-contact" class="font-bold">[Founder]</span> </p>
-<p class="mb-4 text-sm leading-relaxed text-marble/80">Address: [CLIENT ADDRESS] </p>
+<p class="mb-4 text-sm leading-relaxed text-marble/80">Address: <span id="el-client-address">[Address]</span></p>
 <p class="mb-4 text-sm leading-relaxed text-marble/80">Primary Email: <span id="el-client-email" class="font-bold">[Email]</span></p>
 <p class="mb-4 text-sm leading-relaxed text-marble/80">Secondary Email: [CLIENT BACKUP EMAIL]</p>
 <p class="mb-4 text-sm leading-relaxed text-marble/80">From:</p>
@@ -271,7 +271,7 @@
 <p class="mb-4 text-sm leading-relaxed text-marble/80">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Lane C — Enterprise (Flagship only)</p>
 <p class="mb-4 text-sm leading-relaxed text-marble/80">2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELIVERABLES</p>
 <p class="mb-4 text-sm leading-relaxed text-marble/80">Product Name: <span id="el-sa-product" class="font-bold text-white">[Product]</span></p>
-<p class="mb-4 text-sm leading-relaxed text-marble/80">#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;File ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Document Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Description</p>
+<div id="el-sa-deliverables"></div>
 <p class="mb-4 text-sm leading-relaxed text-marble/80">3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMMERCIAL TERMS</p>
 <p class="mb-4 text-sm leading-relaxed text-marble/80">Field&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Detail</p>
 <p class="mb-4 text-sm leading-relaxed text-marble/80">Total Fee&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="el-sa-fee" class="font-bold text-white">[Fee]</span></p>
@@ -288,9 +288,8 @@
 <p class="mb-4 text-sm leading-relaxed text-marble/80">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;As per Maintenance scope (Maintenance)</p>
 <p class="mb-4 text-sm leading-relaxed text-marble/80">4.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FIRST CLIENTS PROTOCOL</p>
 <p class="mb-4 text-sm leading-relaxed text-marble/80">Field&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Detail</p>
-<p class="mb-4 text-sm leading-relaxed text-marble/80">Applicable?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Yes </p>
-<p class="mb-4 text-sm leading-relaxed text-marble/80">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No</p>
-<p class="mb-4 text-sm leading-relaxed text-marble/80">Discount Applied&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_________________%</p>
+<p class="mb-4 text-sm leading-relaxed text-marble/80">Applicable?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong class="text-gold">Yes — Founding Client Rate Applied</strong></p>
+                    <p class="mb-4 text-sm leading-relaxed text-marble/80">Discount Applied&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_________________%</p>
 <p class="mb-4 text-sm leading-relaxed text-marble/80">Obligations&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Written testimonial within 30 days of delivery</p>
 <p class="mb-4 text-sm leading-relaxed text-marble/80">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Logo usage permission for Lex Nova marketing</p>
 <p class="mb-4 text-sm leading-relaxed text-marble/80">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Case study participation (subject to Client approval)</p>
@@ -327,7 +326,7 @@
     </main>
 
     <!-- ENGINE IGNITION -->
-    <script type="module" src="./forensic-engine-v6/bridge/engagement-logic.js"></script>
+    <script type="module" src="./bridge/engagement-logic.js"></script>
 
 </body>
 </html>
