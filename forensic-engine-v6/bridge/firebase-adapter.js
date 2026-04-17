@@ -1,7 +1,9 @@
 /**
  * LEX NOVA HQ — FORENSIC ENGINE v6.0
  * /bridge/firebase-adapter.js - The Integration Hub & Telemetry Radar
- * * THE SUPREME COMMAND: This is the ONLY file authorized to touch the database.
+ *
+ * SCHEMA v2.0: Added saveConfessedGaps() for registry-enriched quiz gap persistence.
+ * All existing function signatures preserved.
  */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
@@ -23,7 +25,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // ============================================================================
-// 2. GLOBAL STATE (In-Memory Security)
+// 2. GLOBAL STATE
 // ============================================================================
 let activeProspectId = null;
 let isWarmLead = false;
@@ -33,17 +35,16 @@ let isWarmLead = false;
 // ============================================================================
 
 /**
- * Initializes the DB and checks for the ?pid= bypass.
- * Returns the path routing instruction for the State Machine.
+ * Initializes DB and checks for ?pid= warm bypass.
+ * Returns routing instruction for the State Machine.
  */
 export async function initFirebase() {
     console.log("> Checking Identity Capture vectors...");
-    
+
     const urlParams = new URLSearchParams(window.location.search);
     const pid = urlParams.get('pid');
 
     if (pid) {
-        // Attempt the Warm Bypass
         const docRef = doc(db, "prospects", pid);
         const docSnap = await getDoc(docRef);
 
@@ -52,7 +53,6 @@ export async function initFirebase() {
             isWarmLead = true;
             const prospectData = docSnap.data();
 
-            // PID CLICK TRACKING: Immediate update to Firestore
             await updateDoc(docRef, {
                 scannerClicked: true,
                 scannerStep: 'page_loaded',
@@ -64,7 +64,7 @@ export async function initFirebase() {
             console.log(`> Warm lead confirmed & tracked: ${pid}.`);
             return { path: 'WARM', prospectId: activeProspectId, data: prospectData };
         } else {
-            console.warn(`> Invalid PID provided: ${pid}. Reverting to Cold Gate.`);
+            console.warn(`> Invalid PID: ${pid}. Reverting to Cold Gate.`);
         }
     }
 
@@ -73,22 +73,20 @@ export async function initFirebase() {
 }
 
 /**
- * Fires when a cold lead submits the Gate form.
- * Creates a new document in the "prospects" collection.
+ * Creates a new document for cold traffic.
  */
 export async function captureColdLead(email, companyName) {
     if (!email || !companyName) throw new Error("Missing email or company name.");
 
-    // Generate a new ID for the organic lead
     const newId = `LN-ORG-${Date.now()}`;
-    
     const docRef = doc(db, "prospects", newId);
+
     await setDoc(docRef, {
         email: email,
-        company: companyName, // Key: company
+        company: companyName,
         source: "organic_scanner_v6",
         status: "COLD_LEAD",
-        addedAt: serverTimestamp() // Key: addedAt
+        addedAt: serverTimestamp()
     });
 
     activeProspectId = newId;
@@ -98,80 +96,94 @@ export async function captureColdLead(email, companyName) {
 }
 
 /**
- * Fires at the end of the Quiz. 
- * Saves the raw inputs and the calculated Threat_IDs.
+ * Saves quiz payload at quiz completion.
+ * vaultInputs: full Q&A log with threatId per entry.
+ * activeGaps: [{threatId, penalty}] objects.
  */
 export async function saveForensicPayload(vaultInputs, activeGaps) {
     if (!activeProspectId) throw new Error("Cannot save payload: No active Prospect ID.");
 
     const docRef = doc(db, "prospects", activeProspectId);
-    
+
     await updateDoc(docRef, {
         vaultInputs: vaultInputs,
         activeGaps: activeGaps,
-        scannerCompleted: true, // Key: scannerCompleted
-        scannerStepAt: serverTimestamp(), // Key: scannerStepAt
+        scannerCompleted: true,
+        scannerStepAt: serverTimestamp(),
         status: "FORENSIC_COMPLETE"
     });
 
-    console.log(`> Forensic payload locked to DB for PID: ${activeProspectId}`);
+    console.log(`> Forensic payload saved for PID: ${activeProspectId}`);
     return true;
 }
 
 /**
- * Utility getter for the Checkout Bridge to pass the PID to the Make webhook
+ * Saves registry-enriched gap objects built from quiz confessions.
+ * These are full true_gaps-format objects, persisted for external consumption
+ * (admin panel, Architect, Copywriter pipeline).
+ *
+ * confessedGaps: Array of full gap objects in true_gaps schema,
+ * built by buildConfessedGaps() in main.js after registry is loaded.
+ */
+export async function saveConfessedGaps(confessedGaps) {
+    if (!activeProspectId) {
+        console.warn("> saveConfessedGaps: No active PID. Skipping.");
+        return false;
+    }
+    if (!confessedGaps || confessedGaps.length === 0) return false;
+
+    const docRef = doc(db, "prospects", activeProspectId);
+
+    await updateDoc(docRef, {
+        confessedGaps: confessedGaps,
+        confessedGapsSavedAt: serverTimestamp()
+    });
+
+    console.log(`> ${confessedGaps.length} confessedGaps saved for PID: ${activeProspectId}`);
+    return true;
+}
+
+/**
+ * Utility getter — used by checkout bridge.
  */
 export function getActiveProspectId() {
     return activeProspectId;
 }
 
 // ============================================================================
-// 4. TELEMETRY RADAR (Micro & Macro Tracking)
+// 4. TELEMETRY RADAR
 // ============================================================================
 
 export const Telemetry = {
-    /**
-     * MACRO TRACKING: page_loaded, dashboard_viewed, checkout_initiated
-     */
     logState: async (stepName) => {
-        if (!activeProspectId) return; // Automatically uses the ID captured in Section 2
-        
+        if (!activeProspectId) return;
         try {
             await updateDoc(doc(db, "prospects", activeProspectId), {
                 scannerStep: stepName,
-                scannerStepAt: serverTimestamp(), // Key: scannerStepAt
+                scannerStepAt: serverTimestamp(),
                 lastActive: serverTimestamp(),
-                updatedAt: serverTimestamp() // Key: updatedAt
+                updatedAt: serverTimestamp()
             });
-            console.log(`> TELEMETRY: State updated to [${stepName}]`);
+            console.log(`> TELEMETRY: State → [${stepName}]`);
         } catch (e) {
-            console.warn("> TELEMETRY: Failed to log macro state", e);
+            console.warn("> TELEMETRY: Failed to log state", e);
         }
     },
 
-    /**
-     * MICRO TRACKING: Exact question drop-off (e.g., lastQuestionSeen: 4)
-     */
     logQuestionView: async (questionIndex) => {
         if (!activeProspectId) return;
-        
         try {
             await updateDoc(doc(db, "prospects", activeProspectId), {
                 lastQuestionSeen: questionIndex,
                 scannerStep: `quiz_viewing_q${questionIndex}`,
-                scannerStepAt: serverTimestamp(), // Key: scannerStepAt
+                scannerStepAt: serverTimestamp(),
                 lastActive: serverTimestamp()
             });
         } catch (e) {}
     },
 
-    /**
-     * MICRO TRACKING: Live Answers (Records what they clicked before they finish)
-     */
     logAnswer: async (questionIndex, questionText, answerText, penaltyScore) => {
         if (!activeProspectId) return;
-
-        // We use dot notation to build a live map of answers in Firebase.
         const answerPayload = {
             [`liveAnswers.q${questionIndex}`]: {
                 question: questionText,
@@ -181,10 +193,8 @@ export const Telemetry = {
             },
             lastActive: serverTimestamp()
         };
-
         try {
             await updateDoc(doc(db, "prospects", activeProspectId), answerPayload);
-            console.log(`> TELEMETRY: Logged Answer for Q${questionIndex}`);
         } catch (e) {}
     }
 };
