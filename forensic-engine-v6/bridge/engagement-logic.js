@@ -280,15 +280,11 @@ async function executeTransaction() {
     if (!btn || btn.disabled) return;
 
     btn.disabled  = true;
+    const pd = PLAN_DATA[activePlanId];
     btn.innerText = "SECURING ARCHITECTURE...";
     btn.classList.add('opacity-75', 'cursor-not-allowed');
 
-    const kitDocs = KITS[activePlanId] || KITS['agentic_shield'];
-    const KITS = {
-    agentic_shield:   ['DOC_TOS','DOC_AGT','DOC_AUP','DOC_DPA','DOC_SLA','DOC_PP','DOC_PBK'],
-    workplace_shield: ['DOC_HND','DOC_IP','DOC_SOP','DOC_DPIA','DOC_SCAN','DOC_PBK'],
-    complete_stack:   ['DOC_TOS','DOC_AGT','DOC_AUP','DOC_DPA','DOC_SLA','DOC_PP','DOC_HND','DOC_IP','DOC_DPIA','DOC_PBK']
-};
+    
     const refCode = `LN-2026-${prospectId.toUpperCase()}`;
 
     const payload = {
