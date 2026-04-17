@@ -137,7 +137,52 @@ function injectContractData() {
     setById('el-sa-product',  pd.name);
     setById('el-sa-fee',      `$${pd.price.toLocaleString()} USD`);
     setById('el-sa-delivery', pd.delivery);
+    // ADDRESS → jurisdiction from DB
+    setById('el-client-address',
+        prospectData.jurisdiction_hq || prospectData.jurisdiction || '[Jurisdiction]'
+    );
 
+    // SCHEDULE A — DELIVERABLES TABLE (auto-generated from kit)
+    const DOC_NAMES = {
+        DOC_TOS:  'AI Terms of Service',
+        DOC_AGT:  'Agentic Addendum',
+        DOC_AUP:  'Acceptable Use Policy',
+        DOC_DPA:  'Data Processing Agreement',
+        DOC_SLA:  'AI-Specific SLA',
+        DOC_PP:   'Privacy Policy',
+        DOC_PBK:  'Negotiation Playbook',
+        DOC_HND:  'AI Employee Handbook',
+        DOC_IP:   'IP Assignment Deed',
+        DOC_SOP:  'HITL Protocol',
+        DOC_DPIA: 'Impact Assessment',
+        DOC_SCAN: 'Shadow AI Scanner'
+    };
+    const DOC_DESC = {
+        DOC_TOS:  'Defines service terms, liability caps, and AI-specific disclaimers.',
+        DOC_AGT:  'Governs autonomous agent liability and kill-switch requirements.',
+        DOC_AUP:  'Defines permitted and prohibited uses of the AI product.',
+        DOC_DPA:  'Governs data processing obligations for GDPR and enterprise compliance.',
+        DOC_SLA:  'AI-specific uptime definitions and service credit limitations.',
+        DOC_PP:   'Jurisdiction-aware privacy policy covering AI data flows and user rights.',
+        DOC_PBK:  'Enterprise negotiation counter-scripts and objection handling.',
+        DOC_HND:  'AI usage policy for employees — the Traffic Light framework.',
+        DOC_IP:   'IP assignment ensuring company ownership of all AI-generated work.',
+        DOC_SOP:  'Human-in-the-loop workflow establishing authorship and review standards.',
+        DOC_DPIA: 'EU AI Act risk assessment mapping high-risk use cases.',
+        DOC_SCAN: 'Anonymous survey to surface unauthorized AI tool usage.'
+    };
+    const kitDocs = PLAN_DATA[activePlanId]?.docs || KITS[activePlanId] || [];
+    const tableEl = document.getElementById('el-sa-deliverables');
+    if (tableEl && kitDocs.length) {
+        tableEl.innerHTML = kitDocs.map((docId, i) =>
+            `<p class="mb-2 text-sm leading-relaxed text-marble/80">
+                ${i + 1}&nbsp;&nbsp;&nbsp;&nbsp;
+                <strong>${docId}</strong>&nbsp;&nbsp;&nbsp;&nbsp;
+                ${DOC_NAMES[docId] || docId}&nbsp;&nbsp;&nbsp;&nbsp;
+                <span style="opacity:0.6">${DOC_DESC[docId] || ''}</span>
+            </p>`
+        ).join('');
+    }
     console.log(`> CLOSER: Injected — Company: [${company}] | Plan: [${pd.name}] | Ref: [${refCode}]`);
 }
 
@@ -226,7 +271,12 @@ async function executeTransaction() {
     btn.innerText = "SECURING ARCHITECTURE...";
     btn.classList.add('opacity-75', 'cursor-not-allowed');
 
-    const pd      = PLAN_DATA[activePlanId];
+    const kitDocs = KITS[activePlanId] || KITS['agentic_shield'];
+    const KITS = {
+    agentic_shield:   ['DOC_TOS','DOC_AGT','DOC_AUP','DOC_DPA','DOC_SLA','DOC_PP','DOC_PBK'],
+    workplace_shield: ['DOC_HND','DOC_IP','DOC_SOP','DOC_DPIA','DOC_SCAN','DOC_PBK'],
+    complete_stack:   ['DOC_TOS','DOC_AGT','DOC_AUP','DOC_DPA','DOC_SLA','DOC_PP','DOC_HND','DOC_IP','DOC_DPIA','DOC_PBK']
+};
     const refCode = `LN-2026-${prospectId.toUpperCase()}`;
 
     const payload = {
