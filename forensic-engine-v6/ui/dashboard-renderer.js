@@ -15,7 +15,7 @@
  */
 
 import { getActiveProspectId, Telemetry } from '../bridge/firebase-adapter.js';
-import { applyHostageRule } from '../engine/hostage-rule.js';
+import { applyHostageRule } from '../engine/scoring-processor.js';
 
 // ============================================================================
 // 1. CONSTANTS
