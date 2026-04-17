@@ -219,7 +219,6 @@ function buildEvidenceData(g) {
 
     return { badge, evBlock };
 }
-
 function buildThreatMatrix(hostageData) {
     let matrixRows = '';
 
