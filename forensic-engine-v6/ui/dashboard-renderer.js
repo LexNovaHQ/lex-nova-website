@@ -340,14 +340,21 @@ function buildItemizedReceipt(financials, hostageIds) {
 // ============================================================================
 
 export function renderDashboard(finalReport, prospectData) {
-    console.log("> EXHIBITION: Building final $72.5M canvas (6-Column Matrix Layout)...");
+    console.log("> EXHIBITION: Building final $143M canvas (6-Column Matrix Layout)...");
 
     const container = document.getElementById(DOM_ID);
-    if (!container) return;
+    
+    // SAFETY CATCH: If the container is missing, scream in the console.
+    if (!container) {
+        console.error(`> 🚨 EXHIBITION FATAL: Cannot find DOM container with ID [${DOM_ID}]. Check your HTML file!`);
+        return;
+    }
+
+    console.log("> EXHIBITION: DOM Container located. Processing Hostage Rule...");
 
     // 1. Process Hostage Data & Plan
     const hostageData = applyHostageRule(finalReport.sortedThreats);
-    const plan = PLAN_DATA[finalReport.prescription];
+    const plan = PLAN_DATA[finalReport.prescription] || PLAN_DATA['complete_stack'];
     
     // 2. Escalators (Corporate Veil / Criminal Flags)
     let flagsHTML = '';
@@ -373,6 +380,8 @@ export function renderDashboard(finalReport, prospectData) {
         <span class="text-xs text-marble block">${d.n}</span>
         <span class="text-[9px] text-marble/40 leading-relaxed block mt-1">${DOC_DESCRIPTIONS[d.id] || ''}</span>
     </div>`).join('');
+
+    console.log("> EXHIBITION: Injecting Matrix Layout into DOM...");
 
     // 5. MASTER LAYOUT INJECTION
     container.innerHTML = `
@@ -455,24 +464,20 @@ export function renderDashboard(finalReport, prospectData) {
 // 8. TELEMETRY & EVENT WIRING
 // ============================================================================
 
-    // 1. THE MONEY (Routes to the Engagement Portal)
+    // 1. THE MONEY
     document.getElementById('trigger-checkout-btn').addEventListener('click', async () => {
         const pid = getActiveProspectId();
         const planKey = finalReport.prescription;
-        
-        console.log(`> CHECKOUT: Routing PID [${pid}] to Engagement Portal for [${planKey}]`);
-        
-        // TRACKING: Log checkout intent to Firestore before redirecting
         await Telemetry.logState('checkout_initiated');
         window.location.href = `./engagement.html?pid=${pid}&plan=${planKey}`;
     });
 
-    // 2. THE HESITATION VALVE (Opens Modal)
+    // 2. THE HESITATION VALVE
     document.getElementById('trigger-valve-btn').addEventListener('click', () => {
         document.getElementById('hesitation-modal').classList.remove('hidden');
     });
 
-    // 3. THE ASYNC OUT (Fires Make.com Webhook & Closes Modal)
+    // 3. THE ASYNC OUT
     document.getElementById('confirm-valve-btn').addEventListener('click', async (e) => {
         const btn = e.target;
         btn.innerText = "REQUEST SENT.";
@@ -480,33 +485,17 @@ export function renderDashboard(finalReport, prospectData) {
         btn.classList.replace('bg-transparent', 'bg-gold');
         
         const pid = getActiveProspectId();
-        const email = prospectData?.email || "Unknown";
-        const exposure = finalReport.financials.totalExposure;
-        
-        console.warn(`> 🚨 ASYNC OUT TRIGGERED: Emailing Partners for ${email}`);
-        
-        // TRACKING: Update Firestore status to reflect hesitation/negotiation
         await Telemetry.logState('negotiation_requested');
         
-        try {
-            // Fire the payload to your Make.com/Slack setup
-            await fetch(HESITATION_WEBHOOK, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    event: "HESITATION_VALVE_TRIGGERED",
-                    prospectId: pid,
-                    email: email,
-                    company: prospectData?.company || "Unknown",
-                    calculatedExposure: exposure,
-                    timestamp: new Date().toISOString()
-                })
-            });
-        } catch (err) {
-            console.error("> Webhook failed, but UI will proceed.", err);
-        }
+        fetch(HESITATION_WEBHOOK, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                event: "HESITATION_VALVE_TRIGGERED", prospectId: pid,
+                email: prospectData?.email || "Unknown", company: prospectData?.company || "Unknown",
+                calculatedExposure: finalReport.financials.totalExposure, timestamp: new Date().toISOString()
+            })
+        }).catch(() => {});
         
-        // Dismiss the modal gracefully
         setTimeout(() => {
             document.getElementById('hesitation-modal').classList.add('hidden');
             btn.innerText = "Flag Matrix For Review";
@@ -514,4 +503,11 @@ export function renderDashboard(finalReport, prospectData) {
             btn.classList.replace('bg-gold', 'bg-transparent');
         }, 2000);
     });
+
+    console.log("> EXHIBITION: Render Complete. Force-painting screen.");
+    
+    // SUPREME COMMAND: Forcibly override the DOM state-machine to ensure visibility
+    container.classList.remove('hidden-state', 'hidden');
+    container.style.display = 'block';
+    container.style.opacity = '1';
 }
