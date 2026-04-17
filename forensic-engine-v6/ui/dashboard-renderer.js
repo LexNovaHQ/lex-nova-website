@@ -80,6 +80,11 @@ function formatVelocity(v) {
     return vel;
 }
 
+function formatBadge(s) {
+    const sc = sevClasses(s);
+    const label = labelSeverity(s);
+    return `<span class="px-2 py-1 text-[9px] font-bold block w-max ${sc}">${label}</span>`;
+}
 // ============================================================================
 // 3. THE HOSTAGE RULE (V5.8 Scaled Visibility Logic)
 // ============================================================================
