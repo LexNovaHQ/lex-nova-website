@@ -122,19 +122,24 @@ function calculateFinancialExposure(mergedGaps, unsureFlag) {
     const chargedExts = new Set();
 
     mergedGaps.forEach(gap => {
-        // 1. Determine Base Value from their jurisdictional surface
+    // 1. Determine Base Value from their jurisdictional surface (UNIVERSAL KEY FIX)
         let baseValue = 0;
         let extSource = "General Architecture Deficit";
+        let extsToProcess = [];
 
-        if (gap.ext) {
-            const exts = gap.ext.split(',').map(e => e.trim());
-            for (const e of exts) {
-                if (EXT_BASE_VALUES[e] && !chargedExts.has(e)) {
-                    baseValue = EXT_BASE_VALUES[e];
-                    chargedExts.add(e);
-                    extSource = e;
-                    break; // Only apply the highest uncharged statutory base per gap
-                }
+        // Safely extract statutes from either the Quiz (ext string) or the Scrape (extSurfaces array)
+        if (gap.ext && typeof gap.ext === 'string') {
+            extsToProcess = gap.ext.split(',').map(e => e.trim());
+        } else if (gap.extSurfaces && Array.isArray(gap.extSurfaces)) {
+            extsToProcess = gap.extSurfaces;
+        }
+
+        for (const e of extsToProcess) {
+            if (EXT_BASE_VALUES[e] && !chargedExts.has(e)) {
+                baseValue = EXT_BASE_VALUES[e];
+                chargedExts.add(e);
+                extSource = e;
+                break; // Only apply the highest uncharged statutory base per gap
             }
         }
         
@@ -238,7 +243,7 @@ export function generateFinalReport(interrogationState, lanes, surfaces, registr
             threatName: gap.gapName || gap.trap || threatDef.name || 'Architecture Vulnerability',
             calculatedSeverity: mapToTier(gap.severity),
             // Inherit specific high-stress fields from prospectData if available
-            legalAmmo: gap.legalAmmo || threatDef.legalAmmo || "Pending State AG/FTC Enforcement Action",
+            legalAmmo: gap.legalAmmo || threatDef.legal?.ammo || threatDef.legalAmmo || "Pending State AG/FTC Enforcement Action",
             velocity: gap.velocity || "Immediate",
             diligence_pressure: prospectData.diligence_pressure || null
         };
