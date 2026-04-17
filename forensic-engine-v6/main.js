@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const surfaces = identity?.data?.jurisdictional_surface || ['EXT.09']; 
                 
                 // 4. Run the Actuarial Math
-                const finalReport = generateFinalReport(payload, lanes, surfaces, registryData);
+                const finalReport = generateFinalReport(payload, lanes, surfaces, registryData, identity?.data || {});
                 
                 // 5. Paint the final UI Canvas
                 renderDashboard(finalReport, identity?.data || {});
