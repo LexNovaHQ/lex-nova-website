@@ -107,3 +107,404 @@ function applyHostageRule(sortedThreats) {
     
     return { clearGaps, blurredGaps, lockedGaps, hostageIds };
 }
+
+// ============================================================================
+// 4. COMPONENT RENDERERS (The Horizontal Cards)
+// ============================================================================
+
+function buildHeader(prospectData) {
+    const compName = prospectData?.company || "Your Company";
+    const founderName = prospectData?.founderName || "Founder"; 
+    const jurisdiction = prospectData?.jurisdiction || "Global Market";
+    const pid = prospectData?.prospectId || "UNKNOWN-PID";
+
+    return `
+    <div class="mb-12 text-center lg:text-left border-b border-white/10 pb-8">
+        <h1 class="font-serif text-4xl md:text-5xl text-marble mb-2 uppercase tracking-widest">Structural Exposure Audit</h1>
+        <p class="font-serif text-2xl text-gold italic mb-4">${compName} <span class="text-marble/30 font-sans text-xs ml-4 not-italic">PID: ${pid}</span></p>
+        <p class="font-sans text-xs text-marble/50 uppercase tracking-widest">
+            Prepared for <span class="text-marble/80 font-bold">${founderName}</span> <span class="mx-2 text-gold">|</span> ${jurisdiction}
+        </p>
+    </div>`;
+}
+
+function buildProfileAndFeatures(prospectData) {
+    if (!prospectData) return '';
+    
+    // Fallbacks if data is missing
+    const archetypes = prospectData.archetypes || prospectData.primaryArchetype || ['The Creator'];
+    const archLabels = archetypes.map(a => `<span class="bg-gold/10 border border-gold/30 text-gold px-2 py-1 text-[9px] uppercase tracking-widest mr-2">${a}</span>`).join('');
+    
+    return `
+    <div class="bg-[#050505] border border-white/5 p-6 mb-6">
+        <p class="text-[9px] tracking-widest text-marble/50 uppercase font-bold mb-4">I. PRODUCT & FEATURE MAPPING</p>
+        <div class="flex flex-wrap items-center gap-4 mb-4">
+            <span class="text-[10px] text-marble/70 uppercase tracking-widest">Identified Architecture:</span>
+            ${archLabels}
+        </div>
+        <p class="text-xs text-marble/70 leading-relaxed font-mono">
+            Forensic scan confirms product architecture maps to the above liability archetypes. 
+            Regulatory surfaces triggered based on evaluated features and public documentation.
+        </p>
+    </div>`;
+}
+
+function buildIndictmentsAndGhosts(prospectData) {
+    if (!prospectData) return '';
+    let html = `<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">`;
+
+    if (prospectData.posture_alibi) {
+        html += `
+        <div class="bg-[#050505] border border-white/5 p-6 shadow-[inset_0_0_20px_rgba(255,215,0,0.02)]">
+            <p class="text-[9px] tracking-widest text-gold uppercase font-bold mb-3">⊘ INVALID DEFENSE POSTURE (Ghost Protection)</p>
+            <p class="text-[11px] text-marble/50 italic mb-2">"But we have ${prospectData.posture_alibi.evidence?.[0]?.what_it_proves || 'an enterprise MSA'}..."</p>
+            <p class="text-xs text-danger font-mono leading-relaxed border-l-2 border-danger pl-3">${prospectData.posture_alibi.argument}</p>
+        </div>`;
+    }
+
+    if (prospectData.self_indictments && prospectData.self_indictments.length > 0) {
+        const ind = prospectData.self_indictments[0];
+        html += `
+        <div class="bg-[#050505] border border-white/5 p-6 shadow-[inset_0_0_20px_rgba(220,38,38,0.02)]">
+            <p class="text-[9px] tracking-widest text-gold uppercase font-bold mb-3">⚠ PUBLIC CONTRADICTION (Self-Indictment)</p>
+            <p class="text-[11px] text-marble/50 italic mb-2">Marketing Claim: "${ind.quote}"</p>
+            <p class="text-xs text-orange-500 font-mono leading-relaxed border-l-2 border-orange-500 pl-3">LEGAL REALITY: ${ind.contradicts}</p>
+        </div>`;
+    }
+    html += `</div>`;
+    return html;
+}
+
+// ============================================================================
+// 5. COMPONENT RENDERERS (The 6-Column Threat Matrix)
+// ============================================================================
+
+function buildEvidenceData(g) {
+    // Determine Verification Status
+    let badge = `<span class="inline-block mt-2 px-2 py-1 text-[8px] tracking-[0.2em] uppercase bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 font-bold">[ CONFIRMED BY YOU (INTERNAL AUDIT) ]</span>`;
+    let evBlock = '';
+
+    // If it came from the scrape, or dual-verified
+    if (g.source === 'dual-verified' || g.dualVerifiable) {
+        badge = `<span class="inline-block mt-2 px-2 py-1 text-[8px] tracking-[0.2em] uppercase bg-danger/10 text-danger border border-danger/30 font-bold animate-pulse">[ VERIFIED: PUBLIC + CONFIRMED BY YOU ]</span>`;
+    } else if (g.source === 'scrape') {
+        badge = `<span class="inline-block mt-2 px-2 py-1 text-[8px] tracking-[0.2em] uppercase bg-[#60a5fa]/10 text-[#60a5fa] border border-[#60a5fa]/30 font-bold">[ FOUND ON YOUR PUBLIC SITE ]</span>`;
+    }
+
+    // Extract Scraped Evidence if it exists
+    const found = g.evidence?.found || g.evidence?.source || '';
+    if (found) {
+        evBlock = `
+        <div class="mt-3 p-3 bg-[#000000] border border-white/10 font-mono text-[9px] text-marble/60 leading-relaxed">
+            <span class="text-gold font-bold block mb-1">&gt; SCRAPED EVIDENCE:</span> 
+            ${found.substring(0,180)}${found.length>180?'...':''}
+        </div>`;
+    }
+
+    return { badge, evBlock };
+}
+
+function buildThreatMatrix(hostageData) {
+    let matrixRows = '';
+
+    // 1. Render Clear Rows (The Proof)
+    hostageData.clearGaps.forEach(g => {
+        const evData = buildEvidenceData(g);
+        const clock = formatVelocity(g.velocity);
+        
+        // Check for diligence pressure from test.txt
+        const pressure = g.diligence_pressure ? `<div class="mt-2 text-[8px] text-orange-500 uppercase tracking-widest font-bold">⚠ ${g.diligence_pressure.source}: ${g.diligence_pressure.deadline}</div>` : '';
+
+        matrixRows += `
+        <tr class="border-b border-white/5 bg-[#050505] hover:bg-[#080808] transition-colors">
+            <td class="p-5 align-top w-[20%]">
+                <span class="font-serif text-lg text-marble block mb-1 leading-tight">${g.threatName || g.name || g.trap}</span>
+                ${evData.badge}
+                ${evData.evBlock}
+            </td>
+            
+            <td class="p-5 align-top w-[20%]">
+                <span class="text-marble/90 text-[11px] leading-relaxed block mb-2 font-bold">${g.copywriting?.mechanism || g.thePain || 'Architecture gap detected.'}</span>
+                <span class="text-marble/50 text-[10px] leading-relaxed block border-l border-gold/30 pl-2 mt-2">Trigger: ${g.copywriting?.trigger || 'Action occurs without hard gate.'}</span>
+            </td>
+            
+            <td class="p-5 align-top w-[15%]">
+                <span class="text-orange-500 font-mono text-[10px] leading-relaxed block mb-1">LEGAL PRECEDENT:</span>
+                <span class="text-marble/80 text-[11px] leading-relaxed block font-bold">${g.legalAmmo || 'Pending FTC/State AG Enforcement Action'}</span>
+            </td>
+
+            <td class="p-5 align-top w-[20%]">
+                ${formatBadge(g.calculatedSeverity)}
+                <span class="text-danger text-[11px] leading-relaxed block mt-3">${g.copywriting?.impact || g.copywriting?.stakes || 'Liability exposure without ceiling. Catastrophic risk to enterprise deals.'}</span>
+            </td>
+
+            <td class="p-5 align-top w-[10%]">
+                <span class="text-marble/80 font-mono text-[10px] tracking-widest uppercase block">${clock}</span>
+                ${pressure}
+            </td>
+
+            <td class="p-5 align-top w-[15%]">
+                <span class="text-gold font-bold text-[11px] block mb-1">${g.copywriting?.fix?.split(' ')[0] || 'Module Required'}</span>
+                <span class="text-marble/50 text-[9px] leading-relaxed block">${DOC_DESCRIPTIONS[g.copywriting?.fix?.split(' ')[0]] || 'Lex Nova proprietary structural defense.'}</span>
+            </td>
+        </tr>`;
+    });
+
+    // 2. Render Blurred Hostage Rows
+    hostageData.blurredGaps.forEach(g => {
+        matrixRows += `
+        <tr class="border-b border-white/5 bg-[#080808] opacity-80">
+            <td class="p-5 align-top w-[20%]">
+                <span class="font-serif text-lg text-marble block mb-1 leading-tight" style="filter:blur(4px);user-select:none">Classified Threat Vector</span>
+                ${formatBadge(g.calculatedSeverity)}
+            </td>
+            <td class="p-5 align-top w-[20%]"><span class="text-marble/70 text-[11px] leading-relaxed block" style="filter:blur(4px);user-select:none">Detailed mechanism and structural trigger redacted.</span></td>
+            <td class="p-5 align-top w-[15%]"><span class="text-marble/70 text-[11px] leading-relaxed block" style="filter:blur(4px);user-select:none">Classified Precedent</span></td>
+            <td class="p-5 align-top w-[20%]"><span class="text-danger text-[11px] leading-relaxed block" style="filter:blur(4px);user-select:none">Severe downstream business consequence redacted. Full matrix unlocks on engagement.</span></td>
+            <td class="p-5 align-top w-[10%]"><span class="text-marble/50 font-mono text-[10px] tracking-widest uppercase block" style="filter:blur(4px);user-select:none">PENDING</span></td>
+            <td class="p-5 align-top w-[15%]"><span class="text-gold font-bold text-[11px] block" style="filter:blur(4px);user-select:none">Lex Nova Module</span></td>
+        </tr>`;
+    });
+
+    return `
+    <div class="mb-10 overflow-x-auto border border-shadow bg-[#050505]">
+        <table class="w-full text-left font-sans text-[11px] border-collapse min-w-[1000px]">
+            <thead>
+                <tr class="text-[9px] text-gold/60 uppercase tracking-widest border-b border-white/10 bg-[#080808]">
+                    <th class="p-5 w-[20%]">I. The Vulnerability & Evidence</th>
+                    <th class="p-5 w-[20%]">II. Structural Absence</th>
+                    <th class="p-5 w-[15%]">III. Legal Precedent</th>
+                    <th class="p-5 w-[20%]">IV. Blast Radius</th>
+                    <th class="p-5 w-[10%]">V. Clock</th>
+                    <th class="p-5 w-[15%]">VI. The Fix</th>
+                </tr>
+            </thead>
+            <tbody>${matrixRows}</tbody>
+        </table>
+    </div>`;
+}
+
+// ============================================================================
+// 6. COMPONENT RENDERERS (Itemized Receipt)
+// ============================================================================
+
+function buildItemizedReceipt(financials, hostageIds) {
+    let rowsHTML = '';
+
+    financials.receiptLines.forEach(line => {
+        // Redact the names of hostage rows in the receipt to maintain mystery
+        const isRedacted = hostageIds.includes(line.threatId);
+        const displayName = isRedacted ? `<span class="opacity-50">[ CLASSIFIED ${line.tier} THREAT ]</span>` : line.threatName;
+        
+        rowsHTML += `
+        <tr class="border-b border-white/5">
+            <td class="p-3 text-[11px] text-marble font-bold">${displayName}</td>
+            <td class="p-3 text-[10px] text-marble/50">${CURRENCY.format(line.baseValue)} (${line.tier})</td>
+            <td class="p-3 text-[10px] text-gold">x ${line.appliedMultiplier} <span class="opacity-50">(${line.multiplierReason})</span></td>
+            <td class="p-3 text-[10px] text-marble/70">${line.decayLabel}</td>
+            <td class="p-3 text-[11px] text-danger font-bold text-right">${CURRENCY.format(line.finalLineTotal)}</td>
+        </tr>`;
+    });
+
+    return `
+    <div class="mt-6 border-t border-danger/20 pt-6">
+        <button onclick="document.getElementById('receipt-table').classList.toggle('hidden');" class="text-[9px] text-gold tracking-widest uppercase font-bold hover:text-marble transition-colors mb-4 w-full text-center">
+            ▸ View Actuarial Calculation Basis
+        </button>
+        <div id="receipt-table" class="hidden overflow-x-auto bg-[#080808] border border-shadow p-4 text-left">
+            <table class="w-full">
+                <thead>
+                    <tr class="text-[9px] text-marble/40 uppercase tracking-widest border-b border-white/10">
+                        <th class="p-3">Vulnerability</th>
+                        <th class="p-3">Base Severity</th>
+                        <th class="p-3">Scale Multiplier</th>
+                        <th class="p-3">Concurrent Adjustment</th>
+                        <th class="p-3 text-right">Adjusted Exposure</th>
+                    </tr>
+                </thead>
+                <tbody>${rowsHTML}</tbody>
+            </table>
+        </div>
+    </div>`;
+}
+
+// ============================================================================
+// 7. MASTER RENDER EXECUTION
+// ============================================================================
+
+export function renderDashboard(finalReport, prospectData) {
+    console.log("> EXHIBITION: Building final $72.5M canvas (6-Column Matrix Layout)...");
+
+    const container = document.getElementById(DOM_ID);
+    if (!container) return;
+
+    // 1. Process Hostage Data & Plan
+    const hostageData = applyHostageRule(finalReport.sortedThreats);
+    const plan = PLAN_DATA[finalReport.prescription];
+    
+    // 2. Escalators (Corporate Veil / Criminal Flags)
+    let flagsHTML = '';
+    if (finalReport.financials.hasPersonalLiability) {
+        flagsHTML += `<p class="bg-danger text-void px-3 py-1 text-[10px] font-bold tracking-widest uppercase inline-block mb-3 animate-pulse shadow-[0_0_15px_rgba(220,38,38,0.3)]">⚠ PIERCED CORPORATE VEIL DETECTED</p> `;
+    }
+    if (finalReport.financials.hasCriminalLiability) {
+        flagsHTML += `<p class="bg-red-800 text-white px-3 py-1 text-[10px] font-bold tracking-widest uppercase inline-block mb-3 animate-pulse shadow-[0_0_15px_rgba(153,27,27,0.3)]">⚠ CRIMINAL EXPOSURE DETECTED</p>`;
+    }
+
+    // 3. Tally Counters for Left Side
+    let cN = 0, cC = 0;
+    finalReport.sortedThreats.forEach(t => {
+        if (t.calculatedSeverity === 'T1') cN++;
+        else if (t.calculatedSeverity === 'T2') cC++;
+    });
+
+    // 4. Build the Manifest HTML for Right Sidebar
+    const docsToRender = KITS[finalReport.prescription] || KITS['agentic_shield'];
+    const manifestHTML = docsToRender.map(d => `
+    <div class="border-l-2 border-gold pl-3 mb-4 text-left">
+        <span class="text-[9px] text-gold uppercase font-bold block">${d.id}</span>
+        <span class="text-xs text-marble block">${d.n}</span>
+        <span class="text-[9px] text-marble/40 leading-relaxed block mt-1">${DOC_DESCRIPTIONS[d.id] || ''}</span>
+    </div>`).join('');
+
+    // 5. MASTER LAYOUT INJECTION
+    container.innerHTML = `
+    <div class="w-full">
+        ${buildHeader(prospectData)}
+        ${buildProfileAndFeatures(prospectData)}
+        ${buildIndictmentsAndGhosts(prospectData)}
+
+        <div class="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-10 items-start">
+            
+            <div>
+                <h3 class="font-serif text-2xl text-gold mb-6 italic">Threat Matrix & Architecture Gaps</h3>
+                
+                <div class="flex gap-4 mb-4 flex-wrap">
+                    <div class="bg-danger/10 border border-danger/20 px-3 py-1"><span class="text-[9px] text-danger font-bold tracking-widest">T1 EXTINCTION: ${cN}</span></div>
+                    <div class="bg-orange-500/10 border border-orange-500/20 px-3 py-1"><span class="text-[9px] text-orange-500 font-bold tracking-widest">T2 UNCAPPED: ${cC}</span></div>
+                    <div class="bg-[#080808] border border-white/10 px-3 py-1"><span class="text-[9px] text-marble font-bold tracking-widest">TOTAL THREATS: ${finalReport.sortedThreats.length}</span></div>
+                </div>
+
+                ${buildThreatMatrix(hostageData)}
+            </div>
+
+            <div class="xl:sticky xl:top-8 space-y-6">
+                
+                <div class="bg-danger/10 border border-danger/30 p-8 text-center shadow-[0_0_40px_rgba(220,38,38,0.1)]">
+                    ${flagsHTML}
+                    <p class="text-[9px] tracking-[0.2em] text-danger uppercase font-bold mb-2">Maximum Concurrent Exposure</p>
+                    <div class="font-serif text-5xl text-marble mb-2">${CURRENCY.format(finalReport.financials.totalExposure)}</div>
+                    <p class="text-[9px] text-marble/40 uppercase tracking-widest mt-3">Calculated via Lex Nova Actuarial Engine v6.0</p>
+                    ${buildItemizedReceipt(finalReport.financials, hostageData.hostageIds)}
+                </div>
+
+                <div class="bg-[#080808] border border-shadow p-8 text-center">
+                    <p class="text-[9px] tracking-[0.2em] text-marble opacity-50 uppercase font-bold mb-6">Required Architecture Fix: ${plan.name}</p>
+                    <div class="flex items-center justify-center gap-4 mb-6">
+                        <span class="text-gold text-5xl font-serif">${CURRENCY.format(plan.price)}</span>
+                    </div>
+                    <p class="font-sans text-xs text-marble opacity-60 leading-relaxed mb-6">${plan.delivery}. No discovery calls. Vault activation immediately upon payment.</p>
+                    
+                    <button id="trigger-checkout-btn" class="block w-full bg-gold text-void py-4 font-bold text-xs tracking-widest uppercase hover:bg-marble transition-all mb-4 shadow-[0_0_15px_rgba(255,215,0,0.2)]">
+                        Secure Architecture Now
+                    </button>
+
+                    <button id="trigger-valve-btn" class="block w-full text-[10px] text-marble/40 tracking-widest uppercase hover:text-marble transition-all">
+                        > Have questions regarding your specific exposure? Request direct contact.
+                    </button>
+                </div>
+
+                <div class="bg-[#050505] border border-white/5 p-8 mt-6">
+                    <h4 class="font-serif text-xl text-gold mb-2 italic">Architecture Manifest</h4>
+                    <p class="text-[10px] text-marble/40 mb-6">The documents required to neutralize the active threats.</p>
+                    <div class="space-y-4">
+                        ${manifestHTML}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    
+    <div id="hesitation-modal" class="hidden fixed inset-0 bg-[#000000]/90 z-50 flex items-center justify-center p-4">
+        <div class="bg-[#050505] border border-gold/30 p-8 max-w-md w-full text-center shadow-[0_0_50px_rgba(255,215,0,0.05)]">
+            <h4 class="font-serif text-2xl text-gold mb-4">Request Direct Contact</h4>
+            <p class="text-xs text-marble/70 leading-relaxed mb-4 text-left">
+                Lex Nova maintains a strictly capped active client roster to protect the precision of our forensic drafting. Because of this, we do not maintain public sales calendars.
+            </p>
+            <p class="text-xs text-marble/70 leading-relaxed mb-8 text-left">
+                However, we understand an exposure profile of this magnitude requires careful consideration. By confirming below, your matrix will be flagged for priority review. A Lex Nova partner will evaluate your specific architecture and contact you directly via email today to address your questions and coordinate a private consultation.
+            </p>
+            <button id="confirm-valve-btn" class="block w-full bg-transparent border border-gold text-gold py-3 font-bold text-xs tracking-widest uppercase hover:bg-gold hover:text-void transition-all mb-3">
+                Flag Matrix For Review
+            </button>
+            <button onclick="document.getElementById('hesitation-modal').classList.add('hidden')" class="block w-full text-[10px] text-marble/50 tracking-widest uppercase hover:text-marble transition-all mt-4">
+                Cancel
+            </button>
+        </div>
+    </div>`;
+
+// ============================================================================
+// 8. TELEMETRY & EVENT WIRING
+// ============================================================================
+
+    // 1. THE MONEY (Routes to the Engagement Portal)
+    document.getElementById('trigger-checkout-btn').addEventListener('click', async () => {
+        const pid = getActiveProspectId();
+        const planKey = finalReport.prescription;
+        
+        console.log(`> CHECKOUT: Routing PID [${pid}] to Engagement Portal for [${planKey}]`);
+        
+        // TRACKING: Log checkout intent to Firestore before redirecting
+        await Telemetry.logState('checkout_initiated');
+        window.location.href = `./engagement.html?pid=${pid}&plan=${planKey}`;
+    });
+
+    // 2. THE HESITATION VALVE (Opens Modal)
+    document.getElementById('trigger-valve-btn').addEventListener('click', () => {
+        document.getElementById('hesitation-modal').classList.remove('hidden');
+    });
+
+    // 3. THE ASYNC OUT (Fires Make.com Webhook & Closes Modal)
+    document.getElementById('confirm-valve-btn').addEventListener('click', async (e) => {
+        const btn = e.target;
+        btn.innerText = "REQUEST SENT.";
+        btn.classList.replace('text-gold', 'text-void');
+        btn.classList.replace('bg-transparent', 'bg-gold');
+        
+        const pid = getActiveProspectId();
+        const email = prospectData?.email || "Unknown";
+        const exposure = finalReport.financials.totalExposure;
+        
+        console.warn(`> 🚨 ASYNC OUT TRIGGERED: Emailing Partners for ${email}`);
+        
+        // TRACKING: Update Firestore status to reflect hesitation/negotiation
+        await Telemetry.logState('negotiation_requested');
+        
+        try {
+            // Fire the payload to your Make.com/Slack setup
+            await fetch(HESITATION_WEBHOOK, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    event: "HESITATION_VALVE_TRIGGERED",
+                    prospectId: pid,
+                    email: email,
+                    company: prospectData?.company || "Unknown",
+                    calculatedExposure: exposure,
+                    timestamp: new Date().toISOString()
+                })
+            });
+        } catch (err) {
+            console.error("> Webhook failed, but UI will proceed.", err);
+        }
+        
+        // Dismiss the modal gracefully
+        setTimeout(() => {
+            document.getElementById('hesitation-modal').classList.add('hidden');
+            btn.innerText = "Flag Matrix For Review";
+            btn.classList.replace('text-void', 'text-gold');
+            btn.classList.replace('bg-gold', 'bg-transparent');
+        }, 2000);
+    });
+}
