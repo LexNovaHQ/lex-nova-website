@@ -84,9 +84,10 @@ function mergeIntelligence(prospectData, quizGaps) {
 
 function sortBySeverityAndVerification(a, b) {
     // 1. Primary Sort: Severity (T1 > T2 > T3)
-    const sevW = { 'NUCLEAR': 3, 'CRITICAL': 2, 'HIGH': 1 };
-    const sevA = sevW[a.severity?.toUpperCase()] || 0;
-    const sevB = sevW[b.severity?.toUpperCase()] || 0;
+    // We safely use the pre-calculated T-Tiers instead of raw strings
+    const sevW = { 'T1': 3, 'T2': 2, 'T3': 1 };
+    const sevA = sevW[a.calculatedSeverity] || 0;
+    const sevB = sevW[b.calculatedSeverity] || 0;
     if (sevA !== sevB) return sevB - sevA;
 
     // 2. Secondary Sort: Verification (Dual-Verified > Scrape > Scanner)
@@ -98,11 +99,13 @@ function sortBySeverityAndVerification(a, b) {
 
 // Map the old severity labels to the new psychological T-Tiers
 function mapToTier(severity) {
-    const s = (severity || '').toUpperCase();
+    // BULLETPROOFING: Only attempt to uppercase if it's actually a string
+    const s = (typeof severity === 'string') ? severity.toUpperCase() : '';
+    
     if (s === 'NUCLEAR') return 'T1';
     if (s === 'CRITICAL') return 'T2';
     if (s === 'HIGH') return 'T3';
-    return 'T3'; // Fallback
+    return 'T3'; // Fallback for anything else
 }
 
 // ============================================================================
