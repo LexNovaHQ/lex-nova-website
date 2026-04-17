@@ -63,7 +63,7 @@ function escapeHTML(str) {
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function sevClasses(s) {
+
 
 function sevClasses(s) {
     if (s === 'T1') return 'bg-danger/10 text-danger border border-danger/20';
