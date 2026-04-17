@@ -1,19 +1,20 @@
 /**
  * LEX NOVA HQ — FORENSIC ENGINE v6.0
  * /engine/question-router.js - The Interrogator
- * * THE SUPREME COMMAND: This file strictly manages the 10-question logic.
- * It contains ZERO user interface. It builds the route, asks the questions, 
- * and stores the confessions.
+ *
+ * SCHEMA v2.0: All threat IDs migrated to REGISTRY_KEY_v2_0 format.
+ * activeGaps now pushes OBJECTS {threatId, penalty} — not strings.
+ * vaultInputs now includes threatId per entry for full traceability.
  */
 
 // ============================================================================
-// 1. THE QUESTION BANK (Immutable Master Script)
+// 1. THE QUESTION BANK — REGISTRY v2.0 IDs
 // ============================================================================
 
 const Q_GLOBAL = [
     {
         q: "When someone lands on your product for the first time — do they click 'I Agree' before they start using it, or do they just... start?",
-        threatId: "UNI_CON_001",
+        threatId: "UNI_CNS_001",
         options: [
             { t: "They hit a hard gate — checkbox or button, can't proceed without it.", pts: 0 },
             { t: "There's a line somewhere saying 'by using this you agree' but no actual click required.", pts: 30 },
@@ -33,7 +34,7 @@ const Q_GLOBAL = [
     },
     {
         q: "If you have users in Europe — where does their data actually go when it hits your AI pipeline?",
-        threatId: "UNI_SEC_001",
+        threatId: "UNI_PRV_001",
         options: [
             { t: "EU data stays on EU servers. We have the contractual clauses locked in.", pts: 0 },
             { t: "We have a GDPR privacy policy, but the API calls go to OpenAI or Anthropic's US servers by default.", pts: 30 },
@@ -63,9 +64,10 @@ const Q_GLOBAL = [
     }
 ];
 
+// Workplace internal-operations question — mapped to UNI_PRV_002 (Missing DPAs / internal data exposure)
 const Q_INTERNAL = {
     q: "Right now, today — can your employees paste your source code or a client's data into ChatGPT and walk out the door with it?",
-    threatId: "SCAN_INTERNAL_001",
+    threatId: "UNI_PRV_002",
     options: [
         { t: "No — technical blocks, enterprise tools only, and everyone's signed IP assignment agreements.", pts: 0 },
         { t: "We have a policy that says don't do it, but nothing actually stops them technically.", pts: 30 },
@@ -74,25 +76,54 @@ const Q_INTERNAL = {
     ]
 };
 
+// Archetype-specific questions — all IDs migrated to v2.0
 const Q_META = {
     actions: [
-        { q: "If your AI starts making decisions or spending money on a loop at 3am — what actually stops it?", threatId: "INT01_AGT_001", options: [{t:"Hard cap", pts:0}, {t:"Alert only", pts:30}, {t:"Runs until done", pts:50}, {t:"Unsure", pts:60, unsure:true}] },
-        { q: "Your AI recommends something... and that recommendation costs them real money. What does your contract say you owe them?", threatId: "INT09_REC_001", options: [{t:"Explicit clause", pts:0}, {t:"General liability only", pts:30}, {t:"Nothing", pts:50}, {t:"Unsure", pts:60, unsure:true}] },
-        { q: "Your AI controls something in the physical world... If it causes injury or property damage, does your contract put a ceiling on what you pay?", threatId: "INT10_PHY_001", options: [{t:"Explicit liability cap", pts:0}, {t:"General limits only", pts:30}, {t:"No physical harm terms", pts:50}, {t:"Unsure", pts:60, unsure:true}] }
+        { q: "If your AI starts making decisions or spending money on a loop at 3am — what actually stops it?",
+          threatId: "UNI_LIA_007",
+          options: [{t:"Hard spend cap + kill switch.", pts:0}, {t:"Alert only, human has to manually stop it.", pts:30}, {t:"Runs until the task completes.", pts:50}, {t:"Unsure.", pts:60, unsure:true}] },
     ],
     evaluates: [
-        { q: "If your AI makes a wrong call about a person (bad hire, denied claim) — who does your contract say is responsible for that?", threatId: "INT02_DIS_001", options: [{t:"Liability shifted to client", pts:0}, {t:"Human review recommended", pts:30}, {t:"We built it, we're on hook", pts:50}, {t:"Unsure", pts:60, unsure:true}] },
-        { q: "Your AI is supposed to catch something (fraud, breach)... It misses. What does your contract say about who pays for the fallout?", threatId: "INT08_SEC_001", options: [{t:"Exposure capped at fees", pts:0}, {t:"General disclaimer only", pts:30}, {t:"Nothing addresses this", pts:50}, {t:"Unsure", pts:60, unsure:true}] }
+        { q: "If your AI makes a wrong call about a person (bad hire, denied claim) — who does your contract say is responsible for that?",
+          threatId: "I02_DEC_001",
+          options: [{t:"Liability explicitly shifted to the client deploying it.", pts:0}, {t:"We recommend human review but the contract is silent on liability.", pts:30}, {t:"We built it, we're on the hook.", pts:50}, {t:"Unsure.", pts:60, unsure:true}] },
+        { q: "Your AI is supposed to catch something (fraud, breach)... It misses. What does your contract say about who pays for the fallout?",
+          threatId: "I08_LIA_001",
+          options: [{t:"Exposure capped at fees paid.", pts:0}, {t:"General disclaimer only.", pts:30}, {t:"Nothing addresses this.", pts:50}, {t:"Unsure.", pts:60, unsure:true}] }
     ],
     creates: [
-        { q: "When your AI produces an output... does your contract say who owns it and what you're liable for if it's wrong or stolen?", threatId: "INT04_COP_001", options: [{t:"Explicit assignment", pts:0}, {t:"Standard software terms", pts:30}, {t:"Nothing addresses AI", pts:50}, {t:"Unsure", pts:60, unsure:true}] },
-        { q: "Does your system pull data from the web, scrape documents, or ingest content from sources outside your own platform?", threatId: "INT05_DIS_001", options: [{t:"Licensed sources only", pts:0}, {t:"Public data, no bot protection", pts:30}, {t:"Wherever data is", pts:50}, {t:"Unsure", pts:60, unsure:true}] },
-        { q: "Your AI processes human voice... Do you have explicit written consent from every person whose voice enters your system?", threatId: "INT07_BIO_001", options: [{t:"Written consent before", pts:0}, {t:"General terms only", pts:30}, {t:"No consent step", pts:50}, {t:"Unsure", pts:60, unsure:true}] },
-        { q: "Under the hood, your product calls other AI models... If one of them produces something harmful — who does your contract say pays?", threatId: "INT06_ORC_001", options: [{t:"Pass-through clauses", pts:0}, {t:"Standard API terms", pts:30}, {t:"We are on the hook", pts:50}, {t:"Unsure", pts:60, unsure:true}] }
+        { q: "When your AI produces an output — does your contract say who owns it and what you're liable for if it's wrong or stolen?",
+          threatId: "I04_INF_001",
+          options: [{t:"Explicit IP assignment + AI output disclaimer.", pts:0}, {t:"Standard software terms — assuming those apply.", pts:30}, {t:"Nothing addresses AI-generated output.", pts:50}, {t:"Unsure.", pts:60, unsure:true}] },
+        { q: "Does your system pull data from the web, scrape documents, or ingest content from sources outside your own platform?",
+          threatId: "I05_PRV_001",
+          options: [{t:"Licensed sources only, provenance documented.", pts:0}, {t:"Public data — no documented licensing or opt-out compliance.", pts:30}, {t:"We ingest from wherever the data is.", pts:50}, {t:"Unsure.", pts:60, unsure:true}] },
+        { q: "Your AI processes human voice or audio — do you have explicit written consent from every person whose voice enters your system?",
+          threatId: "I07_BIO_001",
+          options: [{t:"Written consent gate before any voice is captured.", pts:0}, {t:"General terms only, no specific voice consent.", pts:30}, {t:"No consent step at all.", pts:50}, {t:"Unsure.", pts:60, unsure:true}] },
+        { q: "Under the hood, your product calls other AI models. If one of them produces something harmful — who does your contract say pays?",
+          threatId: "I06_LIA_001",
+          options: [{t:"Pass-through indemnification clauses in place.", pts:0}, {t:"We rely on standard API terms from each provider.", pts:30}, {t:"We are on the hook for anything our product outputs.", pts:50}, {t:"Unsure.", pts:60, unsure:true}] }
     ],
     talks: [
-        { q: "If your AI builds an ongoing relationship with a user... what happens in your contract when that goes wrong?", threatId: "INT03_COM_002", options: [{t:"Crisis break clauses", pts:0}, {t:"Standard chatbot terms", pts:30}, {t:"No guardrails", pts:50}, {t:"Unsure", pts:60, unsure:true}] },
-        { q: "Does your AI adapt how it talks to people based on their behavior... using urgency or emotional language to drive them toward a decision?", threatId: "INT03_CON_002", options: [{t:"Disclosed with opt-out", pts:0}, {t:"Adapts but not disclosed", pts:30}, {t:"Persuasive by design", pts:50}, {t:"Unsure", pts:60, unsure:true}] }
+        { q: "If your AI builds an ongoing relationship with a user — what happens in your contract when that relationship goes wrong?",
+          threatId: "I03_HRM_002",
+          options: [{t:"Crisis escalation and break clauses explicitly written in.", pts:0}, {t:"Standard chatbot terms, no specific companion liability.", pts:30}, {t:"No guardrails at all.", pts:50}, {t:"Unsure.", pts:60, unsure:true}] },
+        { q: "Does your AI adapt how it talks to people based on their behavior — using urgency or emotional language to drive them toward a decision?",
+          threatId: "I03_HRM_003",
+          options: [{t:"Disclosed with opt-out available.", pts:0}, {t:"It adapts but that's not disclosed anywhere.", pts:30}, {t:"Persuasion by design — that's the product.", pts:50}, {t:"Unsure.", pts:60, unsure:true}] }
+    ],
+    // Physical world — INT.10 — uses I10_LIA_001 (Bodily Injury Tort Exposure)
+    mover: [
+        { q: "Your AI controls something in the physical world. If it causes injury or property damage, does your contract put a ceiling on what you pay?",
+          threatId: "I10_LIA_001",
+          options: [{t:"Explicit physical harm liability cap written in.", pts:0}, {t:"General liability limits only — no physical harm specific language.", pts:30}, {t:"No physical harm terms at all.", pts:50}, {t:"Unsure.", pts:60, unsure:true}] }
+    ],
+    // AI recommendations causing financial harm — UNI_HAL_003 (Tort Negligence for Output)
+    optimizer: [
+        { q: "Your AI recommends something — a trade, a decision, an action. That recommendation costs the user real money. What does your contract say you owe them?",
+          threatId: "UNI_HAL_003",
+          options: [{t:"Explicit clause — outputs are informational only, no reliance liability.", pts:0}, {t:"General limitation of liability, but no recommendation-specific language.", pts:30}, {t:"Nothing addresses AI recommendation liability.", pts:50}, {t:"Unsure.", pts:60, unsure:true}] }
     ]
 };
 
@@ -103,31 +134,44 @@ const Q_META = {
 let currentRoute = [];
 let currentQIndex = 0;
 let interrogationState = {
-    vaultInputs: [],   // Stores the exact Q&A strings
-    activeGaps: [],    // Stores the Threat_IDs they triggered
-    totalScore: 0,     // Severity math
-    unsureFlag: false  // Did they admit they don't know?
+    vaultInputs: [],   // Full Q&A log including threatId
+    activeGaps: [],    // {threatId, penalty} objects for scoring
+    totalScore: 0,
+    unsureFlag: false
 };
 
 // ============================================================================
-// 3. CORE EXECUTIONS (The Interrogation Logic)
+// 3. CORE EXECUTIONS
 // ============================================================================
 
 /**
- * Builds the strict 10-question array based on their architecture.
+ * Builds the strict 10-question array based on architecture selection.
  */
 export function buildInterrogationRoute(selectedLanes, selectedArchs) {
     const TARGET = 10;
-    currentRoute = [...Q_GLOBAL]; 
+    currentRoute = [...Q_GLOBAL];
     const usedThreatIds = new Set(Q_GLOBAL.map(q => q.threatId));
 
+    // Operational lane adds the internal data question
     if (selectedLanes.includes('operational')) {
-        currentRoute.push(Q_INTERNAL);
-        usedThreatIds.add(Q_INTERNAL.threatId);
+        if (!usedThreatIds.has(Q_INTERNAL.threatId) && currentRoute.length < TARGET) {
+            currentRoute.push(Q_INTERNAL);
+            usedThreatIds.add(Q_INTERNAL.threatId);
+        }
     }
 
-    const archPriority = ['actions', 'evaluates', 'creates', 'talks'];
-    
+    // Map arch group names to Q_META keys
+    const archToMetaKey = {
+        actions:   'actions',
+        evaluates: 'evaluates',
+        creates:   'creates',
+        talks:     'talks',
+        mover:     'mover',
+        optimizer: 'optimizer'
+    };
+
+    const archPriority = ['actions', 'evaluates', 'creates', 'talks', 'mover', 'optimizer'];
+
     // Phase 1: Pull from explicitly selected archetypes
     archPriority.forEach(arch => {
         if (!selectedArchs.includes(arch) || !Q_META[arch]) return;
@@ -139,7 +183,7 @@ export function buildInterrogationRoute(selectedLanes, selectedArchs) {
         });
     });
 
-    // Phase 2: Pad with generic threats if under 10
+    // Phase 2: Pad to 10 from unselected archetypes
     archPriority.forEach(arch => {
         if (selectedArchs.includes(arch) || !Q_META[arch]) return;
         Q_META[arch].forEach(q => {
@@ -150,19 +194,18 @@ export function buildInterrogationRoute(selectedLanes, selectedArchs) {
         });
     });
 
-    // Reset Memory for a clean run
+    // Reset state
     currentQIndex = 0;
     interrogationState = { vaultInputs: [], activeGaps: [], totalScore: 0, unsureFlag: false };
-    
+
     console.log(`> INTERROGATOR: Route locked. ${currentRoute.length} questions queued.`);
 }
 
 /**
- * Hands the current question to the UI module.
+ * Returns the current question data for the UI to render.
  */
 export function getNextQuestion() {
-    if (currentQIndex >= currentRoute.length) return null; // Interrogation complete
-
+    if (currentQIndex >= currentRoute.length) return null;
     const q = currentRoute[currentQIndex];
     return {
         questionText: q.q,
@@ -173,18 +216,20 @@ export function getNextQuestion() {
 }
 
 /**
- * Processes the user's click, updates the score, and logs the threat.
- * Returns boolean: TRUE if interrogation continues, FALSE if complete.
+ * Processes the selected answer.
+ * Pushes a full object {threatId, penalty, question, answer} to vaultInputs.
+ * Pushes {threatId, penalty} to activeGaps — OBJECTS, not strings.
+ * Returns true if more questions remain, false if complete.
  */
 export function submitAnswer(selectedOptionIndex) {
-    // GUARD: Refuse to process if the interrogation is already over
     if (currentQIndex >= currentRoute.length) return false;
 
     const q = currentRoute[currentQIndex];
     const opt = q.options[selectedOptionIndex];
 
-    // Log the raw text for the final output report
+    // Full audit log — includes threatId for database traceability
     interrogationState.vaultInputs.push({
+        threatId: q.threatId,
         question: q.q,
         answer: opt.t,
         penalty: opt.pts
@@ -193,9 +238,16 @@ export function submitAnswer(selectedOptionIndex) {
     interrogationState.totalScore += opt.pts;
     if (opt.unsure) interrogationState.unsureFlag = true;
 
-    // Any score > 0 means the gap is active
-    if (opt.pts > 0 && !interrogationState.activeGaps.includes(q.threatId)) {
-        interrogationState.activeGaps.push(q.threatId);
+    // Only record as an active gap if the answer indicates exposure
+    if (opt.pts > 0) {
+        const alreadyActive = interrogationState.activeGaps.some(g => g.threatId === q.threatId);
+        if (!alreadyActive) {
+            // OBJECT — not string. Actuary reads penalty for multiplier logic.
+            interrogationState.activeGaps.push({
+                threatId: q.threatId,
+                penalty: opt.pts
+            });
+        }
     }
 
     currentQIndex++;
@@ -203,7 +255,7 @@ export function submitAnswer(selectedOptionIndex) {
 }
 
 /**
- * Hands the final payload to the Scoring Engine.
+ * Returns the final interrogation payload for the scoring engine.
  */
 export function getInterrogationPayload() {
     return interrogationState;
