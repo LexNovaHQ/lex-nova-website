@@ -1,21 +1,36 @@
 /**
  * LEX NOVA HQ — FORENSIC ENGINE v6.0
  * /bridge/engagement-logic.js - The Closer
- * * THE SUPREME COMMAND: Powers the standalone engagement.html portal.
- * Reads the URL, injects the contract, forces the read, and collects the money.
+ *
+ * FIXES v2.0:
+ * - Firebase config inlined (removed broken import from governance.js)
+ * - All duplicate IDs use querySelectorAll + forEach (not getElementById)
+ * - founderName fallback hardened
+ * - Script is now fully self-contained — no external imports required
  */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
-import { FIREBASE_CONFIG } from '../config/governance.js'; // Assuming you centralized config, otherwise paste config here
 
 // ============================================================================
-// 1. CONSTANTS & CONFIGURATION
+// 1. FIREBASE CONFIG (inlined — do not import from governance.js)
 // ============================================================================
+const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyDO4s_W8_87XnsLnuAfyUqgsF8BgaHRYWA",
+    authDomain: "lexnova-hq.firebaseapp.com",
+    projectId: "lexnova-hq",
+    storageBucket: "lexnova-hq.firebasestorage.app",
+    messagingSenderId: "539475214055",
+    appId: "1:539475214055:web:c01a99ec94ff073a9b6c42"
+};
+
 const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
 
-const CHECKOUT_WEBHOOK = "https://hook.eu1.make.com/r77qw3emv27csjq2eag7ibqku1juve4t"; // Your Make Webhook
+// ============================================================================
+// 2. CONSTANTS
+// ============================================================================
+const CHECKOUT_WEBHOOK = "https://hook.eu1.make.com/r77qw3emv27csjq2eag7ibqku1juve4t";
 
 const PAYMENT_LINKS = {
     agentic_shield:   "https://www.paypal.com/ncp/payment/WNH78KQCXDBL6",
@@ -24,161 +39,228 @@ const PAYMENT_LINKS = {
 };
 
 const PLAN_DATA = {
-    agentic_shield:   { name: "The Agentic Shield",   price: 1500, tier: "Kit",    delivery: "48 hours from Vault activation" },
+    agentic_shield:   { name: "The Agentic Shield",  price: 1500, tier: "Kit",    delivery: "48 hours from Vault activation" },
     workplace_shield: { name: "The Workplace Shield", price: 1500, tier: "Kit",    delivery: "48 hours from Vault activation" },
     complete_stack:   { name: "The Complete Stack",   price: 2500, tier: "Bundle", delivery: "72 hours from Vault activation" }
 };
 
-// State
+// ============================================================================
+// 3. STATE
+// ============================================================================
 let prospectData = null;
 let activePlanId = null;
-let prospectId = null;
+let prospectId   = null;
 
 // ============================================================================
-// 2. INITIALIZATION (The Sniff)
+// 4. HELPERS — safe DOM writers
+// ============================================================================
+
+/**
+ * Sets innerText on a single element by ID.
+ * Safe no-op if element doesn't exist.
+ */
+function setById(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = value;
+}
+
+/**
+ * Sets innerText on ALL elements matching a selector.
+ * Handles duplicate IDs and class-based selectors.
+ */
+function setAll(selector, value) {
+    document.querySelectorAll(selector).forEach(el => { el.innerText = value; });
+}
+
+// ============================================================================
+// 5. INITIALIZATION
 // ============================================================================
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("> CLOSER: Engagement Portal Initialized.");
 
-    const urlParams = new URLSearchParams(window.location.search);
-    prospectId = urlParams.get('pid');
+    const urlParams  = new URLSearchParams(window.location.search);
+    prospectId   = urlParams.get('pid');
     activePlanId = urlParams.get('plan') || 'complete_stack';
 
     if (!prospectId || !PLAN_DATA[activePlanId]) {
-        alert("Invalid engagement link. Please contact Lex Nova.");
+        alert("Invalid engagement link. Please contact Lex Nova at shwetabh.singh@lexnovahq.com");
         return;
     }
 
     try {
-        // Fetch the VIP data
         const snap = await getDoc(doc(db, "prospects", prospectId));
         if (snap.exists()) {
             prospectData = snap.data();
             injectContractData();
             wireFrictionLock();
         } else {
-            console.error("> CLOSER: Prospect not found in database.");
-            alert("Record not found. Please contact Lex Nova.");
+            console.error("> CLOSER: Prospect not found:", prospectId);
+            alert("Engagement record not found. Please contact Lex Nova.");
         }
-    } catch (error) {
-        console.error("> CLOSER: Database connection failed.", error);
+    } catch (err) {
+        console.error("> CLOSER: Database connection failed.", err);
+        alert("Connection error. Please try again or contact Lex Nova.");
     }
 });
 
 // ============================================================================
-// 3. THE INJECTOR (Paints the Contract)
+// 6. THE INJECTOR
 // ============================================================================
 function injectContractData() {
     const pd = PLAN_DATA[activePlanId];
-    const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
-    
-    const company = prospectData.company || "[Client Company]";
-    const founderName = prospectData.founderName || prospectData.name || "[Founder Name]";
-    const email = prospectData.email || "[Client Email]";
-    const refCode = `LN-2026-${prospectId.toUpperCase()}`;
 
-    // Inject Dates
-    document.getElementById('el-date').innerText = today;
-    document.querySelectorAll('.el-date-footer').forEach(el => el.innerText = today);
-    
-    // Inject Names
-    document.getElementById('el-client-name').innerText = company;
-    document.getElementById('el-contact').innerText = founderName;
-    document.getElementById('el-client-email').innerText = email;
-    document.getElementById('el-dear').innerText = founderName.split(' ')[0] || "Founder";
-    document.getElementById('el-client-body').innerText = company;
-    
-    // Inject Plan Details
-    document.querySelectorAll('.el-ref-number').forEach(el => el.innerText = refCode);
-    document.getElementById('el-sa-client').innerText = company;
-    document.getElementById('el-sa-date').innerText = today;
-    document.getElementById('el-sa-tier').innerText = pd.tier;
-    document.getElementById('el-sa-product').innerText = pd.name;
-    document.getElementById('el-sa-fee').innerText = `$${pd.price} USD`;
-    document.getElementById('el-sa-delivery').innerText = pd.delivery;
-    
-    document.querySelectorAll('.el-client-footer').forEach(el => el.innerText = company);
-    
-    console.log("> CLOSER: Contract Injection Complete.");
+    const today = new Date().toLocaleDateString('en-GB', {
+        day:   '2-digit',
+        month: 'long',
+        year:  'numeric'
+    });
+
+    const company     = prospectData.company     || "[Client Company]";
+    const founderName = prospectData.founderName  || prospectData.name || "Founder";
+    const firstName   = founderName.split(' ')[0] || "Founder";
+    const email       = prospectData.email        || "[Client Email]";
+    const refCode     = `LN-2026-${prospectId.toUpperCase()}`;
+
+    // ── Dates ──────────────────────────────────────────────────────────
+    // el-date appears TWICE in the HTML — use querySelectorAll
+    setAll('#el-date', today);
+    setAll('.el-date-footer', today);
+
+    // ── Names (single IDs — safe to use getElementById via setById) ────
+    setById('el-client-name',  company);
+    setById('el-contact',      founderName);
+    setById('el-client-email', email);
+    setById('el-dear',         firstName);
+
+    // ── el-client-body appears TWICE ──────────────────────────────────
+    setAll('#el-client-body', company);
+
+    // ── el-ref-number appears THREE TIMES ─────────────────────────────
+    setAll('.el-ref-number', refCode);
+
+    // ── Plan details ──────────────────────────────────────────────────
+    setById('el-sa-client',   company);
+    setById('el-sa-date',     today);
+    setById('el-sa-tier',     pd.tier);
+    setById('el-sa-product',  pd.name);
+    setById('el-sa-fee',      `$${pd.price.toLocaleString()} USD`);
+    setById('el-sa-delivery', pd.delivery);
+
+    // ── Footer client name (class-based — multiple elements) ──────────
+    setAll('.el-client-footer', company);
+
+    // ── Page-level reference number ───────────────────────────────────
+    // This is the one in the page header (outside the scrollable contract)
+    // Already handled by .el-ref-number selector above
+
+    console.log(`> CLOSER: Contract injected for [${company}] | Plan: [${pd.name}] | Ref: [${refCode}]`);
 }
 
 // ============================================================================
-// 4. THE FRICTION LOCK (Scroll to Accept)
+// 7. FRICTION LOCK (Scroll to Accept)
 // ============================================================================
 function wireFrictionLock() {
-    const elScrollContainer = document.getElementById('engagement-scroll-container');
-    const acceptBtn = document.getElementById('accept-pay-btn');
+    const scrollContainer  = document.getElementById('engagement-scroll-container');
+    const acceptBtn        = document.getElementById('accept-pay-btn');
     const scrollInstruction = document.getElementById('scroll-instruction');
 
-    // Default state: Disabled
+    if (!scrollContainer || !acceptBtn) {
+        console.error("> CLOSER: DOM elements missing for friction lock.");
+        return;
+    }
+
+    // Locked state
     acceptBtn.disabled = true;
     acceptBtn.classList.add('opacity-50', 'cursor-not-allowed', 'bg-shadow', 'text-marble/30');
-    acceptBtn.classList.remove('bg-gold', 'text-void', 'hover:bg-marble');
+    acceptBtn.classList.remove('bg-gold', 'text-void', 'hover:bg-marble', 'cursor-pointer');
 
-    const checkScrollBottom = () => {
-        // Allow a 20px buffer for zoom/rendering differences
-        if (elScrollContainer.scrollHeight - elScrollContainer.scrollTop <= elScrollContainer.clientHeight + 20) {
-            // Unlock!
+    const unlock = () => {
+        // 20px buffer for zoom/rendering variance
+        const atBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop
+            <= scrollContainer.clientHeight + 20;
+
+        if (atBottom) {
             acceptBtn.disabled = false;
             acceptBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-shadow', 'text-marble/30');
-            acceptBtn.classList.add('bg-gold', 'text-void', 'hover:bg-marble');
-            
-            if (scrollInstruction) scrollInstruction.classList.add('hidden-state');
-            
-            // Remove listener so it stays unlocked
-            elScrollContainer.removeEventListener('scroll', checkScrollBottom);
+            acceptBtn.classList.add('bg-gold', 'text-void', 'hover:bg-marble', 'cursor-pointer');
+
+            if (scrollInstruction) scrollInstruction.classList.add('hidden');
+            scrollContainer.removeEventListener('scroll', unlock);
+
+            console.log("> CLOSER: Document read confirmed. Pay button unlocked.");
         }
     };
 
-    elScrollContainer.addEventListener('scroll', checkScrollBottom);
-    
-    // Wire the final submit click
+    scrollContainer.addEventListener('scroll', unlock);
     acceptBtn.addEventListener('click', executeTransaction);
 }
 
 // ============================================================================
-// 5. THE CLOSER (Transaction Sequence)
+// 8. THE CLOSER (Transaction Execution)
 // ============================================================================
 async function executeTransaction() {
     const btn = document.getElementById('accept-pay-btn');
-    btn.disabled = true;
-    btn.innerText = "SECURING ARCHITECTURE...";
+    if (!btn || btn.disabled) return;
+
+    btn.disabled   = true;
+    btn.innerText  = "SECURING ARCHITECTURE...";
     btn.classList.add('opacity-50', 'cursor-not-allowed');
 
-    const pd = PLAN_DATA[activePlanId];
-    
-    const leadData = {
-        email: prospectData.email,
-        company: prospectData.company,
-        plan: activePlanId,
-        price: pd.price,
-        status: "hot_payment_pending",
-        elAccepted: true,
-        elAcceptedAt: new Date().toISOString(),
-        elAcceptedForPlan: activePlanId,
-        engagementReference: `LN-2026-${prospectId.toUpperCase()}`
+    const pd      = PLAN_DATA[activePlanId];
+    const refCode = `LN-2026-${prospectId.toUpperCase()}`;
+
+    const transactionPayload = {
+        email:                 prospectData.email,
+        company:               prospectData.company,
+        founderName:           prospectData.founderName || prospectData.name || "Unknown",
+        plan:                  activePlanId,
+        planName:              pd.name,
+        price:                 pd.price,
+        status:                "hot_payment_pending",
+        elAccepted:            true,
+        elAcceptedAt:          new Date().toISOString(),
+        elAcceptedForPlan:     activePlanId,
+        engagementReference:   refCode,
+        lastUpdated:           new Date().toISOString()
     };
 
     try {
-        console.log("> CLOSER: Executing Final Writes...");
-        
-        // 1. Update Firebase Lead/Prospect Status
-        const safeEmailId = prospectData.email ? prospectData.email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase() : prospectId;
-        await setDoc(doc(db, "leads", safeEmailId), leadData, { merge: true });
-        await setDoc(doc(db, "prospects", prospectId), { status: "hot_payment_pending", elAccepted: true }, { merge: true });
+        console.log("> CLOSER: Writing transaction to Firebase...");
 
-        // 2. Fire the Webhook to Slack/Make
+        // Update prospect record
+        await setDoc(doc(db, "prospects", prospectId), {
+            status:            "hot_payment_pending",
+            elAccepted:        true,
+            elAcceptedAt:      new Date().toISOString(),
+            elAcceptedForPlan: activePlanId,
+            engagementRef:     refCode
+        }, { merge: true });
+
+        // Write/update leads record
+        const safeEmailId = prospectData.email
+            ? prospectData.email.replace(/[^a-zA-Z0-9@._-]/g, '').toLowerCase()
+            : prospectId;
+
+        await setDoc(doc(db, "leads", safeEmailId), transactionPayload, { merge: true });
+
+        // Fire Make.com webhook
         await fetch(CHECKOUT_WEBHOOK, {
-            method: "POST",
+            method:  "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...leadData, timestamp: new Date().toISOString(), trigger: "Async Checkout Module" })
+            body:    JSON.stringify({
+                ...transactionPayload,
+                timestamp: new Date().toISOString(),
+                trigger:   "Engagement Letter Accepted"
+            })
         });
 
+        console.log("> CLOSER: Firebase + Webhook complete. Routing to payment.");
+
     } catch (err) {
-        console.error("> CLOSER: Transaction Logging Failed (Proceeding to payment anyway)", err);
+        // Non-blocking — proceed to payment even if logging fails
+        console.error("> CLOSER: Transaction logging failed (proceeding to payment):", err);
     }
 
-    // 3. The Redirect
-    console.log("> CLOSER: Routing to Payment Processor.");
+    // Redirect to payment processor
     window.location.href = PAYMENT_LINKS[activePlanId];
 }
