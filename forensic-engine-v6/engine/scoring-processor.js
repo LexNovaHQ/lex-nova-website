@@ -83,18 +83,19 @@ function mergeIntelligence(prospectData, quizGaps) {
 // ============================================================================
 
 function sortBySeverityAndVerification(a, b) {
-    // 1. Primary Sort: Severity (T1 > T2 > T3)
-    // We safely use the pre-calculated T-Tiers instead of raw strings
+    // 1. APEX PREDATOR: Dual-Verified ALWAYS wins, forcing them to the top of the unblurred dashboard
+    if (a.source === 'dual-verified' && b.source !== 'dual-verified') return -1;
+    if (b.source === 'dual-verified' && a.source !== 'dual-verified') return 1;
+
+    // 2. Secondary Sort: Severity (T1 > T2 > T3)
     const sevW = { 'T1': 3, 'T2': 2, 'T3': 1 };
     const sevA = sevW[a.calculatedSeverity] || 0;
     const sevB = sevW[b.calculatedSeverity] || 0;
     if (sevA !== sevB) return sevB - sevA;
 
-    // 2. Secondary Sort: Verification (Dual-Verified > Scrape > Scanner)
-    const srcW = { 'dual-verified': 3, 'scrape': 2, 'scanner': 1 };
-    const srcA = srcW[a.source] || 0;
-    const srcB = srcW[b.source] || 0;
-    return srcB - srcA;
+    // 3. Tertiary Sort: Source (Scrape beats Scanner)
+    const srcW = { 'scrape': 2, 'scanner': 1 };
+    return (srcW[b.source] || 0) - (srcW[a.source] || 0);
 }
 
 // Map the old severity labels to the new psychological T-Tiers
@@ -228,34 +229,29 @@ function determinePrescription(lanes) {
 export function generateFinalReport(interrogationState, lanes, surfaces, registryData, prospectData = {}) {
     console.log("> ACTUARY: Assembling Final Financial & Legal Briefcase...");
 
-    // 1. Merge Public Scrape with Private Confessions
     const mergedGaps = mergeIntelligence(prospectData, interrogationState.activeGaps || []);
-
-    // 2. Calculate the exact dollar amount of the pain
     const financialData = calculateFinancialExposure(mergedGaps, interrogationState.unsureFlag);
 
-    // 3. Enhance gaps with copywriting from registry
     const enrichedThreats = mergedGaps.map(gap => {
         const threatId = gap.threatId || gap.id;
-        const threatDef = registryData?.threats?.[threatId] || {};
+        // FIX: Intelligently hunt for the threat definition regardless of JSON nesting
+        const threatDef = registryData?.threats?.[threatId] || registryData?.definitions?.threats?.[threatId] || {};
         
         return {
             ...gap,
-            ...threatDef, // Brings in copywriting, mechanism, trigger, stakes, fix
+            ...threatDef, 
             threatId: threatId,
-            threatName: gap.gapName || gap.trap || threatDef.name || 'Architecture Vulnerability',
-            calculatedSeverity: mapToTier(gap.severity),
-            // Inherit specific high-stress fields from prospectData if available
+            // FIX: Prioritize registry name, then gap name
+            threatName: threatDef.name || gap.gapName || gap.trap || 'Architecture Vulnerability',
+            calculatedSeverity: mapToTier(gap.severity || threatDef.severity),
             legalAmmo: gap.legalAmmo || threatDef.legal?.ammo || threatDef.legalAmmo || "Pending State AG/FTC Enforcement Action",
-            velocity: gap.velocity || "Immediate",
+            velocity: gap.velocity || threatDef.velocity || "Immediate",
             diligence_pressure: prospectData.diligence_pressure || null
         };
     });
 
-    // 4. Apply the Ruthless Sorting Algorithm (Dual-Verified to the top)
     enrichedThreats.sort(sortBySeverityAndVerification);
 
-    // 5. Package the Final Report
     return {
         totalScore: interrogationState.totalScore || 0,
         unsureFlag: interrogationState.unsureFlag || false,
@@ -263,6 +259,7 @@ export function generateFinalReport(interrogationState, lanes, surfaces, registr
         financials: financialData,
         prescription: determinePrescription(lanes),
         rawConfessions: interrogationState.vaultInputs || [],
-        sortedThreats: enrichedThreats
+        sortedThreats: enrichedThreats,
+        registry: registryData // PASS REGISTRY TO UI FOR ARCHETYPE TRANSLATION
     };
 }
